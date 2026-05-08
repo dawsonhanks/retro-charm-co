@@ -1,0 +1,187 @@
+import { Helmet } from 'react-helmet-async'
+import { lazy, Suspense } from 'react'
+import { Link } from 'react-router-dom'
+import { motion } from 'framer-motion'
+import { HowItWorks } from '../components/HowItWorks'
+import { EmailSignup } from '../components/EmailSignup'
+import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccents'
+import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
+
+const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
+
+const heroWords = ['Build.', 'Blink.', 'Booth.', 'Brilliant.']
+
+const testimonials = [
+  {
+    quote: 'My daughter and I made matching bracelets in ten minutes — cutest mom-and-me memory.',
+    name: 'Jamie R.',
+    place: 'Orem market',
+  },
+  {
+    quote: 'The retro charms are so detailed. I get compliments every time I wear my stack.',
+    name: 'Mel S.',
+    place: 'Springville market',
+  },
+  {
+    quote: 'Finally a booth where you pick every charm yourself. Felt like customizing candy, but jewelry.',
+    name: 'Priya K.',
+    place: 'Draper market',
+  },
+]
+
+function PageLoader() {
+  return (
+    <div className="flex min-h-[200px] items-center justify-center py-16">
+      <div className="h-10 w-10 animate-spin rounded-full border-2 border-jscolors-gold border-t-jscolors-pink" aria-label="Loading" />
+    </div>
+  )
+}
+
+export default function Home() {
+  return (
+    <>
+      <Helmet>
+        <title>Retro Charm Co 2.0 | Italian Charm Bracelets in Utah</title>
+        <meta
+          name="description"
+          content="Custom Italian charm bracelets at Utah farmers markets. Pick your base, choose your charms, wear your story — Sunset Markets in Springville, Draper, Orem, and Lindon."
+        />
+      </Helmet>
+
+      <section className="relative overflow-hidden bg-gradient-to-b from-jscolors-navy via-jscolors-charcoal to-jscolors-navy text-jscolors-cream">
+        <StarField className="absolute left-0 right-0 top-4 mx-auto max-w-4xl opacity-90" />
+        <FloatingHearts className="pointer-events-none absolute bottom-8 right-4 hidden w-32 md:block" />
+
+        <div className="relative mx-auto flex max-w-6xl flex-col items-center px-4 pb-20 pt-16 text-center md:pb-28 md:pt-24">
+          <motion.p
+            initial={{ opacity: 0, y: -8 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold"
+          >
+            Sunset Farmers Markets • Utah
+          </motion.p>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3 md:gap-4">
+            {heroWords.map((word, i) => (
+              <motion.span
+                key={word}
+                initial={{ opacity: 0, y: 18 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.08 + i * 0.1, type: 'spring', stiffness: 320, damping: 26 }}
+                className="font-display text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl"
+              >
+                {word}
+              </motion.span>
+            ))}
+          </div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.45, duration: 0.55 }}
+            className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-cream sm:text-3xl md:text-4xl"
+          >
+            Italian charm bracelets, assembled <span className="text-jscolors-pink">by you</span> at the booth.
+          </motion.h1>
+
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.65, duration: 0.5 }}
+            className="mt-5 max-w-2xl text-base text-jscolors-cream/80 md:text-lg"
+          >
+            Bases from $12–15 and charms from $2–2.50 — most folks leave with 7–10 charms and a $25–30 bracelet that feels
+            one-of-a-kind.
+          </motion.p>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.8, type: 'spring', stiffness: 280, damping: 20 }}
+            className="mt-10"
+          >
+            <Link
+              to="/find-us"
+              className="inline-flex items-center justify-center rounded-full bg-jscolors-pink px-10 py-4 text-base font-semibold text-white shadow-lg shadow-jscolors-pink/30 transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
+            >
+              Find Us at the Market
+            </Link>
+          </motion.div>
+          <SparkleRow className="mt-10" />
+        </div>
+      </section>
+
+      <HowItWorks />
+
+      <Suspense fallback={<PageLoader />}>
+        <div className="bg-white py-16">
+          <CharmBuilder className="px-4" idPrefix="home-builder" />
+        </div>
+      </Suspense>
+
+      <section className="mx-auto max-w-6xl px-4 py-16 md:py-24" aria-labelledby="love-heading">
+        <div className="text-center">
+
+          <h2 id="love-heading" className="font-display text-3xl font-bold text-jscolors-navy md:text-4xl">
+            Love from the aisle
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
+            Sweet words from shoppers who built bracelets with us — thank you for letting us sparkle alongside you.
+          </p>
+        </div>
+        <ul className="mt-12 grid gap-6 md:grid-cols-3">
+          {testimonials.map((t) => (
+            <li key={t.name} className="retro-card retro-card-hover p-6">
+              <p className="text-sm italic leading-relaxed text-jscolors-charcoal/90">&ldquo;{t.quote}&rdquo;</p>
+              <p className="mt-4 text-sm font-semibold text-jscolors-navy">
+                {t.name}
+                <span className="font-normal text-jscolors-charcoal/60"> — {t.place}</span>
+              </p>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section className="border-y border-jscolors-gold/25 bg-jscolors-cream/80 py-16 md:py-20" aria-labelledby="ig-heading">
+        <div className="mx-auto max-w-6xl px-4 text-center">
+          <h2 id="ig-heading" className="font-display text-3xl font-bold text-jscolors-navy">
+            On the &rsquo;Gram
+          </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
+            Follow along for booth previews, charm drops, and market day stories — feed coming soon below.
+          </p>
+          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
+            {['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
+              <div
+                key={i}
+                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-white/80 font-display text-xl text-jscolors-navy/35"
+              >
+                <span aria-hidden>{label}</span>
+                <span className="sr-only">Instagram placeholder tile {i + 1}</span>
+              </div>
+            ))}
+          </div>
+          <p className="mt-6 text-sm text-jscolors-charcoal/65">
+            Instagram embed placeholder — drop your @ when you are ready and this becomes a live grid.
+          </p>
+
+          <div className="mx-auto mt-10 max-w-md text-left">
+            <p className="text-center font-display text-sm font-semibold text-jscolors-navy">Get charm doodles in your inbox</p>
+            <EmailSignup
+              className="mt-4"
+              source="home-instagram"
+              theme="on-light"
+              onSuccess={(payload) => {
+                const key = STORAGE_KEYS.shopWaitlist
+                const list = readJson(key, [])
+                list.push({ ...payload, kind: 'newsletter', at: new Date().toISOString() })
+                writeJson(key, list)
+              }}
+            />
+          </div>
+        </div>
+      </section>
+    </>
+  )
+}

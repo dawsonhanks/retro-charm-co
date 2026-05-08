@@ -1,0 +1,59 @@
+@import 'tailwindcss';
+
+@theme {
+  /* jscolors — Retro Charm Co design tokens */
+  --color-jscolors-navy: #1a1a2e;
+  --color-jscolors-pink: #e94560;
+  --color-jscolors-gold: #f5a623;
+  --color-jscolors-cream: #fff9f0;
+  --color-jscolors-charcoal: #2c2c3e;
+
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+
+  --shadow-retro-card: 0 4px 24px rgba(26, 26, 46, 0.08),
+    0 0 0 1px rgba(245, 166, 35, 0.2);
+  --shadow-retro-card-hover: 0 12px 40px rgba(26, 26, 46, 0.12),
+    0 0 0 2px rgba(245, 166, 35, 0.35);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    margin: 0;
+    font-family: var(--font-body);
+    background-color: var(--color-jscolors-cream);
+    color: var(--color-jscolors-charcoal);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #root {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+  }
+}
+
+@layer utilities {
+  .retro-card {
+    @apply rounded-2xl border-2 border-jscolors-gold/30 bg-white shadow-[var(--shadow-retro-card)];
+  }
+
+  .retro-card-hover {
+    @apply transition-shadow duration-300 hover:shadow-[var(--shadow-retro-card-hover)];
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+}
