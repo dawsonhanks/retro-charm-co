@@ -4,8 +4,8 @@ import { CountdownTimer } from '../components/CountdownTimer'
 import { SparkleRow } from '../components/RetroAccents'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
-/** Placeholder launch: Spring 2026 collections ship online */
-const LAUNCH_ISO = '2026-06-01T10:00:00-06:00'
+/** Placeholder launch date */
+const LAUNCH_ISO = '2027-01-01T00:00:00-07:00'
 
 export default function Shop() {
   return (
@@ -56,6 +56,7 @@ export default function Shop() {
             showName
             buttonLabel="Notify me"
             theme="on-light"
+            successMessage="You're on the list! We'll let you know when we launch."
             onSuccess={(entry) => {
               const list = readJson(STORAGE_KEYS.shopWaitlist, [])
               list.push({ ...entry, kind: 'shop_waitlist', at: new Date().toISOString() })

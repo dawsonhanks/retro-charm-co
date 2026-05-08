@@ -3,8 +3,7 @@ import { MarketCard } from '../components/MarketCard'
 import { locations } from '../data/locations'
 
 const weeklyRows = [
-  { day: 'Tuesday', note: 'Springville (June–Oct)', time: '5–9 PM' },
-  { day: 'Weekly evening markets', note: 'Draper, Orem, Lindon (seasonal)', time: '5–9 PM' },
+  { day: 'Tuesdays', note: 'Springville, Draper, Orem, Lindon (seasonal)', time: '5-9 PM (Oct: 5-8 PM)' },
 ]
 
 export default function FindUs() {

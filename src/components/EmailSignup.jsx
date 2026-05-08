@@ -2,7 +2,15 @@ import { useState } from 'react'
 
 const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
-export function EmailSignup({ className = '', source = 'generic', showName = false, buttonLabel = 'Subscribe', onSuccess, theme = 'on-dark' }) {
+export function EmailSignup({
+  className = '',
+  source = 'generic',
+  showName = false,
+  buttonLabel = 'Subscribe',
+  onSuccess,
+  theme = 'on-dark',
+  successMessage = "You're on the list! We'll let you know when we launch.",
+}) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState(null)
@@ -13,6 +21,7 @@ export function EmailSignup({ className = '', source = 'generic', showName = fal
 
   function handleSubmit(e) {
     e.preventDefault()
+    if (status === 'ok') return
     if (showName && !name.trim()) {
       setStatus('error')
       return
@@ -23,8 +32,6 @@ export function EmailSignup({ className = '', source = 'generic', showName = fal
     }
     setStatus('ok')
     onSuccess?.({ name: name.trim(), email: email.trim(), source })
-    setEmail('')
-    setName('')
   }
 
   return (
@@ -39,6 +46,8 @@ export function EmailSignup({ className = '', source = 'generic', showName = fal
             onChange={(e) => setName(e.target.value)}
             className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-navy outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
             placeholder="Alex Taylor"
+          required={showName}
+          disabled={status === 'ok'}
           />
         </label>
       )}
@@ -52,19 +61,22 @@ export function EmailSignup({ className = '', source = 'generic', showName = fal
           onChange={(e) => setEmail(e.target.value)}
           className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-navy outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
           placeholder="hello@example.com"
+          required
+          disabled={status === 'ok'}
         />
       </label>
       <div className="flex flex-wrap items-center gap-3">
         <button
           type="submit"
+          disabled={status === 'ok'}
           className="rounded-full bg-jscolors-pink px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
         >
-          {buttonLabel}
+          {status === 'ok' ? 'Submitted' : buttonLabel}
         </button>
         {status === 'error' && (
           <span className={`text-sm ${errClass}`}>Please enter a valid email{showName ? ' and name' : ''}.</span>
         )}
-        {status === 'ok' && <span className={`text-sm ${okClass}`}>You are in — thank you!</span>}
+        {status === 'ok' && <span className={`text-sm ${okClass}`}>{successMessage}</span>}
       </div>
     </form>
   )
