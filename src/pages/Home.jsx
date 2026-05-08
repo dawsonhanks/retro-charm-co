@@ -20,12 +20,12 @@ const testimonials = [
   {
     quote: 'The retro charms are so detailed. I get compliments every time I wear my stack.',
     name: 'Mel S.',
-    place: 'Springville market',
+    place: 'Orem market',
   },
   {
     quote: 'Finally a booth where you pick every charm yourself. Felt like customizing candy, but jewelry.',
     name: 'Priya K.',
-    place: 'Draper market',
+    place: 'Orem market',
   },
 ]
 
@@ -44,7 +44,7 @@ export default function Home() {
         <title>Retro Charm Co 2.0 | Italian Charm Bracelets in Utah</title>
         <meta
           name="description"
-          content="Custom Italian charm bracelets at Utah farmers markets. Pick your base, choose your charms, wear your story — Sunset Markets in Springville, Draper, Orem, and Lindon."
+          content="Custom Italian charm bracelets at the Orem Sunset Farmers Market. Pick your base, choose your charms, wear your story."
         />
       </Helmet>
 
@@ -59,7 +59,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold"
           >
-            Sunset Farmers Markets • Utah
+            Orem Sunset Farmers Market • Utah
           </motion.p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 md:gap-4">

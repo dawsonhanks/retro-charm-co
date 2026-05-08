@@ -19,7 +19,7 @@ export function Footer() {
             Retro Charm Co <span className="text-jscolors-pink">2.0</span>
           </p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-jscolors-cream/75">
-            Custom Italian charm bracelets, built by you at the booth. Find us at Sunset Farmers Markets across Utah.
+            Custom Italian charm bracelets, built by you at the booth. Find us at the Orem Sunset Farmers Market.
           </p>
           <div className="mt-6 flex gap-3">
             <a
@@ -58,7 +58,7 @@ export function Footer() {
 
         <div className="md:col-span-2 lg:col-span-1">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-jscolors-gold">Market mail</h2>
-          <p className="mt-2 text-sm text-jscolors-cream/75">Reminders for pop-ups, new charms, and seasonal markets.</p>
+          <p className="mt-2 text-sm text-jscolors-cream/75">Reminders for Orem market nights, new charms, and seasonal updates.</p>
           <EmailSignup
             className="mt-4"
             source="footer"

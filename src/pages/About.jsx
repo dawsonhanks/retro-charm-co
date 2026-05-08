@@ -10,7 +10,7 @@ const values = [
   },
   {
     title: 'Local sparkle',
-    body: 'Born from Utah farmers market nights: real neighbors, real conversations, lemonade stands nearby.',
+    body: 'Born from Orem farmers market nights: real neighbors, real conversations, lemonade stands nearby.',
   },
   {
     title: 'Personal ritual',
@@ -29,7 +29,7 @@ export default function About() {
         <title>About Us | Retro Charm Co 2.0</title>
         <meta
           name="description"
-          content="The story behind Retro Charm Co 2.0 — handmade Italian charm bracelets with retro soul, sold at Utah farmers markets."
+          content="The story behind Retro Charm Co 2.0 — handmade Italian charm bracelets with retro soul, sold at the Orem farmers market."
         />
       </Helmet>
 

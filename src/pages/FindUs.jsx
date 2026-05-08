@@ -3,25 +3,25 @@ import { MarketCard } from '../components/MarketCard'
 import { locations } from '../data/locations'
 
 const weeklyRows = [
-  { day: 'Tuesdays', note: 'Springville, Draper, Orem, Lindon (seasonal)', time: '5-9 PM (Oct: 5-8 PM)' },
+  { day: 'Tuesdays', note: 'Orem location only', time: '5-9 PM (Oct: 5-8 PM)' },
 ]
 
 export default function FindUs() {
   return (
     <>
       <Helmet>
-        <title>Find Us at Utah Markets | Retro Charm Co 2.0</title>
+        <title>Find Us in Orem | Retro Charm Co 2.0</title>
         <meta
           name="description"
-          content="Sunset Farmers Market locations in Springville, Draper, Orem, and Lindon — addresses, hours, maps, and calendar downloads."
+          content="Find Retro Charm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download."
         />
       </Helmet>
 
       <header className="border-b border-jscolors-gold/25 bg-jscolors-navy px-4 py-14 text-center text-jscolors-cream md:py-20">
         <h1 className="font-display text-4xl font-bold md:text-5xl">Find Us</h1>
         <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/85">
-          Four Sunset Farmers Market stops across Utah County — same sparkly booth, new parking lot each week. Hours are
-          generally 5–9 PM; confirm seasonal dates on location cards below.
+          We are currently at one location: Sunset Farmers Market in Orem. Hours are generally 5–9 PM; confirm seasonal
+          dates on the location card below.
         </p>
       </header>
 
