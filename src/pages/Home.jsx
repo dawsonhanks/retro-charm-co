@@ -95,6 +95,10 @@ export default function Home() {
             one-of-a-kind.
           </motion.p>
 
+          <p className="mt-4 rounded-full border border-jscolors-gold/50 bg-jscolors-charcoal/40 px-5 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-jscolors-gold">
+            Probe Test: May 7 10:21 PM
+          </p>
+
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
