@@ -1,22 +1,12 @@
-import { lazy, Suspense } from 'react'
 import { Routes, Route, useLocation, Outlet } from 'react-router-dom'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
-
-const Home = lazy(() => import('./pages/Home.jsx'))
-const Shop = lazy(() => import('./pages/Shop.jsx'))
-const Gallery = lazy(() => import('./pages/Gallery.jsx'))
-const FindUs = lazy(() => import('./pages/FindUs.jsx'))
-const About = lazy(() => import('./pages/About.jsx'))
-
-function PageSpinner() {
-  return (
-    <div className="flex min-h-[40vh] flex-1 items-center justify-center bg-jscolors-cream/80">
-      <div className="h-12 w-12 animate-spin rounded-full border-2 border-jscolors-gold border-t-jscolors-pink" role="status" aria-label="Loading page" />
-    </div>
-  )
-}
+import Home from './pages/Home.jsx'
+import Shop from './pages/Shop.jsx'
+import Gallery from './pages/Gallery.jsx'
+import FindUs from './pages/FindUs.jsx'
+import About from './pages/About.jsx'
 
 function AnimatedOutlet() {
   const location = useLocation()
@@ -31,9 +21,7 @@ function AnimatedOutlet() {
         className="flex-1"
         id="main-content"
       >
-        <Suspense fallback={<PageSpinner />}>
-          <Outlet />
-        </Suspense>
+        <Outlet />
       </motion.main>
     </AnimatePresence>
   )
