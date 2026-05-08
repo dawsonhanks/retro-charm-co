@@ -12,10 +12,10 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t-2 border-jscolors-gold/30 bg-jscolors-navy text-jscolors-cream">
+    <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#6e6042] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="font-display text-xl font-semibold text-white">
+          <p className="font-display text-xl font-semibold text-jscolors-cream">
             Retro Charm Co <span className="text-jscolors-pink">2.0</span>
           </p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-jscolors-cream/75">
@@ -48,7 +48,7 @@ export function Footer() {
           <ul className="mt-4 space-y-2">
             {footerLinks.map(({ to, label }) => (
               <li key={to}>
-                <Link to={to} className="text-sm text-jscolors-cream/80 transition hover:text-white">
+                <Link to={to} className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink">
                   {label}
                 </Link>
               </li>

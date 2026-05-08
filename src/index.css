@@ -2,19 +2,19 @@
 
 @theme {
   /* jscolors — Retro Charm Co design tokens */
-  --color-jscolors-navy: #1a1a2e;
-  --color-jscolors-pink: #e94560;
-  --color-jscolors-gold: #f5a623;
-  --color-jscolors-cream: #fff9f0;
-  --color-jscolors-charcoal: #2c2c3e;
+  --color-jscolors-navy: #5f5337;
+  --color-jscolors-pink: #d8cedf;
+  --color-jscolors-gold: #9d8752;
+  --color-jscolors-cream: #fbf7ea;
+  --color-jscolors-charcoal: #7a6e53;
 
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 
-  --shadow-retro-card: 0 4px 24px rgba(26, 26, 46, 0.08),
-    0 0 0 1px rgba(245, 166, 35, 0.2);
-  --shadow-retro-card-hover: 0 12px 40px rgba(26, 26, 46, 0.12),
-    0 0 0 2px rgba(245, 166, 35, 0.35);
+  --shadow-retro-card: 0 8px 28px rgba(122, 110, 83, 0.1),
+    0 0 0 1px rgba(157, 135, 82, 0.22);
+  --shadow-retro-card-hover: 0 14px 42px rgba(122, 110, 83, 0.16),
+    0 0 0 2px rgba(157, 135, 82, 0.35);
 }
 
 @layer base {
@@ -26,6 +26,10 @@
     margin: 0;
     font-family: var(--font-body);
     background-color: var(--color-jscolors-cream);
+    background-image:
+      linear-gradient(to bottom, rgba(251, 247, 234, 0.88), rgba(251, 247, 234, 0.94)),
+      linear-gradient(90deg, rgba(216, 206, 223, 0.26) 0 20%, transparent 20% 58%, rgba(251, 236, 234, 0.28) 58% 100%);
+    background-size: cover, 100% 100%;
     color: var(--color-jscolors-charcoal);
     -webkit-font-smoothing: antialiased;
   }
@@ -46,7 +50,7 @@
 
 @layer utilities {
   .retro-card {
-    @apply rounded-2xl border-2 border-jscolors-gold/30 bg-white shadow-[var(--shadow-retro-card)];
+    @apply rounded-2xl border-2 border-jscolors-gold/30 bg-jscolors-cream shadow-[var(--shadow-retro-card)];
   }
 
   .retro-card-hover {

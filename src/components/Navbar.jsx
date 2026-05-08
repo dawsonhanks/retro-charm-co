@@ -14,10 +14,10 @@ export function Navbar() {
   const [open, setOpen] = useState(false)
 
   return (
-    <header className="sticky top-0 z-50 border-b border-white/10 bg-jscolors-navy/85 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream/90 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4" aria-label="Main">
-        <Link to="/" className="group flex items-center gap-2 font-display text-lg font-semibold text-jscolors-cream md:text-xl">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-jscolors-charcoal/50 text-jscolors-gold transition group-hover:border-jscolors-gold">
+        <Link to="/" className="group flex items-center gap-2 font-display text-lg font-semibold text-jscolors-navy md:text-xl">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-[#f3ede0] text-jscolors-gold transition group-hover:border-jscolors-navy">
             ✦
           </span>
           <span className="text-balance">
@@ -32,7 +32,7 @@ export function Navbar() {
                 to={to}
                 className={({ isActive }) =>
                   `rounded-full px-4 py-2 text-sm font-medium transition ${
-                    isActive ? 'bg-jscolors-pink text-white' : 'text-jscolors-cream/85 hover:bg-white/10 hover:text-white'
+                    isActive ? 'bg-jscolors-navy text-jscolors-cream' : 'text-jscolors-navy/90 hover:bg-jscolors-pink/35 hover:text-jscolors-navy'
                   }`
                 }
               >
@@ -44,7 +44,7 @@ export function Navbar() {
 
         <button
           type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/40 text-jscolors-cream md:hidden"
+          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy md:hidden"
           aria-expanded={open}
           aria-controls="mobile-menu"
           onClick={() => setOpen((o) => !o)}
@@ -78,7 +78,7 @@ export function Navbar() {
             animate={{ height: 'auto', opacity: 1 }}
             exit={{ height: 0, opacity: 0 }}
             transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
-            className="overflow-hidden border-t border-white/10 bg-jscolors-navy md:hidden"
+            className="overflow-hidden border-t border-jscolors-gold/30 bg-jscolors-cream md:hidden"
           >
             <ul className="flex flex-col px-4 py-4">
               {links.map(({ to, label }, i) => (
@@ -93,7 +93,7 @@ export function Navbar() {
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       `block rounded-xl px-4 py-3 text-base font-medium ${
-                        isActive ? 'bg-jscolors-pink text-white' : 'text-jscolors-cream hover:bg-white/10'
+                        isActive ? 'bg-jscolors-navy text-jscolors-cream' : 'text-jscolors-navy hover:bg-jscolors-pink/35'
                       }`
                     }
                   >

@@ -48,7 +48,7 @@ export default function Home() {
         />
       </Helmet>
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-jscolors-navy via-jscolors-charcoal to-jscolors-navy text-jscolors-cream">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f7f1e2] via-[#efe8d7] to-[#f7f1e2] text-jscolors-charcoal">
         <StarField className="absolute left-0 right-0 top-4 mx-auto max-w-4xl opacity-90" />
         <FloatingHearts className="pointer-events-none absolute bottom-8 right-4 hidden w-32 md:block" />
 
@@ -69,7 +69,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 + i * 0.1, type: 'spring', stiffness: 320, damping: 26 }}
-                className="font-display text-4xl font-bold text-white sm:text-5xl md:text-6xl lg:text-7xl"
+                className="font-display text-4xl font-bold text-jscolors-navy sm:text-5xl md:text-6xl lg:text-7xl"
               >
                 {word}
               </motion.span>
@@ -80,16 +80,16 @@ export default function Home() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.55 }}
-            className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-cream sm:text-3xl md:text-4xl"
+            className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
           >
-            Italian charm bracelets, assembled <span className="text-jscolors-pink">by you</span> at the booth.
+            Italian charm bracelets, assembled <span className="text-[#a18bb1]">by you</span> at the booth.
           </motion.h1>
 
           <motion.p
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.65, duration: 0.5 }}
-            className="mt-5 max-w-2xl text-base text-jscolors-cream/80 md:text-lg"
+            className="mt-5 max-w-2xl text-base text-jscolors-charcoal/85 md:text-lg"
           >
             Bases from $12–15 and charms from $2–2.50 — most folks leave with 7–10 charms and a $25–30 bracelet that feels
             one-of-a-kind.
@@ -103,7 +103,7 @@ export default function Home() {
           >
             <Link
               to="/find-us"
-              className="inline-flex items-center justify-center rounded-full bg-jscolors-pink px-10 py-4 text-base font-semibold text-white shadow-lg shadow-jscolors-pink/30 transition hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
+              className="inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-navy px-10 py-4 text-base font-semibold text-jscolors-cream shadow-lg shadow-jscolors-gold/20 transition hover:bg-jscolors-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
             >
               Find Us at the Market
             </Link>
@@ -115,7 +115,7 @@ export default function Home() {
       <HowItWorks />
 
       <Suspense fallback={<PageLoader />}>
-        <div className="bg-white py-16">
+        <div className="bg-jscolors-cream/70 py-16">
           <CharmBuilder className="px-4" idPrefix="home-builder" />
         </div>
       </Suspense>
@@ -143,7 +143,7 @@ export default function Home() {
         </ul>
       </section>
 
-      <section className="border-y border-jscolors-gold/25 bg-jscolors-cream/80 py-16 md:py-20" aria-labelledby="ig-heading">
+      <section className="border-y border-jscolors-gold/25 bg-[#f8f3e7]/85 py-16 md:py-20" aria-labelledby="ig-heading">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 id="ig-heading" className="font-display text-3xl font-bold text-jscolors-navy">
             On the &rsquo;Gram
@@ -155,7 +155,7 @@ export default function Home() {
             {['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
               <div
                 key={i}
-                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-white/80 font-display text-xl text-jscolors-navy/35"
+                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35"
               >
                 <span aria-hidden>{label}</span>
                 <span className="sr-only">Instagram placeholder tile {i + 1}</span>
