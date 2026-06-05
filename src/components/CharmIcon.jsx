@@ -19,6 +19,14 @@ export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text
     )
   }
 
+  if (charm.iconType === 'emoji') {
+    return (
+      <span className={className} aria-label={charm.name} role="img" style={{ fontSize: '1.5em', lineHeight: 1 }}>
+        {charm.emoji}
+      </span>
+    )
+  }
+
   return (
     <svg className={`${className} ${accentClass}`} viewBox={vb} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {charm.paths

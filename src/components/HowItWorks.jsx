@@ -51,13 +51,13 @@ export function HowItWorks() {
     {
       n: '01',
       title: 'Pick Your Base',
-      body: 'Silver, gold, or rose gold Italian link bracelet — the blank canvas for your story.',
+      body: 'Silver or gold Italian link bracelet — the blank canvas for your story.',
       Icon: BraceletIcon,
     },
     {
       n: '02',
       title: 'Choose Your Charms',
-      body: 'Add as many as you like ($2–$2.50 each). Mix categories, initials, and icons.',
+      body: 'Add as many as you like ($4 each). Mix categories, initials, and icons.',
       Icon: SparkIcon,
     },
     {

@@ -59,8 +59,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
     alert('Saved! A summary was copied to your clipboard if your browser allows it.')
   }
 
-  const chainStroke =
-    base.id === 'gold' ? '#d4af37' : base.id === 'rose' ? '#c27b86' : '#b8bcc6'
+  const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
 
   return (
     <section className={`mx-auto max-w-6xl ${className}`} aria-labelledby={`${idPrefix}-heading`}>

@@ -91,7 +91,7 @@ export default function Home() {
             transition={{ delay: 0.65, duration: 0.5 }}
             className="mt-5 max-w-2xl text-base text-jscolors-charcoal/85 md:text-lg"
           >
-            Bases from $12–15 and charms from $2–2.50 — most folks leave with 7–10 charms and a $25–30 bracelet that feels
+            Silver bases $10, gold bases $12, and charms at $4 each — most folks leave with 7–10 charms and a $38–52 bracelet that feels
             one-of-a-kind.
           </motion.p>
 
