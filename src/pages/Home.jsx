@@ -5,11 +5,12 @@ import { motion } from 'framer-motion'
 import { HowItWorks } from '../components/HowItWorks'
 import { EmailSignup } from '../components/EmailSignup'
 import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccents'
+import { instagram } from '../data/social'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
-const heroWords = ['Build.', 'Blink.', 'Booth.', 'Brilliant.']
+const heroWords = ['Italian', 'Charm', 'Bracelets']
 
 const testimonials = [
   {
@@ -82,7 +83,8 @@ export default function Home() {
             transition={{ delay: 0.45, duration: 0.55 }}
             className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
           >
-            Italian charm bracelets, assembled <span className="text-[#a18bb1]">by you</span> at the booth.
+            Fully custom — you pick the base, you choose every charm, and{' '}
+            <span className="text-[#a18bb1]">build it yourself</span> at the booth.
           </motion.h1>
 
           <motion.p
@@ -149,22 +151,30 @@ export default function Home() {
             On the &rsquo;Gram
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
-            Follow along for booth previews, charm drops, and market day stories — feed coming soon below.
+            Follow {instagram.handle} for booth previews, charm drops, and market day stories.
           </p>
+          <a
+            href={instagram.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="mt-6 inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-navy px-8 py-3 text-sm font-semibold text-jscolors-cream shadow-md shadow-jscolors-gold/15 transition hover:bg-jscolors-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
+          >
+            Follow {instagram.handle}
+          </a>
           <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
             {['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
-              <div
+              <a
                 key={i}
-                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35"
+                href={instagram.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35 transition hover:border-jscolors-gold hover:bg-jscolors-cream hover:text-jscolors-navy/60"
               >
                 <span aria-hidden>{label}</span>
-                <span className="sr-only">Instagram placeholder tile {i + 1}</span>
-              </div>
+                <span className="sr-only">View {instagram.handle} on Instagram</span>
+              </a>
             ))}
           </div>
-          <p className="mt-6 text-sm text-jscolors-charcoal/65">
-            Instagram embed placeholder — drop your @ when you are ready and this becomes a live grid.
-          </p>
 
           <div className="mx-auto mt-10 max-w-md text-left">
             <p className="text-center font-display text-sm font-semibold text-jscolors-navy">Get charm doodles in your inbox</p>

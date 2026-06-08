@@ -1,9 +1,6 @@
 import { buildMarketIcs, downloadIcs } from '../utils/calendar'
-import { getMapsEmbedSrc } from '../data/locations'
 
 export function MarketCard({ location }) {
-  const src = getMapsEmbedSrc(location.embedQuery || location.address)
-
   function handleCalendar() {
     const ics = buildMarketIcs({
       title: location.calendar.title,
@@ -32,23 +29,23 @@ export function MarketCard({ location }) {
             <dd>{location.hours}</dd>
           </div>
         </dl>
-        <button
-          type="button"
-          onClick={handleCalendar}
-          className="mt-5 inline-flex items-center justify-center rounded-full border-2 border-jscolors-gold bg-white px-5 py-2.5 text-sm font-semibold text-jscolors-navy shadow-sm transition hover:bg-jscolors-gold hover:text-jscolors-navy"
-        >
-          Add market days to calendar
-        </button>
-      </div>
-      <div className="aspect-[16/10] w-full bg-jscolors-charcoal/10">
-        <iframe
-          title={`Map: ${location.shortName} market`}
-          src={src}
-          className="h-full w-full border-0"
-          loading="lazy"
-          referrerPolicy="no-referrer-when-downgrade"
-          allowFullScreen
-        />
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={handleCalendar}
+            className="inline-flex items-center justify-center rounded-full border-2 border-jscolors-gold bg-white px-5 py-2.5 text-sm font-semibold text-jscolors-navy shadow-sm transition hover:bg-jscolors-gold hover:text-jscolors-navy"
+          >
+            Add market days to calendar
+          </button>
+          <a
+            href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location.address)}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center rounded-full border-2 border-jscolors-navy bg-white px-5 py-2.5 text-sm font-semibold text-jscolors-navy shadow-sm transition hover:bg-jscolors-navy hover:text-jscolors-cream"
+          >
+            Get directions →
+          </a>
+        </div>
       </div>
     </article>
   )

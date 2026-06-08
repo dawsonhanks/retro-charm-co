@@ -1,6 +1,7 @@
 import { Routes, Route, Outlet } from 'react-router-dom'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
+import { NextMarketBanner } from './components/NextMarketBanner'
 import Home from './pages/Home.jsx'
 import Shop from './pages/Shop.jsx'
 import Gallery from './pages/Gallery.jsx'
@@ -11,6 +12,7 @@ function Shell() {
   return (
     <div className="flex min-h-dvh flex-col bg-jscolors-cream">
       <Navbar />
+      <NextMarketBanner />
       <main className="flex-1" id="main-content">
         <Outlet />
       </main>

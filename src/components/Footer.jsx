@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { EmailSignup } from './EmailSignup'
+import { instagram } from '../data/social'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 const footerLinks = [
@@ -23,11 +24,11 @@ export function Footer() {
           </p>
           <div className="mt-6 flex gap-3">
             <a
-              href="https://www.instagram.com/"
+              href={instagram.url}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-navy"
-              aria-label="Instagram (placeholder link)"
+              aria-label={`Follow ${instagram.handle} on Instagram`}
             >
               <InstagramGlyph />
             </a>
