@@ -183,7 +183,7 @@ function PageLoader() {
   )
 }
 
-export default function Gallery() {
+export default function Create() {
   const [filter, setFilter] = useState('all')
 
   const inventory = useMemo(() => [...SILVER_CHARMS, ...GOLD_CHARMS], [])
@@ -198,16 +198,33 @@ export default function Gallery() {
   return (
     <>
       <Helmet>
-        <title>Our Charms | Retro Charm Co 2.0</title>
-        <meta name="description" content="Browse Retro Charm Co 2.0 inventory — silver & gold charms you can mix and match." />
+        <title>Charm Studio | Retro Charm Co 2.0</title>
+        <meta
+          name="description"
+          content="Browse every charm we carry and build your bracelet before you visit us at the Orem Sunset Farmers Market."
+        />
       </Helmet>
 
-      <header className="border-b border-jscolors-gold/20 bg-gradient-to-b from-white to-jscolors-cream px-4 py-14 text-center md:py-20">
-        <h1 className="font-display text-4xl font-bold text-jscolors-navy md:text-5xl">Our Charms</h1>
-        <p className="mx-auto mt-4 max-w-2xl text-jscolors-charcoal/85">
-          Every charm is $4 — mix and match to build your story.
-        </p>
+      <header className="relative overflow-hidden border-b border-jscolors-gold/20 bg-gradient-to-b from-jscolors-navy to-jscolors-charcoal px-4 py-14 text-center text-jscolors-cream md:py-20">
+        <div className="pointer-events-none absolute inset-0 opacity-30" aria-hidden>
+          <div className="absolute -left-20 top-10 h-64 w-64 rounded-full bg-jscolors-pink/30 blur-3xl" />
+          <div className="absolute -right-16 bottom-0 h-72 w-72 rounded-full bg-jscolors-gold/25 blur-3xl" />
+        </div>
+        <div className="relative">
+          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold">Charm Studio</p>
+          <h1 className="mt-4 font-display text-4xl font-bold text-jscolors-cream md:text-5xl">Build Your Bracelet</h1>
+          <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/80">
+            Browse every charm we carry, snap your favorites into the builder below, and walk into market night knowing
+            exactly what you want.
+          </p>
+        </div>
       </header>
+
+      <Suspense fallback={<PageLoader />}>
+        <div className="border-t-2 border-jscolors-gold/20 bg-jscolors-navy/5 py-16">
+          <CharmBuilder className="px-4" idPrefix="gallery-builder" />
+        </div>
+      </Suspense>
 
       <section className="mx-auto max-w-6xl px-4 py-10" aria-label="Charm filters">
         <div className="flex items-center justify-between gap-4">
@@ -247,7 +264,9 @@ export default function Gallery() {
         {filtered.length === 0 ? (
           <div className="mx-auto max-w-xl rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-white/60 p-8 text-center">
             <p className="font-display text-xl font-semibold text-jscolors-navy">No charms match that filter</p>
-            <p className="mt-2 text-sm text-jscolors-charcoal/80">Try a different metal or category — fresh favorites are always rolling in.</p>
+            <p className="mt-2 text-sm text-jscolors-charcoal/80">
+              Try a different metal or category — fresh favorites are always rolling in.
+            </p>
           </div>
         ) : (
           <div className="grid auto-rows-fr grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
@@ -266,17 +285,20 @@ export default function Gallery() {
                   <article className="retro-card retro-card-hover flex h-full flex-col p-5">
                     <div className="flex items-start justify-between gap-3">
                       <MetalBadge metal={charm.metal} />
-                      <span className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-jscolors-navy/90" title="Current inventory at the booth">
+                      <span
+                        className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-jscolors-navy/90"
+                        title="Current inventory at the booth"
+                      >
                         {charm.stock} in stock
                       </span>
                     </div>
 
                     <div className="mt-4 flex flex-1 flex-col items-center text-center">
                       <CharmPlaceholder charm={charm} />
-                      <h3 className="mt-4 line-clamp-2 font-display text-lg font-semibold text-jscolors-navy">{charm.name}</h3>
-                      <p className="mt-2 font-semibold text-jscolors-charcoal">
-                        {formatPrice(charm.price)}
-                      </p>
+                      <h3 className="mt-4 line-clamp-2 font-display text-lg font-semibold text-jscolors-navy">
+                        {charm.name}
+                      </h3>
+                      <p className="mt-2 font-semibold text-jscolors-charcoal">{formatPrice(charm.price)}</p>
                       <p className="mt-2 text-sm font-medium text-jscolors-charcoal/70">{charm.category}</p>
                     </div>
                   </article>
@@ -286,12 +308,6 @@ export default function Gallery() {
           </div>
         )}
       </section>
-
-      <Suspense fallback={<PageLoader />}>
-        <div className="bg-jscolors-cream/70 py-16">
-          <CharmBuilder className="px-4" idPrefix="gallery-builder" />
-        </div>
-      </Suspense>
     </>
   )
 }

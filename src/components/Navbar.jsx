@@ -1,10 +1,12 @@
 import { useState } from 'react'
 import { NavLink, Link } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
+import { useCart } from '../context/CartContext.jsx'
+import { CartDrawer } from './CartDrawer.jsx'
 
 const links = [
   { to: '/', label: 'Home' },
-  { to: '/gallery', label: 'Gallery' },
+  { to: '/create', label: 'Create' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
   { to: '/shop', label: 'Shop' },
@@ -12,6 +14,8 @@ const links = [
 
 export function Navbar() {
   const [open, setOpen] = useState(false)
+  const [cartOpen, setCartOpen] = useState(false)
+  const { cartCount } = useCart()
 
   return (
     <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream/90 backdrop-blur-md">
@@ -42,13 +46,33 @@ export function Navbar() {
           ))}
         </ul>
 
-        <button
-          type="button"
-          className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy md:hidden"
-          aria-expanded={open}
-          aria-controls="mobile-menu"
-          onClick={() => setOpen((o) => !o)}
-        >
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy transition hover:bg-jscolors-pink/35"
+            aria-label="Open cart"
+            aria-expanded={cartOpen}
+            onClick={() => setCartOpen((o) => !o)}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" className="h-5 w-5" aria-hidden="true">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4H6z" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 6h18" />
+              <path strokeLinecap="round" strokeLinejoin="round" d="M16 10a4 4 0 01-8 0" />
+            </svg>
+            {cartCount > 0 && (
+              <span className="absolute -right-1.5 -top-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-jscolors-pink px-1 text-[10px] font-bold text-white">
+                {cartCount > 99 ? '99+' : cartCount}
+              </span>
+            )}
+          </button>
+
+          <button
+            type="button"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy md:hidden"
+            aria-expanded={open}
+            aria-controls="mobile-menu"
+            onClick={() => setOpen((o) => !o)}
+          >
           <span className="sr-only">Open menu</span>
           <span className="relative h-5 w-6">
             <motion.span
@@ -67,8 +91,11 @@ export function Navbar() {
               transition={{ type: 'spring', stiffness: 320, damping: 28 }}
             />
           </span>
-        </button>
+          </button>
+        </div>
       </nav>
+
+      <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
 
       <AnimatePresence>
         {open && (
