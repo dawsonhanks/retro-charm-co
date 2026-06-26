@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion } from 'framer-motion'
+import { useCart } from '../context/CartContext.jsx'
 
 const CharmBuilder = lazy(() =>
   import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder }))
@@ -184,7 +185,21 @@ function PageLoader() {
 }
 
 export default function Create() {
+  const { addItem } = useCart()
   const [filter, setFilter] = useState('all')
+  const [addedIds, setAddedIds] = useState(() => new Set())
+
+  function handleAddToCart(charm) {
+    addItem({ id: charm.id, name: charm.name, price: charm.price, metal: charm.metal, quantity: 1 })
+    setAddedIds((prev) => new Set(prev).add(charm.id))
+    setTimeout(() => {
+      setAddedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(charm.id)
+        return next
+      })
+    }, 1200)
+  }
 
   const inventory = useMemo(() => [...SILVER_CHARMS, ...GOLD_CHARMS], [])
 
@@ -301,6 +316,20 @@ export default function Create() {
                       <p className="mt-2 font-semibold text-jscolors-charcoal">{formatPrice(charm.price)}</p>
                       <p className="mt-2 text-sm font-medium text-jscolors-charcoal/70">{charm.category}</p>
                     </div>
+
+                    <button
+                      type="button"
+                      onClick={() => handleAddToCart(charm)}
+                      disabled={addedIds.has(charm.id)}
+                      className={[
+                        'mt-4 w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
+                        addedIds.has(charm.id)
+                          ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                          : 'border-jscolors-gold bg-jscolors-navy text-jscolors-cream hover:bg-jscolors-navy/90',
+                      ].join(' ')}
+                    >
+                      {addedIds.has(charm.id) ? 'Added ✓' : 'Add to Cart'}
+                    </button>
                   </article>
                 </motion.div>
               ))}

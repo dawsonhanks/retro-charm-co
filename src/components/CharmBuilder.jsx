@@ -1,16 +1,25 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
-import { BASE_OPTIONS, charms, getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
+import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
-import { writeJson, STORAGE_KEYS } from '../utils/storage'
+import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
-  const [baseId, setBaseId] = useState(BASE_OPTIONS[0].id)
-  const [charmIds, setCharmIds] = useState([])
+  const navigate = useNavigate()
+  const [baseId, setBaseId] = useState(() => {
+    const saved = readJson(STORAGE_KEYS.savedBuild, null)
+    return saved?.baseId ?? BASE_OPTIONS[0].id
+  })
+  const [charmIds, setCharmIds] = useState(() => {
+    const saved = readJson(STORAGE_KEYS.savedBuild, null)
+    return saved?.charmIds ?? []
+  })
 
   const base = BASE_OPTIONS.find((b) => b.id === baseId) ?? BASE_OPTIONS[0]
-  const selected = charmIds.map((id) => getCharmById(id)).filter(Boolean)
-  const charmTotal = selected.reduce((s, c) => s + c.price, 0)
+  const pickerCharms = useMemo(() => charms.filter((c) => c.category !== 'starter'), [])
+  const selected = charmIds.map((id) => getCharmById(id)).filter((c) => c && c.category !== 'starter')
+  const charmTotal = selected.length * DEFAULT_CHARM_PRICE
   const grand = base.price + charmTotal
   const n = selected.length
   const atMax = n >= MAX_BRACELET_CHARMS
@@ -18,20 +27,19 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   const summaryLine = useMemo(() => {
     const baseStr = `$${base.price.toFixed(2)} base`
     if (n === 0) return `Your bracelet: ${baseStr} + 0 charms = $${base.price.toFixed(2)}`
-    const allSame = selected.every((c) => c.price === selected[0].price)
-    const charmPart = allSame
-      ? `${n} charms × $${selected[0].price.toFixed(2)} = $${charmTotal.toFixed(2)}`
-      : `${n} charms totaling $${charmTotal.toFixed(2)}`
+    const charmPart = `${n} charms × $${DEFAULT_CHARM_PRICE.toFixed(2)} = $${charmTotal.toFixed(2)}`
     return `Your bracelet: ${baseStr} + ${charmPart} = $${grand.toFixed(2)}`
-  }, [base.price, n, selected, charmTotal, grand])
+  }, [base.price, n, charmTotal, grand])
 
   function addCharm(c) {
-    if (atMax) return
+    if (atMax || c.category === 'starter') return
     setCharmIds((prev) => [...prev, c.id])
   }
 
   function reset() {
     setCharmIds([])
+    setBaseId(BASE_OPTIONS[0].id)
+    writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
   function saveBuild() {
@@ -45,18 +53,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
       summaryLine,
     }
     writeJson(STORAGE_KEYS.savedBuild, payload)
-    const share = [
-      'Retro Charm Co 2.0 — my bracelet build',
-      summaryLine,
-      `Charms: ${selected.map((c) => c.name).join(', ') || '(none yet)'}`,
-      'Saved from retrocharmco.local',
-    ].join('\n')
-    try {
-      navigator.clipboard.writeText(share)
-    } catch {
-      /* ignore */
-    }
-    alert('Saved! A summary was copied to your clipboard if your browser allows it.')
+    navigate('/shop')
   }
 
   const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
@@ -98,7 +95,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
               <AnimatePresence initial={false}>
                 {charmIds.map((id, i) => {
                   const c = getCharmById(id)
-                  if (!c) return null
+                  if (!c || c.category === 'starter') return null
                   return (
                     <motion.div
                       key={`${id}-${i}`}
@@ -139,14 +136,14 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
             onClick={saveBuild}
             className="rounded-full bg-jscolors-gold px-6 py-3 text-sm font-semibold text-jscolors-navy shadow hover:brightness-105"
           >
-            Save My Build
+            Save & Checkout →
           </button>
         </div>
 
         <div className="mt-10 border-t border-jscolors-gold/25 pt-8">
           <p className="text-center text-sm font-semibold text-jscolors-navy">Add charms</p>
           <div className="mt-4 max-h-[320px] overflow-y-auto pr-1 md:max-h-[380px]">
-            <CharmPickerGrid charms={charms} onPick={addCharm} maxReached={atMax} />
+            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={atMax} />
           </div>
         </div>
       </div>
