@@ -43,7 +43,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const squareRes = await fetch('https://connect.squareupsandbox.com/v2/online-checkout/payment-links', {
+    const squareRes = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${accessToken}`,
