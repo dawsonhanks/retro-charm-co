@@ -1,20 +1,20 @@
 @import 'tailwindcss';
 
 @theme {
-  /* jscolors — Retro Charm Co design tokens */
-  --color-jscolors-navy: #5f5337;
-  --color-jscolors-pink: #d8cedf;
-  --color-jscolors-gold: #9d8752;
-  --color-jscolors-cream: #fbf7ea;
-  --color-jscolors-charcoal: #7a6e53;
+  /* jscolors — Retro Charm Co design tokens (Pastel & Dainty, blue-led) */
+  --color-jscolors-navy: #517593;
+  --color-jscolors-pink: #f8e1e5;
+  --color-jscolors-gold: #efdfc0;
+  --color-jscolors-cream: #fffbf6;
+  --color-jscolors-charcoal: #5f6b72;
 
   --font-display: 'Playfair Display', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
 
-  --shadow-retro-card: 0 8px 28px rgba(122, 110, 83, 0.1),
-    0 0 0 1px rgba(157, 135, 82, 0.22);
-  --shadow-retro-card-hover: 0 14px 42px rgba(122, 110, 83, 0.16),
-    0 0 0 2px rgba(157, 135, 82, 0.35);
+  --shadow-retro-card: 0 8px 28px rgba(95, 107, 114, 0.1),
+    0 0 0 1px rgba(239, 223, 192, 0.45);
+  --shadow-retro-card-hover: 0 14px 42px rgba(95, 107, 114, 0.16),
+    0 0 0 2px rgba(239, 223, 192, 0.6);
 }
 
 @layer base {
@@ -27,8 +27,8 @@
     font-family: var(--font-body);
     background-color: var(--color-jscolors-cream);
     background-image:
-      linear-gradient(to bottom, rgba(251, 247, 234, 0.88), rgba(251, 247, 234, 0.94)),
-      linear-gradient(90deg, rgba(216, 206, 223, 0.26) 0 20%, transparent 20% 58%, rgba(251, 236, 234, 0.28) 58% 100%);
+      linear-gradient(to bottom, rgba(255, 251, 246, 0.88), rgba(255, 251, 246, 0.94)),
+      linear-gradient(90deg, rgba(248, 225, 229, 0.3) 0 20%, transparent 20% 58%, rgba(81, 117, 147, 0.12) 58% 100%);
     background-size: cover, 100% 100%;
     color: var(--color-jscolors-charcoal);
     -webkit-font-smoothing: antialiased;
