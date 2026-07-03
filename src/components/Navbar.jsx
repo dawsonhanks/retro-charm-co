@@ -9,7 +9,6 @@ const links = [
   { to: '/create', label: 'Create' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
-  { to: '/shop', label: 'Shop' },
 ]
 
 export function Navbar() {

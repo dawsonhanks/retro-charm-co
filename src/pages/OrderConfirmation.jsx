@@ -1,14 +1,22 @@
 import { useEffect } from 'react'
 import { Helmet } from 'react-helmet-async'
-import { Link } from 'react-router-dom'
+import { Link, useSearchParams } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
 import { useCart } from '../context/CartContext.jsx'
 
 export default function OrderConfirmation() {
   const { clearCart } = useCart()
+  const [searchParams] = useSearchParams()
 
   useEffect(() => {
-    clearCart()
+    // Square only appends this ?order= token when it redirects here after a real
+    // checkout attempt. Without it, someone just navigated here directly (bookmark,
+    // back button, refresh, shared link) and we should NOT wipe their cart.
+    const orderToken = searchParams.get('order')
+    if (orderToken) {
+      clearCart()
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   return (
@@ -24,8 +32,8 @@ export default function OrderConfirmation() {
           Your order is confirmed! 🎉
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
-          Thank you so much for supporting Retro Charm Co. Your charms will be ready at the next Sunset Farmers Market,
-          or shipped within 3–5 business days if you chose delivery.
+          Thank you so much for supporting Retro Charm Co. Your order will be ready for pickup at the next Sunset
+          Farmers Market.
         </p>
         <Link
           to="/"

@@ -1,9 +1,8 @@
-import { Routes, Route, Outlet } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
 import { NextMarketBanner } from './components/NextMarketBanner'
 import Home from './pages/Home.jsx'
-import Shop from './pages/Shop.jsx'
 import Create from './pages/Create.jsx'
 import FindUs from './pages/FindUs.jsx'
 import About from './pages/About.jsx'
@@ -28,7 +27,9 @@ export default function App() {
     <Routes>
       <Route element={<Shell />}>
         <Route index element={<Home />} />
-        <Route path="shop" element={<Shop />} />
+        {/* Old build-and-checkout flow was retired in favor of a single cart (CartContext).
+            Redirect any existing /shop links/bookmarks straight to the real cart. */}
+        <Route path="shop" element={<Navigate to="/cart" replace />} />
         <Route path="create" element={<Create />} />
         <Route path="find-us" element={<FindUs />} />
         <Route path="about" element={<About />} />

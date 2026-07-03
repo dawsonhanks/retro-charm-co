@@ -4,9 +4,11 @@ import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
+import { useCart } from '../context/CartContext.jsx'
 
 export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   const navigate = useNavigate()
+  const { addItem } = useCart()
   const [baseId, setBaseId] = useState(() => {
     const saved = readJson(STORAGE_KEYS.savedBuild, null)
     return saved?.baseId ?? BASE_OPTIONS[0].id
@@ -42,18 +44,20 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
-  function saveBuild() {
-    const payload = {
-      savedAt: new Date().toISOString(),
-      baseId: base.id,
-      baseLabel: base.label,
-      charmIds: [...charmIds],
-      charmNames: selected.map((c) => c.name),
-      total: grand,
-      summaryLine,
-    }
-    writeJson(STORAGE_KEYS.savedBuild, payload)
-    navigate('/shop')
+  function addToCart() {
+    // Base bracelet is always represented, even with zero charms selected.
+    addItem({ id: base.id, name: base.label, price: base.price, metal: base.id, quantity: 1 })
+
+    selected.forEach((c) => {
+      addItem({ id: c.id, name: c.name, price: c.price, metal: c.metal, quantity: 1 })
+    })
+
+    // Clear the in-progress build so it isn't re-added if the customer comes back to the builder.
+    setCharmIds([])
+    setBaseId(BASE_OPTIONS[0].id)
+    writeJson(STORAGE_KEYS.savedBuild, null)
+
+    navigate('/cart')
   }
 
   const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
@@ -133,10 +137,10 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
           </button>
           <button
             type="button"
-            onClick={saveBuild}
+            onClick={addToCart}
             className="rounded-full bg-jscolors-gold px-6 py-3 text-sm font-semibold text-jscolors-navy shadow hover:brightness-105"
           >
-            Save & Checkout →
+            Add to Cart →
           </button>
         </div>
 

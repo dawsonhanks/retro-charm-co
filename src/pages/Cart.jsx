@@ -3,6 +3,7 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
 import { useCart } from '../context/CartContext.jsx'
+import { hashCartItems } from '../utils/idempotency'
 
 function formatPrice(value) {
   return `$${Number(value).toFixed(2)}`
@@ -22,7 +23,8 @@ export default function Cart() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items: items.map(({ name, price, quantity }) => ({ name, price, quantity })),
+          items: items.map(({ id, name, price, quantity }) => ({ id, name, price, quantity })),
+          idempotencyKey: hashCartItems(items),
         }),
       })
 
@@ -60,10 +62,10 @@ export default function Cart() {
           <div className="mt-12 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 p-10 text-center shadow-lg">
             <p className="text-lg text-jscolors-charcoal/80">Your cart is empty.</p>
             <Link
-              to="/shop"
+              to="/create"
               className="mt-6 inline-block rounded-full bg-jscolors-navy px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-navy/90"
             >
-              Browse the shop
+              Build a bracelet
             </Link>
           </div>
         ) : (

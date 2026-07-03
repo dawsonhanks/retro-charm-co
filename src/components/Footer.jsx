@@ -8,7 +8,7 @@ const footerLinks = [
   { to: '/create', label: 'Charm Studio' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
-  { to: '/shop', label: 'Shop (Soon)' },
+  { to: '/cart', label: 'Cart' },
 ]
 
 export function Footer() {
