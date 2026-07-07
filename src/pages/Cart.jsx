@@ -10,9 +10,15 @@ function formatPrice(value) {
 }
 
 export default function Cart() {
-  const { items, cartTotal } = useCart()
+  const { items, cartTotal, clearCart } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
+
+  function handleEmptyCart() {
+    if (window.confirm('Empty your cart?')) {
+      clearCart()
+    }
+  }
 
   async function handleCheckout() {
     setLoading(true)
@@ -48,7 +54,7 @@ export default function Cart() {
   return (
     <>
       <Helmet>
-        <title>Cart | Retro Charm Co 2.0</title>
+        <title>Cart | Retro Charm Co</title>
         <meta name="description" content="Review your Retro Charm Co cart and checkout securely with Square." />
       </Helmet>
 
@@ -104,6 +110,15 @@ export default function Cart() {
                 className="mt-6 w-full rounded-full bg-jscolors-navy px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-navy/90 disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Redirecting to checkout…' : 'Checkout'}
+              </button>
+
+              <button
+                type="button"
+                onClick={handleEmptyCart}
+                disabled={loading}
+                className="mt-3 w-full rounded-full border-2 border-jscolors-charcoal/25 bg-white px-6 py-3 text-sm font-semibold text-jscolors-navy/70 transition hover:border-jscolors-gold hover:text-jscolors-navy disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                Empty Cart
               </button>
             </div>
           </div>

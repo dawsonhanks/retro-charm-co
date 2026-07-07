@@ -8,7 +8,7 @@ function isMarketDay(date) {
   const iso = date.toISOString().slice(0, 10)
   if (SKIP_DATES.includes(iso)) return false
   if (date < SEASON_START || date > SEASON_END) return false
-  return date.getDay() === 2
+  return date.getDay() === 3
 }
 
 function getDisplayMonth() {

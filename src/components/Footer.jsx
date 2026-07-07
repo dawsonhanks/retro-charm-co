@@ -6,7 +6,7 @@ import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 const footerLinks = [
   { to: '/', label: 'Home' },
   { to: '/create', label: 'Charm Studio' },
-  { to: '/find-us', label: 'Find Us' },
+  { to: '/create', label: 'Start Building' },
   { to: '/about', label: 'About' },
   { to: '/cart', label: 'Cart' },
 ]
@@ -16,11 +16,9 @@ export function Footer() {
     <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#7d5b6c] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="font-display text-xl font-semibold text-jscolors-cream">
-            Retro Charm Co <span className="text-jscolors-pink">2.0</span>
-          </p>
+          <p className="font-display text-xl font-semibold text-jscolors-cream">Retro Charm Co</p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-jscolors-cream/75">
-            Custom Italian charm bracelets, built by you at the booth. Find us at the Orem Sunset Farmers Market.
+            Custom Italian charm bracelets, built online by you. Pick your base, choose your charms, and order your story.
           </p>
           <div className="mt-6 flex gap-3">
             <a
@@ -58,8 +56,8 @@ export function Footer() {
         </div>
 
         <div className="md:col-span-2 lg:col-span-1">
-          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-jscolors-gold">Market mail</h2>
-          <p className="mt-2 text-sm text-jscolors-cream/75">Reminders for Orem market nights, new charms, and seasonal updates.</p>
+          <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-jscolors-gold">Charm mail</h2>
+          <p className="mt-2 text-sm text-jscolors-cream/75">New charm drops, restocks, and online ordering updates.</p>
           <EmailSignup
             className="mt-4"
             source="footer"
@@ -73,7 +71,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10 py-6 text-center text-xs text-jscolors-cream/50">
-        © {new Date().getFullYear()} Retro Charm Co 2.0. Handmade with love in Utah.
+        © {new Date().getFullYear()} Retro Charm Co. Handmade with love in Utah.
       </div>
     </footer>
   )

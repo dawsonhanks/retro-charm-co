@@ -6,7 +6,8 @@ import { CartDrawer } from './CartDrawer.jsx'
 
 const links = [
   { to: '/', label: 'Home' },
-  { to: '/create', label: 'Create' },
+  { to: '/create', label: 'Start Building' },
+  { to: '/cart', label: 'Shop' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
 ]
@@ -23,9 +24,7 @@ export function Navbar() {
           <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-[#f6eef1] text-[#b08a4e] transition group-hover:border-jscolors-navy">
             ✦
           </span>
-          <span className="text-balance">
-            Retro Charm Co <span className="text-jscolors-pink">2.0</span>
-          </span>
+          <span className="text-balance">Retro Charm Co</span>
         </Link>
 
         <ul className="hidden items-center gap-1 md:flex">

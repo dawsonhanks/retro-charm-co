@@ -10,8 +10,8 @@ function getNextMarketDate() {
 
   const d = new Date(today)
   const day = d.getDay()
-  const daysUntilTuesday = (2 - day + 7) % 7 || 7
-  d.setDate(d.getDate() + daysUntilTuesday)
+  const daysUntilWednesday = (3 - day + 7) % 7 || 7
+  d.setDate(d.getDate() + daysUntilWednesday)
 
   while (true) {
     const iso = d.toISOString().slice(0, 10)

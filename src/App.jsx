@@ -1,4 +1,4 @@
-import { Routes, Route, Outlet, Navigate } from 'react-router-dom'
+import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
 import { NextMarketBanner } from './components/NextMarketBanner'
@@ -10,10 +10,13 @@ import Cart from './pages/Cart.jsx'
 import OrderConfirmation from './pages/OrderConfirmation.jsx'
 
 function Shell() {
+  const { pathname } = useLocation()
+  const showMarketBanner = pathname === '/find-us'
+
   return (
     <div className="flex min-h-dvh flex-col bg-jscolors-cream">
       <Navbar />
-      <NextMarketBanner />
+      {showMarketBanner ? <NextMarketBanner /> : null}
       <main className="flex-1" id="main-content">
         <Outlet />
       </main>

@@ -81,7 +81,7 @@ export function HowItWorks() {
           How It Works
         </h2>
         <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
-          Three easy steps at the booth — no tools, no stress, just playful building and instant sparkle.
+          Three easy steps online — no tools, no stress, just playful building and instant sparkle.
         </p>
       </div>
 

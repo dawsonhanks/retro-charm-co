@@ -6,11 +6,11 @@ import { SparkleRow, FloatingHearts } from '../components/RetroAccents'
 const values = [
   {
     title: 'Handmade heart',
-    body: 'Each bracelet is curated link-by-link at the booth — nothing mass-assembled, nothing generic.',
+    body: 'Each bracelet is curated link-by-link with care — nothing mass-assembled, nothing generic.',
   },
   {
     title: 'Local sparkle',
-    body: 'Born from Orem farmers market nights: real neighbors, real conversations, lemonade stands nearby.',
+    body: 'Rooted in Utah and inspired by real people, real stories, and everyday moments worth celebrating.',
   },
   {
     title: 'Personal ritual',
@@ -26,10 +26,10 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>About Us | Retro Charm Co 2.0</title>
+        <title>About Us | Retro Charm Co</title>
         <meta
           name="description"
-          content="The story behind Retro Charm Co 2.0 — handmade Italian charm bracelets with retro soul, sold at the Orem farmers market."
+          content="The story behind Retro Charm Co — handmade Italian charm bracelets with retro soul, built and ordered online."
         />
       </Helmet>
 
@@ -39,9 +39,8 @@ export default function About() {
           <SparkleRow />
           <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">Our story, link by link</h1>
           <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
-            Retro Charm Co 2.0 began as a fold-up table dream: bring the vintage joy of Italian charm bracelets to Utah
-            markets where families already gather. Now it is hugs over the counter, laughter while counting charms, and the
-            quiet magic of someone seeing their personality in metal and enamel.
+            Retro Charm Co began as a small dream: bring the vintage joy of Italian charm bracelets to more people.
+            Today, that same playful spirit lives online so you can build a bracelet that feels like you, charm by charm.
           </p>
         </div>
       </section>
@@ -60,24 +59,25 @@ export default function About() {
             </span>
             <figcaption className="mt-4 font-display text-lg font-semibold text-jscolors-navy">The maker behind the magic</figcaption>
             <p className="mt-2 text-sm text-jscolors-charcoal/75">
-              Photo placeholder — frame your favorite booth polaroid here with that warm retro border.
+              Photo placeholder — frame your favorite bracelet polaroid here with that warm retro border.
             </p>
           </div>
         </motion.figure>
         <div className="mt-10 md:mt-0 md:w-1/2">
-          <h2 className="font-display text-3xl font-bold text-jscolors-navy">Meet the hands at the table</h2>
+          <h2 className="font-display text-3xl font-bold text-jscolors-navy">Meet the hands behind the brand</h2>
           <p className="mt-4 text-jscolors-charcoal/85">
-            The maker behind the magic threads patience into every clasp, coaches kids through their first bracelet, and remembers repeat customers by their charm stacks.
+            The maker behind the magic threads patience into every clasp, helping each customer turn memories, milestones,
+            and inside jokes into a bracelet they love.
           </p>
           <p className="mt-4 text-jscolors-charcoal/85">
-            This little brand is family-run, market-toughened, and always learning — thank you for supporting a tiny Utah
-            business between the produce tents.
+            This little brand is family-run, detail-obsessed, and always learning — thank you for supporting a tiny Utah
+            business and building with us online.
           </p>
           <Link
-            to="/find-us"
+            to="/create"
             className="mt-8 inline-flex rounded-full border-2 border-jscolors-gold bg-white px-6 py-3 text-sm font-semibold text-jscolors-navy transition hover:bg-jscolors-gold"
           >
-            Plan a market night
+            Start Building
           </Link>
         </div>
       </section>
@@ -100,7 +100,7 @@ export default function About() {
 
       <section className="px-4 py-16 md:py-24">
         <div className="mx-auto grid max-w-6xl gap-6 md:grid-cols-3">
-          {['Booth glow', 'Charm wall', 'Market dusk'].map((label) => (
+          {['Bracelet close-up', 'Charm wall', 'Styled stack'].map((label) => (
             <figure
               key={label}
               className="retro-card overflow-hidden border-2 border-dashed border-jscolors-gold/40 bg-gradient-to-br from-jscolors-cream to-white"

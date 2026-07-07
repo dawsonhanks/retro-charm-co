@@ -213,10 +213,10 @@ export default function Create() {
   return (
     <>
       <Helmet>
-        <title>Charm Studio | Retro Charm Co 2.0</title>
+        <title>Charm Studio | Retro Charm Co</title>
         <meta
           name="description"
-          content="Browse every charm we carry and build your bracelet before you visit us at the Orem Sunset Farmers Market."
+          content="Browse every charm we carry, build your bracelet online, and order your custom stack."
         />
       </Helmet>
 
@@ -229,8 +229,7 @@ export default function Create() {
           <p className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold">Charm Studio</p>
           <h1 className="mt-4 font-display text-4xl font-bold text-jscolors-cream md:text-5xl">Build Your Bracelet</h1>
           <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/80">
-            Browse every charm we carry, snap your favorites into the builder below, and walk into market night knowing
-            exactly what you want.
+            Browse every charm we carry, snap your favorites into the builder below, and order exactly what you want.
           </p>
         </div>
       </header>
@@ -302,7 +301,7 @@ export default function Create() {
                       <MetalBadge metal={charm.metal} />
                       <span
                         className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-jscolors-navy/90"
-                        title="Current inventory at the booth"
+                        title="Current online inventory"
                       >
                         {charm.stock} in stock
                       </span>

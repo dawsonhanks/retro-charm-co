@@ -8,7 +8,7 @@ function isMarketDay(date) {
   const iso = date.toISOString().slice(0, 10)
   if (SKIP_DATES.includes(iso)) return false
   if (date < SEASON_START || date > SEASON_END) return false
-  return date.getDay() === 2
+  return date.getDay() === 3
 }
 
 function getNextMarketDate() {
@@ -22,8 +22,8 @@ function getNextMarketDate() {
 
   const d = new Date(today)
   const day = d.getDay()
-  const daysUntilTuesday = (2 - day + 7) % 7 || 7
-  d.setDate(d.getDate() + daysUntilTuesday)
+  const daysUntilWednesday = (3 - day + 7) % 7 || 7
+  d.setDate(d.getDate() + daysUntilWednesday)
 
   while (true) {
     const iso = d.toISOString().slice(0, 10)

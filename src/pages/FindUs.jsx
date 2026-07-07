@@ -6,7 +6,7 @@ import { locations } from '../data/locations'
 import { buildMarketIcs, downloadIcs } from '../utils/calendar'
 
 const weeklyRows = [
-  { day: 'Tuesdays', note: 'Orem location only', time: '5-9 PM (Oct: 5-8 PM)' },
+  { day: 'Wednesdays', note: 'Orem location only', time: '5-9 PM (Oct: 5-8 PM)' },
 ]
 
 export default function FindUs() {
@@ -27,7 +27,7 @@ export default function FindUs() {
   return (
     <>
       <Helmet>
-        <title>Find Us in Orem | Retro Charm Co 2.0</title>
+        <title>Find Us in Orem | Retro Charm Co</title>
         <meta
           name="description"
           content="Find Retro Charm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download."

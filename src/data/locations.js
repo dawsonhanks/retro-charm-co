@@ -9,7 +9,7 @@ export const locations = [
     lng: -111.6945,
     dates: 'May - September',
     hours: '5-9 PM (Oct: 5-8 PM)',
-    dayLabel: 'Tuesdays',
+    dayLabel: 'Wednesdays',
     calendar: {
       title: 'Sunset Farmers Market — Orem (Retro Charm Co)',
       description: 'Pick your base and charms at the Retro Charm Co booth.',

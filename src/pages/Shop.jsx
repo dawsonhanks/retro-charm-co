@@ -73,7 +73,7 @@ export default function Shop() {
   return (
     <>
       <Helmet>
-        <title>Your Order | Retro Charm Co 2.0</title>
+        <title>Your Order | Retro Charm Co</title>
         <meta name="description" content="Review your custom Retro Charm Co bracelet and checkout securely with Square." />
       </Helmet>
 

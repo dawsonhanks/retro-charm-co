@@ -17,17 +17,17 @@ const testimonials = [
   {
     quote: 'My daughter and I made matching bracelets in ten minutes — cutest mom-and-me memory.',
     name: 'Jamie R.',
-    place: 'Orem market',
+    place: 'Online order',
   },
   {
     quote: 'The retro charms are so detailed. I get compliments every time I wear my stack.',
     name: 'Mel S.',
-    place: 'Orem market',
+    place: 'Online order',
   },
   {
-    quote: 'Finally a booth where you pick every charm yourself. Felt like customizing candy, but jewelry.',
+    quote: 'I loved being able to pick every charm myself online. Felt like customizing candy, but jewelry.',
     name: 'Priya K.',
-    place: 'Orem market',
+    place: 'Online order',
   },
 ]
 
@@ -43,10 +43,10 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>Retro Charm Co 2.0 | Italian Charm Bracelets in Utah</title>
+        <title>Retro Charm Co | Italian Charm Bracelets in Utah</title>
         <meta
           name="description"
-          content="Custom Italian charm bracelets at the Orem Sunset Farmers Market. Pick your base, choose your charms, wear your story."
+          content="Custom Italian charm bracelets built online. Pick your base, choose your charms, and order your story."
         />
       </Helmet>
 
@@ -61,7 +61,7 @@ export default function Home() {
             transition={{ duration: 0.5 }}
             className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b08a4e]"
           >
-            Orem Sunset Farmers Market • Utah
+            Build online • Ship your story
           </motion.p>
 
           <div className="mt-6 flex flex-wrap justify-center gap-3 md:gap-4">
@@ -94,10 +94,10 @@ export default function Home() {
             className="mt-12 md:mt-14"
           >
             <Link
-              to="/find-us"
+              to="/create"
               className="inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-navy px-10 py-4 text-base font-semibold text-jscolors-cream shadow-lg shadow-jscolors-gold/20 transition hover:bg-jscolors-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
             >
-              Find Us at the Market
+              Create Your Bracelet
             </Link>
           </motion.div>
           <SparkleRow className="mt-10" />
@@ -141,7 +141,7 @@ export default function Home() {
             On the &rsquo;Gram
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
-            Follow {instagram.handle} for booth previews, charm drops, and market day stories.
+            Follow {instagram.handle} for styling ideas, charm drops, and bracelet inspiration.
           </p>
           <a
             href={instagram.url}
@@ -159,13 +159,13 @@ export default function Home() {
                     href={post.url}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-jscolors-gold/40 bg-jscolors-cream/80 shadow-sm transition hover:border-jscolors-gold hover:shadow-md"
+                    className="group relative aspect-[9/16] overflow-hidden rounded-2xl border-2 border-jscolors-gold/40 bg-gradient-to-b from-jscolors-cream to-jscolors-navy/10 shadow-sm transition hover:border-jscolors-gold hover:shadow-md"
                   >
                     <img
                       src={post.image}
                       alt={post.alt}
                       loading="lazy"
-                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                      className="h-full w-full object-contain"
                     />
                     <span className="sr-only">View this post on {instagram.handle}</span>
                   </a>

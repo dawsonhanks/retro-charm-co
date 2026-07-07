@@ -22,7 +22,7 @@ export default function OrderConfirmation() {
   return (
     <>
       <Helmet>
-        <title>Order Confirmed | Retro Charm Co 2.0</title>
+        <title>Order Confirmed | Retro Charm Co</title>
         <meta name="description" content="Thank you for your Retro Charm Co order!" />
       </Helmet>
 
@@ -32,8 +32,8 @@ export default function OrderConfirmation() {
           Your order is confirmed! 🎉
         </h1>
         <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
-          Thank you so much for supporting Retro Charm Co. Your order will be ready for pickup at the next Sunset
-          Farmers Market.
+          Thank you so much for supporting Retro Charm Co. We are now preparing your bracelet and will follow up with your
+          order details shortly.
         </p>
         <Link
           to="/"

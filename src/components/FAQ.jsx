@@ -4,11 +4,11 @@ import { AnimatePresence, motion } from 'framer-motion'
 const FAQS = [
   {
     q: 'How does this work?',
-    a: 'Pick a starter bracelet as your base, then choose as many individual charms as you like. We snap them onto the bracelet right at the booth — you walk away wearing it.',
+    a: 'Pick a starter bracelet as your base, then choose as many individual charms as you like. Add your favorites to cart and place your order online in minutes.',
   },
   {
     q: 'Can I add charms later?',
-    a: 'Absolutely. Italian charm bracelets are designed to be expandable. Bring your bracelet back to any market and we can add new charms on the spot.',
+    a: 'Absolutely. Italian charm bracelets are designed to be expandable, so you can come back anytime and order more charms to keep building your stack.',
   },
   {
     q: 'Will the charms tarnish over time?',
@@ -16,7 +16,7 @@ const FAQS = [
   },
   {
     q: 'What sizes are available?',
-    a: 'One size fits all — and the link design means we can adjust the fit right at the booth so it feels just right on your wrist.',
+    a: 'One size fits most, and the expandable link design makes it easy to get a comfortable fit.',
   },
   {
     q: 'What payment methods do you accept?',
@@ -24,7 +24,7 @@ const FAQS = [
   },
   {
     q: 'How long does it take to build a bracelet?',
-    a: 'Most people are done in 10–15 minutes, but we love it when people take their time. Come early if you want the full charm wall experience.',
+    a: 'Most people finish building their bracelet in about 10–15 minutes, but you can take your time and customize every detail.',
   },
 ]
 
