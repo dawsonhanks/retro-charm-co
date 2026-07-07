@@ -57,13 +57,13 @@ export function HowItWorks() {
     {
       n: '02',
       title: 'Choose Your Charms',
-      body: 'Add as many as you like ($4 each). Mix categories, initials, and icons.',
+      body: 'Add as many as you like. Mix categories, initials, and icons.',
       Icon: SparkIcon,
     },
     {
       n: '03',
       title: 'Wear Your Story',
-      body: 'Leave the booth with your one-of-a-kind bracelet — built by you, finished on the spot.',
+      body: 'Shipped to your door — one-of-a-kind, made by you, ready to wear.',
       Icon: HeartStarIcon,
     },
   ]

@@ -81,27 +81,16 @@ export default function Home() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.55 }}
-            className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
+            className="mt-10 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
           >
-            Fully custom — you pick the base, you choose every charm, and{' '}
-            <span className="text-jscolors-pink">build it yourself</span> at the booth.
+            Charm by Charm, Made by You.
           </motion.h1>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.65, duration: 0.5 }}
-            className="mt-5 max-w-2xl text-base text-jscolors-charcoal/85 md:text-lg"
-          >
-            Silver bases $10, gold bases $12, and charms at $4 each — most folks leave with 7–10 charms and a $38–52 bracelet that feels
-            one-of-a-kind.
-          </motion.p>
 
           <motion.div
             initial={{ opacity: 0, scale: 0.94 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.8, type: 'spring', stiffness: 280, damping: 20 }}
-            className="mt-10"
+            transition={{ delay: 0.65, type: 'spring', stiffness: 280, damping: 20 }}
+            className="mt-12 md:mt-14"
           >
             <Link
               to="/find-us"
