@@ -1,10 +1,51 @@
 import { useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
-import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+} from '@dnd-kit/core'
+import {
+  SortableContext,
+  arrayMove,
+  sortableKeyboardCoordinates,
+  useSortable,
+  horizontalListSortingStrategy,
+} from '@dnd-kit/sortable'
+import { CSS } from '@dnd-kit/utilities'
+import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 import { useCart } from '../context/CartContext.jsx'
+import {
+  BASE_LINK_COUNT,
+  addCharmToLinkOrder,
+  createInitialLinkOrder,
+  getCharmsFromLinkOrder,
+  linkOrderFromCharmIds,
+  removeCharmFromLinkOrder,
+} from '../utils/braceletLinks'
+
+function loadInitialLinkOrder() {
+  const saved = readJson(STORAGE_KEYS.savedBuild, null)
+  if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
+    return saved.linkOrder.map((link) => {
+      if (link.type === 'charm' && link.charmId) {
+        const charm = getCharmById(link.charmId)
+        if (charm) return { id: link.id ?? crypto.randomUUID(), type: 'charm', charm }
+      }
+      if (link.type === 'plain') return { id: link.id ?? crypto.randomUUID(), type: 'plain' }
+      return null
+    }).filter(Boolean)
+  }
+  if (Array.isArray(saved?.charmIds)) {
+    return linkOrderFromCharmIds(saved.charmIds, getCharmById)
+  }
+  return createInitialLinkOrder()
+}
 
 export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   const navigate = useNavigate()
@@ -13,18 +54,20 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
     const saved = readJson(STORAGE_KEYS.savedBuild, null)
     return saved?.baseId ?? BASE_OPTIONS[0].id
   })
-  const [charmIds, setCharmIds] = useState(() => {
-    const saved = readJson(STORAGE_KEYS.savedBuild, null)
-    return saved?.charmIds ?? []
-  })
+  const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
+  )
 
   const base = BASE_OPTIONS.find((b) => b.id === baseId) ?? BASE_OPTIONS[0]
   const pickerCharms = useMemo(() => charms.filter((c) => c.category !== 'starter'), [])
-  const selected = charmIds.map((id) => getCharmById(id)).filter((c) => c && c.category !== 'starter')
+  const selected = useMemo(() => getCharmsFromLinkOrder(linkOrder), [linkOrder])
   const charmTotal = selected.length * DEFAULT_CHARM_PRICE
   const grand = base.price + charmTotal
   const n = selected.length
-  const atMax = n >= MAX_BRACELET_CHARMS
+  const baseSlotsFull = linkOrder.length >= BASE_LINK_COUNT && !linkOrder.some((link) => link.type === 'plain')
 
   const summaryLine = useMemo(() => {
     const baseStr = `$${base.price.toFixed(2)} base`
@@ -34,33 +77,52 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   }, [base.price, n, charmTotal, grand])
 
   function addCharm(c) {
-    if (atMax || c.category === 'starter') return
-    setCharmIds((prev) => [...prev, c.id])
+    if (c.category === 'starter') return
+    setLinkOrder((prev) => addCharmToLinkOrder(prev, c))
+  }
+
+  function removeCharm(linkId) {
+    setLinkOrder((prev) => removeCharmFromLinkOrder(prev, linkId))
+  }
+
+  function handleBaseChange(nextBaseId) {
+    setBaseId(nextBaseId)
   }
 
   function reset() {
-    setCharmIds([])
+    setLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
   function addToCart() {
-    // Base bracelet is always represented, even with zero charms selected.
     addItem({ id: base.id, name: base.label, price: base.price, metal: base.id, quantity: 1 })
 
     selected.forEach((c) => {
       addItem({ id: c.id, name: c.name, price: c.price, metal: c.metal, quantity: 1 })
     })
 
-    // Clear the in-progress build so it isn't re-added if the customer comes back to the builder.
-    setCharmIds([])
+    setLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
 
     navigate('/cart')
   }
 
+  function handleDragEnd(event) {
+    const { active, over } = event
+    if (!over || active.id === over.id) return
+
+    setLinkOrder((prev) => {
+      const oldIndex = prev.findIndex((link) => link.id === active.id)
+      const newIndex = prev.findIndex((link) => link.id === over.id)
+      if (oldIndex === -1 || newIndex === -1) return prev
+      return arrayMove(prev, oldIndex, newIndex)
+    })
+  }
+
   const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
+  const sortableIds = linkOrder.map((link) => link.id)
 
   return (
     <section className={`mx-auto max-w-6xl ${className}`} aria-labelledby={`${idPrefix}-heading`}>
@@ -69,7 +131,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
           Interactive Charm Studio
         </h2>
         <p className="mt-2 text-sm text-jscolors-charcoal/80 md:text-base">
-          Tap charms to snap them onto your bracelet preview — up to {MAX_BRACELET_CHARMS} charms. Reset anytime or save a summary for the booth.
+          Tap charms to add them, then drag to rearrange — {BASE_LINK_COUNT} link slots to start, with room to grow.
         </p>
       </div>
 
@@ -80,7 +142,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
             <button
               key={b.id}
               type="button"
-              onClick={() => setBaseId(b.id)}
+              onClick={() => handleBaseChange(b.id)}
               className={`rounded-full border-2 px-5 py-2.5 text-sm font-semibold transition ${
                 baseId === b.id
                   ? 'border-jscolors-pink bg-jscolors-pink text-white shadow-md'
@@ -93,39 +155,34 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
         </div>
 
         <div className="relative mt-10">
-          <BraceletBaseGraphic stroke={chainStroke} />
-          <LayoutGroup>
-            <div className="relative mx-auto flex min-h-[140px] max-w-4xl flex-wrap items-center justify-center gap-2 px-4 py-8">
-              <AnimatePresence initial={false}>
-                {charmIds.map((id, i) => {
-                  const c = getCharmById(id)
-                  if (!c || c.category === 'starter') return null
-                  return (
-                    <motion.div
-                      key={`${id}-${i}`}
-                      layout
-                      initial={{ scale: 0.2, opacity: 0, y: 16 }}
-                      animate={{ scale: 1, opacity: 1, y: 0 }}
-                      exit={{ scale: 0.5, opacity: 0 }}
-                      transition={{ type: 'spring', stiffness: 420, damping: 22 }}
-                      className="relative z-10 rounded-full border-2 border-jscolors-gold bg-white p-2 shadow-md"
-                    >
-                      <CharmSvgIcon charm={c} className="h-8 w-8 text-jscolors-pink" />
-                    </motion.div>
-                  )
-                })}
-              </AnimatePresence>
-              {n === 0 && (
-                <p className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center text-center text-sm text-jscolors-charcoal/45">
-                  Charms appear here as you tap below
-                </p>
-              )}
-            </div>
-          </LayoutGroup>
+          <BraceletBaseGraphic stroke={chainStroke} linkCount={linkOrder.length} />
+          <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+            <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
+              <div className="relative mx-auto flex min-h-[140px] max-w-full items-center justify-center gap-1.5 overflow-x-auto px-4 py-8 md:gap-2">
+                {linkOrder.map((link) => (
+                  <SortableBraceletLink
+                    key={link.id}
+                    link={link}
+                    chainStroke={chainStroke}
+                    onRemove={removeCharm}
+                  />
+                ))}
+                {n === 0 && (
+                  <p className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center text-center text-sm text-jscolors-charcoal/45">
+                    Charms appear here as you tap below
+                  </p>
+                )}
+              </div>
+            </SortableContext>
+          </DndContext>
         </div>
 
         <p className="mt-4 text-center font-display text-lg font-semibold text-jscolors-navy md:text-xl">{summaryLine}</p>
-        {atMax && <p className="mt-2 text-center text-sm font-medium text-jscolors-pink">Full bracelet — that is 18 charms of joy.</p>}
+        {baseSlotsFull && (
+          <p className="mt-2 text-center text-sm font-medium text-jscolors-pink">
+            All {BASE_LINK_COUNT} slots filled — new charms extend your bracelet.
+          </p>
+        )}
 
         <div className="mt-8 flex flex-wrap justify-center gap-3">
           <button
@@ -147,7 +204,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
         <div className="mt-10 border-t border-jscolors-gold/25 pt-8">
           <p className="text-center text-sm font-semibold text-jscolors-navy">Add charms</p>
           <div className="mt-4 max-h-[320px] overflow-y-auto pr-1 md:max-h-[380px]">
-            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={atMax} />
+            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={false} />
           </div>
         </div>
       </div>
@@ -155,30 +212,82 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   )
 }
 
-function BraceletBaseGraphic({ stroke }) {
+function SortableBraceletLink({ link, chainStroke, onRemove }) {
+  const isCharm = link.type === 'charm'
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: link.id,
+    disabled: !isCharm ? { draggable: false, droppable: true } : false,
+  })
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 20 : 10,
+    opacity: isDragging ? 0.65 : 1,
+  }
+
+  if (!isCharm) {
+    return (
+      <div ref={setNodeRef} style={style} className="relative shrink-0">
+        <PlainLinkGraphic stroke={chainStroke} />
+      </div>
+    )
+  }
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className="group relative shrink-0 rounded-full border-2 border-jscolors-gold bg-white p-2 shadow-md touch-none"
+      {...attributes}
+      {...listeners}
+    >
+      <CharmSvgIcon charm={link.charm} className="h-8 w-8 text-jscolors-pink" />
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation()
+          onRemove(link.id)
+        }}
+        onPointerDown={(e) => e.stopPropagation()}
+        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-jscolors-gold/60 bg-white text-xs leading-none text-jscolors-navy/70 opacity-0 shadow transition hover:bg-jscolors-pink/40 hover:text-jscolors-navy group-hover:opacity-100 focus:opacity-100"
+        aria-label={`Remove ${link.charm.name}`}
+      >
+        ×
+      </button>
+    </div>
+  )
+}
+
+function PlainLinkGraphic({ stroke }) {
+  return (
+    <svg className="h-10 w-5 shrink-0" viewBox="0 0 20 40" fill="none" aria-hidden>
+      <rect x="3" y="10" width="14" height="20" rx="3" stroke={stroke} strokeWidth="3" fill="rgba(255,255,255,0.65)" />
+      <line x1="10" y1="14" x2="10" y2="26" stroke={stroke} strokeWidth="1.5" opacity="0.5" />
+    </svg>
+  )
+}
+
+function BraceletBaseGraphic({ stroke, linkCount }) {
+  const slots = Math.max(linkCount, BASE_LINK_COUNT)
+  const width = Math.min(920, 40 + slots * 26)
+  const height = 80
+
   return (
     <svg
-      className="pointer-events-none absolute left-1/2 top-1/2 h-[100px] w-[min(100%,520px)] -translate-x-1/2 -translate-y-1/2 md:h-[120px]"
-      viewBox="0 0 520 80"
+      className="pointer-events-none absolute left-1/2 top-1/2 h-[100px] -translate-x-1/2 -translate-y-1/2 md:h-[120px]"
+      style={{ width: `min(100%, ${width}px)` }}
+      viewBox={`0 0 ${width} ${height}`}
       fill="none"
       aria-hidden
     >
       <path
-        d="M40 40c60-28 160-28 220 0 60 28 160 28 220 0"
+        d={`M40 40c${Math.round((width - 80) * 0.12)}-28 ${Math.round((width - 80) * 0.32)}-28 ${Math.round((width - 80) * 0.44)} 0 ${Math.round((width - 80) * 0.12)} 28 ${Math.round((width - 80) * 0.32)} 28 ${Math.round((width - 80) * 0.44)} 0`}
         stroke={stroke}
         strokeWidth="10"
         strokeLinecap="round"
         opacity="0.35"
       />
-      {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17].map((i) => {
-        const x = 46 + i * 26
-        return (
-          <g key={i}>
-            <rect x={x} y="34" width="14" height="12" rx="3" stroke={stroke} strokeWidth="3" fill="rgba(255,255,255,0.65)" />
-            <line x1={x + 7} y1="36" x2={x + 7} y2="44" stroke={stroke} strokeWidth="1.5" opacity="0.5" />
-          </g>
-        )
-      })}
     </svg>
   )
 }
