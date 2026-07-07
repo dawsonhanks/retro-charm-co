@@ -47,7 +47,7 @@ function loadInitialLinkOrder() {
   return createInitialLinkOrder()
 }
 
-export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
+export function CharmBuilder({ className = '', idPrefix = 'builder', instructionLabel }) {
   const navigate = useNavigate()
   const { addItem } = useCart()
   const [baseId, setBaseId] = useState(() => {
@@ -125,17 +125,29 @@ export function CharmBuilder({ className = '', idPrefix = 'builder' }) {
   const sortableIds = linkOrder.map((link) => link.id)
 
   return (
-    <section className={`mx-auto max-w-6xl ${className}`} aria-labelledby={`${idPrefix}-heading`}>
-      <div className="text-center">
-        <h2 id={`${idPrefix}-heading`} className="font-display text-2xl font-bold text-jscolors-navy md:text-3xl">
-          Interactive Charm Studio
-        </h2>
-        <p className="mt-2 text-sm text-jscolors-charcoal/80 md:text-base">
-          Tap charms to add them, then drag to rearrange — {BASE_LINK_COUNT} link slots to start, with room to grow.
+    <section
+      className={`mx-auto max-w-6xl ${className}`}
+      aria-labelledby={instructionLabel ? `${idPrefix}-instruction` : `${idPrefix}-heading`}
+    >
+      {instructionLabel ? (
+        <p
+          id={`${idPrefix}-instruction`}
+          className="text-center text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold-warm"
+        >
+          {instructionLabel}
         </p>
-      </div>
+      ) : (
+        <div className="text-center">
+          <h2 id={`${idPrefix}-heading`} className="font-display text-2xl font-bold text-jscolors-navy md:text-3xl">
+            Interactive Charm Studio
+          </h2>
+          <p className="mt-2 text-sm text-jscolors-charcoal/80 md:text-base">
+            Tap charms to add them, then drag to rearrange — {BASE_LINK_COUNT} link slots to start, with room to grow.
+          </p>
+        </div>
+      )}
 
-      <div className="mt-8 retro-card border-jscolors-gold/35 p-5 md:p-8">
+      <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${instructionLabel ? 'mt-6' : 'mt-8'}`}>
         <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your base</p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           {BASE_OPTIONS.map((b) => (

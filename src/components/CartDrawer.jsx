@@ -1,3 +1,4 @@
+import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../context/CartContext.jsx'
@@ -15,7 +16,7 @@ export function CartDrawer({ isOpen, onClose }) {
     navigate('/cart')
   }
 
-  return (
+  return createPortal(
     <AnimatePresence>
       {isOpen && (
         <>
@@ -33,7 +34,7 @@ export function CartDrawer({ isOpen, onClose }) {
             role="dialog"
             aria-modal="true"
             aria-label="Shopping cart"
-            className="fixed inset-y-0 right-0 z-[70] flex w-full max-w-md flex-col border-l border-gold/35 bg-cream shadow-2xl"
+            className="fixed inset-y-0 right-0 z-[70] flex h-screen w-full max-w-md flex-col border-l border-gold/35 bg-cream shadow-2xl"
             initial={{ x: '100%' }}
             animate={{ x: 0 }}
             exit={{ x: '100%' }}
@@ -122,6 +123,7 @@ export function CartDrawer({ isOpen, onClose }) {
           </motion.aside>
         </>
       )}
-    </AnimatePresence>
+    </AnimatePresence>,
+    document.body,
   )
 }

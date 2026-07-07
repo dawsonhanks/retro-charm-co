@@ -57,7 +57,7 @@ export function FAQ() {
                   aria-expanded={isOpen}
                 >
                   <span className="font-semibold text-jscolors-navy">{item.q}</span>
-                  <span className="shrink-0 text-xl font-light text-jscolors-gold" aria-hidden="true">
+                  <span className="shrink-0 text-xl font-light text-jscolors-gold-warm" aria-hidden="true">
                     {isOpen ? '−' : '+'}
                   </span>
                 </button>

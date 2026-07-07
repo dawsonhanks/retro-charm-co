@@ -6,8 +6,7 @@ import { CartDrawer } from './CartDrawer.jsx'
 
 const links = [
   { to: '/', label: 'Home' },
-  { to: '/create', label: 'Start Building' },
-  { to: '/cart', label: 'Shop' },
+  { to: '/create', label: 'Charm Studio' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
 ]

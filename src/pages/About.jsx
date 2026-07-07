@@ -77,7 +77,7 @@ export default function About() {
             to="/create"
             className="mt-8 inline-flex rounded-full border-2 border-jscolors-gold bg-white px-6 py-3 text-sm font-semibold text-jscolors-navy transition hover:bg-jscolors-gold"
           >
-            Start Building
+            Charm Studio
           </Link>
         </div>
       </section>

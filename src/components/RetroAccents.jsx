@@ -25,7 +25,7 @@ export function SparkleRow({ className = '' }) {
   return (
     <div className={`flex justify-center gap-3 ${className}`} aria-hidden>
       {['✦', '✧', '★', '✧', '✦'].map((s, i) => (
-        <span key={i} className="text-jscolors-gold/80" style={{ fontSize: i % 2 ? '1rem' : '1.25rem' }}>
+        <span key={i} className="text-jscolors-gold-warm/80" style={{ fontSize: i % 2 ? '1rem' : '1.25rem' }}>
           {s}
         </span>
       ))}

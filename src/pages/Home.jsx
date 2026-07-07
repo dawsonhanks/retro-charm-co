@@ -59,7 +59,7 @@ export default function Home() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b08a4e]"
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold-warm"
           >
             Build online • Ship your story
           </motion.p>

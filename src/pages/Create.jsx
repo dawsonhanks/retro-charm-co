@@ -236,7 +236,11 @@ export default function Create() {
 
       <Suspense fallback={<PageLoader />}>
         <div className="border-t-2 border-jscolors-gold/20 bg-jscolors-navy/5 py-16">
-          <CharmBuilder className="px-4" idPrefix="gallery-builder" />
+          <CharmBuilder
+            className="px-4"
+            idPrefix="gallery-builder"
+            instructionLabel="Tap to add · drag to rearrange · 18 links to start"
+          />
         </div>
       </Suspense>
 
@@ -297,15 +301,7 @@ export default function Create() {
                   className="min-w-0"
                 >
                   <article className="retro-card retro-card-hover flex h-full flex-col p-5">
-                    <div className="flex items-start justify-between gap-3">
-                      <MetalBadge metal={charm.metal} />
-                      <span
-                        className="rounded-full bg-white/70 px-3 py-1 text-xs font-semibold text-jscolors-navy/90"
-                        title="Current online inventory"
-                      >
-                        {charm.stock} in stock
-                      </span>
-                    </div>
+                    <MetalBadge metal={charm.metal} />
 
                     <div className="mt-4 flex flex-1 flex-col items-center text-center">
                       <CharmPlaceholder charm={charm} />

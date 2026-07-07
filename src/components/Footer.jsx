@@ -6,7 +6,7 @@ import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 const footerLinks = [
   { to: '/', label: 'Home' },
   { to: '/create', label: 'Charm Studio' },
-  { to: '/create', label: 'Start Building' },
+  { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'About' },
   { to: '/cart', label: 'Cart' },
 ]
