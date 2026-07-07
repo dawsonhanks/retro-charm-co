@@ -13,7 +13,7 @@ const footerLinks = [
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#6e6042] text-jscolors-cream">
+    <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#7d5b6c] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
           <p className="font-display text-xl font-semibold text-jscolors-cream">

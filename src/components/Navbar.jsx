@@ -20,7 +20,7 @@ export function Navbar() {
     <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream/90 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4" aria-label="Main">
         <Link to="/" className="group flex items-center gap-2 font-display text-lg font-semibold text-jscolors-navy md:text-xl">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-[#f3ede0] text-jscolors-gold transition group-hover:border-jscolors-navy">
+          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-[#f6eef1] text-[#b08a4e] transition group-hover:border-jscolors-navy">
             ✦
           </span>
           <span className="text-balance">

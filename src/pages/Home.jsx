@@ -49,7 +49,7 @@ export default function Home() {
         />
       </Helmet>
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#f7f1e2] via-[#efe8d7] to-[#f7f1e2] text-jscolors-charcoal">
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f6eef2] via-[#edf1f6] to-[#f6eef2] text-jscolors-charcoal">
         <StarField className="absolute left-0 right-0 top-4 mx-auto max-w-4xl opacity-90" />
         <FloatingHearts className="pointer-events-none absolute bottom-8 right-4 hidden w-32 md:block" />
 
@@ -58,7 +58,7 @@ export default function Home() {
             initial={{ opacity: 0, y: -8 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
-            className="text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold"
+            className="text-xs font-semibold uppercase tracking-[0.3em] text-[#b08a4e]"
           >
             Orem Sunset Farmers Market • Utah
           </motion.p>
@@ -84,7 +84,7 @@ export default function Home() {
             className="mt-8 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
           >
             Fully custom — you pick the base, you choose every charm, and{' '}
-            <span className="text-[#a18bb1]">build it yourself</span> at the booth.
+            <span className="text-jscolors-pink">build it yourself</span> at the booth.
           </motion.h1>
 
           <motion.p
@@ -145,7 +145,7 @@ export default function Home() {
         </ul>
       </section>
 
-      <section className="border-y border-jscolors-gold/25 bg-[#f8f3e7]/85 py-16 md:py-20" aria-labelledby="ig-heading">
+      <section className="border-y border-jscolors-gold/25 bg-[#f3eef3]/85 py-16 md:py-20" aria-labelledby="ig-heading">
         <div className="mx-auto max-w-6xl px-4 text-center">
           <h2 id="ig-heading" className="font-display text-3xl font-bold text-jscolors-navy">
             On the &rsquo;Gram

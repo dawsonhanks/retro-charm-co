@@ -143,7 +143,7 @@ function getCharmEmoji(charm) {
 function MetalBadge({ metal }) {
   if (metal === 'gold') {
     return (
-      <span className="inline-flex rounded-full border border-[#D4A017]/50 bg-[#D4A017] px-3 py-1 text-xs font-semibold text-[#2a1d05]">
+      <span className="inline-flex rounded-full border border-[#d9b97c]/60 bg-[#f2e4c8] px-3 py-1 text-xs font-semibold text-[#6b4e28]">
         Gold
       </span>
     )
