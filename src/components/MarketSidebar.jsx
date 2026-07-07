@@ -83,7 +83,7 @@ export function MarketSidebar({ location, onAddToCalendar }) {
 
       <div className="retro-card space-y-2 p-4 text-sm text-jscolors-charcoal/85">
         <p>
-          <span className="font-semibold text-jscolors-navy">Hours:</span> 5–9 PM (season runs May–September)
+          <span className="font-semibold text-jscolors-navy">Hours:</span> 5–9 PM
         </p>
         <p>
           <span className="font-semibold text-jscolors-navy">Location:</span> Sunset Farmers Market, Orem
@@ -96,9 +96,8 @@ export function MarketSidebar({ location, onAddToCalendar }) {
       <div className="retro-card p-4">
         <h3 className="font-display font-semibold text-jscolors-navy">What to know before you come</h3>
         <ul className="mt-3 space-y-2 text-sm text-jscolors-charcoal/85">
-          <li>💳 We take cash, card (Square), and Venmo</li>
+          <li>💳 We take cash, card, and Venmo</li>
           <li>🚫 No reservation needed — just show up</li>
-          <li>⏱ Budget 10–15 min to browse and build</li>
           <li>📐 One size fits all — we adjust at the booth</li>
           <li>✨ Charms don&apos;t tarnish — wear them every day</li>
         </ul>

@@ -16,33 +16,39 @@ const item = {
 export function HowItWorks() {
   const categories = [
     {
-      id: 'nature',
-      label: 'Nature & Animals',
-      blurb: 'Sun, moon, butterflies, and blooms.',
-      icon: LeafIcon,
-    },
-    {
-      id: 'retro',
-      label: 'Retro & Nostalgia',
-      blurb: 'Tapes, cameras, cherries, and classic flair.',
-      icon: TapeIcon,
-    },
-    {
       id: 'letters',
       label: 'Letters & Initials',
       blurb: 'The sweet spot for names and monograms.',
       icon: AIcon,
     },
     {
-      id: 'food',
-      label: 'Food & Fun',
-      blurb: 'Rainbows, treats, and tiny joys.',
-      icon: ConeIcon,
+      id: 'hearts',
+      label: 'Hearts & Love',
+      blurb: 'Hearts in silver and gold, for the people you love.',
+      icon: HeartIcon,
+    },
+    {
+      id: 'florals',
+      label: 'Florals & Nature',
+      blurb: 'Flowers, palm trees, and garden blooms.',
+      icon: LeafIcon,
+    },
+    {
+      id: 'retro',
+      label: 'Retro & Nostalgia',
+      blurb: 'Racing flags, stars, and vintage vibes.',
+      icon: TapeIcon,
+    },
+    {
+      id: 'sports',
+      label: 'Sports & Fun',
+      blurb: 'Pickleball, basketball, and playful icons.',
+      icon: TrophyIcon,
     },
     {
       id: 'spiritual',
       label: 'Spiritual & Symbolic',
-      blurb: 'Protective motifs with vintage soul.',
+      blurb: 'Crosses and faith-inspired charms.',
       icon: EyeIcon,
     },
   ]
@@ -107,7 +113,7 @@ export function HowItWorks() {
         initial="hidden"
         whileInView="show"
         viewport={{ once: true, margin: '-40px' }}
-        className="mt-16 grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5"
+        className="mt-16 grid grid-cols-1 gap-6 md:grid-cols-3"
       >
         {categories.map((c) => (
           <motion.article key={c.id} variants={item} className="retro-card retro-card-hover flex gap-4 p-5">
@@ -181,11 +187,20 @@ function AIcon() {
   )
 }
 
-function ConeIcon() {
+function HeartIcon() {
   return (
     <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
-      <path d="M12 4l8 14H4l8-14z" />
-      <path d="M9 12h6" />
+      <path d="M12 21s-6-4.2-6-9a3.5 3.5 0 016-2.5A3.5 3.5 0 0118 12c0 4.8-6 9-6 9z" />
+    </svg>
+  )
+}
+
+function TrophyIcon() {
+  return (
+    <svg className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" aria-hidden>
+      <path d="M8 4h8v3a4 4 0 01-8 0V4z" />
+      <path d="M6 4H4v1a3 3 0 003 3M18 4h2v1a3 3 0 01-3 3" />
+      <path d="M12 11v3M9 20h6M10 14h4v3a2 2 0 01-4 0v-3z" />
     </svg>
   )
 }

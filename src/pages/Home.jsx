@@ -6,6 +6,7 @@ import { HowItWorks } from '../components/HowItWorks'
 import { EmailSignup } from '../components/EmailSignup'
 import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccents'
 import { instagram } from '../data/social'
+import { instagramPosts } from '../data/instagramPosts'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
@@ -151,18 +152,36 @@ export default function Home() {
             Follow {instagram.handle}
           </a>
           <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-            {['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
-              <a
-                key={i}
-                href={instagram.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35 transition hover:border-jscolors-gold hover:bg-jscolors-cream hover:text-jscolors-navy/60"
-              >
-                <span aria-hidden>{label}</span>
-                <span className="sr-only">View {instagram.handle} on Instagram</span>
-              </a>
-            ))}
+            {instagramPosts.length > 0
+              ? instagramPosts.map((post) => (
+                  <a
+                    key={post.url}
+                    href={post.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="group relative aspect-square overflow-hidden rounded-2xl border-2 border-jscolors-gold/40 bg-jscolors-cream/80 shadow-sm transition hover:border-jscolors-gold hover:shadow-md"
+                  >
+                    <img
+                      src={post.image}
+                      alt={post.alt}
+                      loading="lazy"
+                      className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
+                    />
+                    <span className="sr-only">View this post on {instagram.handle}</span>
+                  </a>
+                ))
+              : ['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
+                  <a
+                    key={i}
+                    href={instagram.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35 transition hover:border-jscolors-gold hover:bg-jscolors-cream hover:text-jscolors-navy/60"
+                  >
+                    <span aria-hidden>{label}</span>
+                    <span className="sr-only">View {instagram.handle} on Instagram</span>
+                  </a>
+                ))}
           </div>
 
           <div className="mx-auto mt-10 max-w-md text-left">
