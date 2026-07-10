@@ -44,7 +44,58 @@ function formatAmount(amountMoney) {
   return `${currency} ${dollars}`
 }
 
-async function sendOrderEmail({ to, payment, timestamp }) {
+function formatShippingSection(recipient) {
+  if (!recipient) {
+    return 'Shipping address not found'
+  }
+
+  const { display_name, phone_number, address } = recipient
+  const lines = []
+
+  if (display_name) lines.push(`Recipient name: ${display_name}`)
+  if (phone_number) lines.push(`Phone: ${phone_number}`)
+
+  if (address) {
+    if (address.address_line_1) lines.push(`Address line 1: ${address.address_line_1}`)
+    if (address.address_line_2) lines.push(`Address line 2: ${address.address_line_2}`)
+    if (address.locality) lines.push(`City: ${address.locality}`)
+    if (address.administrative_district_level_1) {
+      lines.push(`State: ${address.administrative_district_level_1}`)
+    }
+    if (address.postal_code) lines.push(`Postal code: ${address.postal_code}`)
+  }
+
+  return lines.length > 0 ? lines.join('\n') : 'Shipping address not found'
+}
+
+async function fetchOrderRecipient(orderId, accessToken) {
+  if (!orderId || !accessToken) {
+    return null
+  }
+
+  try {
+    const res = await fetch(`https://connect.squareup.com/v2/orders/${orderId}`, {
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Square-Version': '2024-07-17',
+      },
+    })
+
+    if (!res.ok) {
+      const errorBody = await res.text()
+      console.error(`Square order lookup failed (${res.status}):`, errorBody)
+      return null
+    }
+
+    const data = await res.json()
+    return data.order?.fulfillments?.[0]?.shipment_details?.recipient ?? null
+  } catch (error) {
+    console.error('Square order lookup error:', error)
+    return null
+  }
+}
+
+async function sendOrderEmail({ to, payment, timestamp, shippingSection }) {
   const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
     throw new Error('RESEND_API_KEY is not configured')
@@ -61,6 +112,8 @@ async function sendOrderEmail({ to, payment, timestamp }) {
     `Payment ID: ${paymentId}`,
     `Order ID: ${orderId}`,
     `Timestamp: ${timestamp}`,
+    '',
+    shippingSection,
   ].join('\n')
 
   const payload = {
@@ -143,10 +196,16 @@ export default async function handler(req, res) {
         } else {
           try {
             const timestamp = event.created_at ?? payment?.updated_at ?? new Date().toISOString()
+            const recipient = await fetchOrderRecipient(
+              payment?.order_id,
+              process.env.SQUARE_ACCESS_TOKEN,
+            )
+            const shippingSection = formatShippingSection(recipient)
             await sendOrderEmail({
               to: notificationEmail,
               payment,
               timestamp,
+              shippingSection,
             })
             console.log('Order notification sent', {
               paymentId: payment?.id,

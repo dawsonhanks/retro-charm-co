@@ -83,6 +83,7 @@ export default async function handler(req, res) {
         idempotency_key: safeIdempotencyKey,
         checkout_options: {
           redirect_url: `${siteUrl}/order-confirmation?order=${encodeURIComponent(safeIdempotencyKey)}`,
+          ask_for_shipping_address: true,
         },
         order: {
           location_id: locationId,
