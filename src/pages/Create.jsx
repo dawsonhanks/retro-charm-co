@@ -213,7 +213,7 @@ export default function Create() {
   return (
     <>
       <Helmet>
-        <title>Charm Studio | Retro Charm Co</title>
+        <title>Charm Studio | RetroCharm Co</title>
         <meta
           name="description"
           content="Browse every charm we carry, build your bracelet online, and order your custom stack."

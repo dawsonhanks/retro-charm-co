@@ -54,8 +54,8 @@ export default function Cart() {
   return (
     <>
       <Helmet>
-        <title>Cart | Retro Charm Co</title>
-        <meta name="description" content="Review your Retro Charm Co cart and checkout securely with Square." />
+        <title>Cart | RetroCharm Co</title>
+        <meta name="description" content="Review your RetroCharm Co cart and checkout securely with Square." />
       </Helmet>
 
       <section className="mx-auto max-w-3xl px-4 py-12 md:py-16">

@@ -22,25 +22,27 @@ export default function OrderConfirmation() {
   return (
     <>
       <Helmet>
-        <title>Order Confirmed | Retro Charm Co</title>
-        <meta name="description" content="Thank you for your Retro Charm Co order!" />
+        <title>Order Confirmed | RetroCharm Co</title>
+        <meta name="description" content="Thank you for your RetroCharm Co order!" />
       </Helmet>
 
-      <section className="mx-auto max-w-2xl px-4 py-16 text-center md:py-24">
-        <SparkleRow className="mx-auto" />
-        <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">
-          Your order is confirmed! 🎉
-        </h1>
-        <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
-          Thank you so much for supporting Retro Charm Co. We are now preparing your bracelet and will follow up with your
-          order details shortly.
-        </p>
-        <Link
-          to="/"
-          className="mt-10 inline-block rounded-full bg-jscolors-navy px-8 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-navy/90"
-        >
-          Back to Home
-        </Link>
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f6eef2] via-[#edf1f6] to-[#f6eef2] text-jscolors-charcoal">
+        <div className="mx-auto max-w-2xl px-4 py-16 text-center md:py-24">
+          <SparkleRow className="mx-auto" />
+          <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">
+            Your order is confirmed! 🎉
+          </h1>
+          <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
+            Thank you so much for supporting RetroCharm Co. We are now preparing your bracelet and will follow up with your
+            order details shortly.
+          </p>
+          <Link
+            to="/"
+            className="mt-10 inline-block rounded-full bg-jscolors-navy px-8 py-3 text-sm font-semibold text-jscolors-cream shadow-lg shadow-jscolors-gold/20 transition hover:bg-jscolors-navy/90"
+          >
+            Back to Home
+          </Link>
+        </div>
       </section>
     </>
   )

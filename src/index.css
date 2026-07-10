@@ -1,7 +1,7 @@
 @import 'tailwindcss';
 
 @theme {
-  /* jscolors — Retro Charm Co design tokens (Pastel & Dainty, blue-led) */
+  /* jscolors — RetroCharm Co design tokens (Pastel & Dainty, blue-led) */
   --color-jscolors-navy: #8ab0c7;
   --color-jscolors-pink: #e8b8c4;
   --color-jscolors-gold: #f2e4c8;

@@ -43,7 +43,7 @@ export default function Home() {
   return (
     <>
       <Helmet>
-        <title>Retro Charm Co | Italian Charm Bracelets in Utah</title>
+        <title>RetroCharm Co | Italian Charm Bracelets in Utah</title>
         <meta
           name="description"
           content="Custom Italian charm bracelets built online. Pick your base, choose your charms, and order your story."

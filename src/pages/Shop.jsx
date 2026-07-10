@@ -73,8 +73,8 @@ export default function Shop() {
   return (
     <>
       <Helmet>
-        <title>Your Order | Retro Charm Co</title>
-        <meta name="description" content="Review your custom Retro Charm Co bracelet and checkout securely with Square." />
+        <title>Your Order | RetroCharm Co</title>
+        <meta name="description" content="Review your custom RetroCharm Co bracelet and checkout securely with Square." />
       </Helmet>
 
       <section className="mx-auto max-w-3xl px-4 py-12 md:py-16">

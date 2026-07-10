@@ -26,10 +26,10 @@ export default function About() {
   return (
     <>
       <Helmet>
-        <title>About Us | Retro Charm Co</title>
+        <title>About Us | RetroCharm Co</title>
         <meta
           name="description"
-          content="The story behind Retro Charm Co — handmade Italian charm bracelets with retro soul, built and ordered online."
+          content="The story behind RetroCharm Co — handmade Italian charm bracelets with retro soul, built and ordered online."
         />
       </Helmet>
 
@@ -39,7 +39,7 @@ export default function About() {
           <SparkleRow />
           <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">Our story, link by link</h1>
           <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
-            Retro Charm Co began as a small dream: bring the vintage joy of Italian charm bracelets to more people.
+            RetroCharm Co began as a small dream: bring the vintage joy of Italian charm bracelets to more people.
             Today, that same playful spirit lives online so you can build a bracelet that feels like you, charm by charm.
           </p>
         </div>

@@ -16,7 +16,7 @@ export function Footer() {
     <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#7d5b6c] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="font-display text-xl font-semibold text-jscolors-cream">Retro Charm Co</p>
+          <p className="font-display text-xl font-semibold text-jscolors-cream">RetroCharm Co</p>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-jscolors-cream/75">
             Custom Italian charm bracelets, built online by you. Pick your base, choose your charms, and order your story.
           </p>
@@ -71,7 +71,7 @@ export function Footer() {
       </div>
 
       <div className="border-t border-white/10 py-6 text-center text-xs text-jscolors-cream/50">
-        © {new Date().getFullYear()} Retro Charm Co. Handmade with love in Utah.
+        © {new Date().getFullYear()} RetroCharm Co. Handmade with love in Utah.
       </div>
     </footer>
   )

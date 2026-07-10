@@ -11,7 +11,7 @@ export function buildMarketIcs({
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Retro Charm Co//Market//EN',
+    'PRODID:-//RetroCharm Co//Market//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

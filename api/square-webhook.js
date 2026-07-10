@@ -1,8 +1,8 @@
 import crypto from 'node:crypto'
 
 const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
-const FROM_EMAIL = 'Retro Charm Co <orders@theretrocharmco.com>'
-const FALLBACK_FROM_EMAIL = 'Retro Charm Co <onboarding@resend.dev>'
+const FROM_EMAIL = 'RetroCharm Co <orders@theretrocharmco.com>'
+const FALLBACK_FROM_EMAIL = 'RetroCharm Co <onboarding@resend.dev>'
 
 export const config = {
   api: {
@@ -106,7 +106,7 @@ async function sendOrderEmail({ to, payment, timestamp, shippingSection }) {
   const amount = formatAmount(payment?.amount_money)
 
   const text = [
-    'A new order has been completed on Retro Charm Co.',
+    'A new order has been completed on RetroCharm Co.',
     '',
     `Payment amount: ${amount}`,
     `Payment ID: ${paymentId}`,
@@ -119,7 +119,7 @@ async function sendOrderEmail({ to, payment, timestamp, shippingSection }) {
   const payload = {
     from: FROM_EMAIL,
     to: [to],
-    subject: 'New Retro Charm Co Order',
+    subject: 'New RetroCharm Co Order',
     text,
   }
 

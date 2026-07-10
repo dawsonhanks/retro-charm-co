@@ -27,10 +27,10 @@ export default function FindUs() {
   return (
     <>
       <Helmet>
-        <title>Find Us in Orem | Retro Charm Co</title>
+        <title>Find Us in Orem | RetroCharm Co</title>
         <meta
           name="description"
-          content="Find Retro Charm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download."
+          content="Find RetroCharm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download."
         />
       </Helmet>
 
