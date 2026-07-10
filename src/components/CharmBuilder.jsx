@@ -16,7 +16,7 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
+import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 import { useCart } from '../context/CartContext.jsx'
@@ -25,36 +25,34 @@ import {
   addCharmToLinkOrder,
   createInitialLinkOrder,
   getCharmsFromLinkOrder,
-  linkOrderFromCharmIds,
+  loadInitialLinkOrder,
   removeCharmFromLinkOrder,
 } from '../utils/braceletLinks'
 
-function loadInitialLinkOrder() {
-  const saved = readJson(STORAGE_KEYS.savedBuild, null)
-  if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
-    return saved.linkOrder.map((link) => {
-      if (link.type === 'charm' && link.charmId) {
-        const charm = getCharmById(link.charmId)
-        if (charm) return { id: link.id ?? crypto.randomUUID(), type: 'charm', charm }
-      }
-      if (link.type === 'plain') return { id: link.id ?? crypto.randomUUID(), type: 'plain' }
-      return null
-    }).filter(Boolean)
-  }
-  if (Array.isArray(saved?.charmIds)) {
-    return linkOrderFromCharmIds(saved.charmIds, getCharmById)
-  }
-  return createInitialLinkOrder()
-}
-
-export function CharmBuilder({ className = '', idPrefix = 'builder', instructionLabel }) {
+export function CharmBuilder({
+  className = '',
+  idPrefix = 'builder',
+  instructionLabel,
+  linkOrder: controlledLinkOrder,
+  onLinkOrderChange,
+}) {
   const navigate = useNavigate()
   const { addItem } = useCart()
   const [baseId, setBaseId] = useState(() => {
     const saved = readJson(STORAGE_KEYS.savedBuild, null)
     return saved?.baseId ?? BASE_OPTIONS[0].id
   })
-  const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
+  const [internalLinkOrder, setInternalLinkOrder] = useState(loadInitialLinkOrder)
+  const isControlled = controlledLinkOrder !== undefined && onLinkOrderChange !== undefined
+  const linkOrder = isControlled ? controlledLinkOrder : internalLinkOrder
+
+  function updateLinkOrder(updater) {
+    if (isControlled) {
+      onLinkOrderChange(updater)
+    } else {
+      setInternalLinkOrder(updater)
+    }
+  }
 
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -78,11 +76,11 @@ export function CharmBuilder({ className = '', idPrefix = 'builder', instruction
 
   function addCharm(c) {
     if (c.category === 'starter') return
-    setLinkOrder((prev) => addCharmToLinkOrder(prev, c))
+    updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
   }
 
   function removeCharm(linkId) {
-    setLinkOrder((prev) => removeCharmFromLinkOrder(prev, linkId))
+    updateLinkOrder((prev) => removeCharmFromLinkOrder(prev, linkId))
   }
 
   function handleBaseChange(nextBaseId) {
@@ -90,7 +88,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder', instruction
   }
 
   function reset() {
-    setLinkOrder(createInitialLinkOrder())
+    updateLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
@@ -102,7 +100,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder', instruction
       addItem({ id: c.id, name: c.name, price: c.price, metal: c.metal, quantity: 1 })
     })
 
-    setLinkOrder(createInitialLinkOrder())
+    updateLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
 
@@ -113,7 +111,7 @@ export function CharmBuilder({ className = '', idPrefix = 'builder', instruction
     const { active, over } = event
     if (!over || active.id === over.id) return
 
-    setLinkOrder((prev) => {
+    updateLinkOrder((prev) => {
       const oldIndex = prev.findIndex((link) => link.id === active.id)
       const newIndex = prev.findIndex((link) => link.id === over.id)
       if (oldIndex === -1 || newIndex === -1) return prev

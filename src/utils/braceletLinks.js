@@ -1,3 +1,6 @@
+import { getCharmById } from '../data/charms'
+import { readJson, STORAGE_KEYS } from './storage'
+
 export const BASE_LINK_COUNT = 18
 
 /** @typedef {{ id: string, type: 'plain' }} PlainLink */
@@ -27,6 +30,27 @@ export function createCharmLink(charm) {
 /** @returns {BraceletLink[]} */
 export function createInitialLinkOrder() {
   return Array.from({ length: BASE_LINK_COUNT }, () => createPlainLink())
+}
+
+/** @returns {BraceletLink[]} */
+export function loadInitialLinkOrder() {
+  const saved = readJson(STORAGE_KEYS.savedBuild, null)
+  if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
+    return saved.linkOrder
+      .map((link) => {
+        if (link.type === 'charm' && link.charmId) {
+          const charm = getCharmById(link.charmId)
+          if (charm) return { id: link.id ?? createLinkId(), type: 'charm', charm }
+        }
+        if (link.type === 'plain') return { id: link.id ?? createLinkId(), type: 'plain' }
+        return null
+      })
+      .filter(Boolean)
+  }
+  if (Array.isArray(saved?.charmIds)) {
+    return linkOrderFromCharmIds(saved.charmIds, getCharmById)
+  }
+  return createInitialLinkOrder()
 }
 
 /**

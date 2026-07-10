@@ -2,6 +2,12 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from '../context/CartContext.jsx'
+import { getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
+import {
+  addCharmToLinkOrder,
+  getCharmsFromLinkOrder,
+  loadInitialLinkOrder,
+} from '../utils/braceletLinks'
 
 const CharmBuilder = lazy(() =>
   import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder }))
@@ -221,6 +227,25 @@ export default function Create() {
   const { addItem } = useCart()
   const [filter, setFilter] = useState('all')
   const [addedIds, setAddedIds] = useState(() => new Set())
+  const [braceletAddedIds, setBraceletAddedIds] = useState(() => new Set())
+  const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
+
+  const braceletCharmCount = useMemo(() => getCharmsFromLinkOrder(linkOrder).length, [linkOrder])
+  const braceletFull = braceletCharmCount >= MAX_BRACELET_CHARMS
+
+  function handleAddToBracelet(catalogCharm) {
+    const charm = getCharmById(catalogCharm.id)
+    if (!charm || charm.category === 'starter' || braceletFull) return
+    setLinkOrder((prev) => addCharmToLinkOrder(prev, charm))
+    setBraceletAddedIds((prev) => new Set(prev).add(catalogCharm.id))
+    setTimeout(() => {
+      setBraceletAddedIds((prev) => {
+        const next = new Set(prev)
+        next.delete(catalogCharm.id)
+        return next
+      })
+    }, 1200)
+  }
 
   function handleAddToCart(charm) {
     addItem({ id: charm.id, name: charm.name, price: charm.price, metal: charm.metal, quantity: 1 })
@@ -273,6 +298,8 @@ export default function Create() {
             className="px-4"
             idPrefix="gallery-builder"
             instructionLabel="Tap to add · drag to rearrange · 18 links to start"
+            linkOrder={linkOrder}
+            onLinkOrderChange={setLinkOrder}
           />
         </div>
       </Suspense>
@@ -345,19 +372,41 @@ export default function Create() {
                       <p className="mt-2 text-sm font-medium text-jscolors-charcoal/70">{charm.category}</p>
                     </div>
 
-                    <button
-                      type="button"
-                      onClick={() => handleAddToCart(charm)}
-                      disabled={addedIds.has(charm.id)}
-                      className={[
-                        'mt-4 w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
-                        addedIds.has(charm.id)
-                          ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
-                          : 'border-jscolors-gold bg-jscolors-navy text-jscolors-cream hover:bg-jscolors-navy/90',
-                      ].join(' ')}
-                    >
-                      {addedIds.has(charm.id) ? 'Added ✓' : 'Add to Cart'}
-                    </button>
+                    <div className="mt-4 flex flex-col gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleAddToBracelet(charm)}
+                        disabled={braceletFull || braceletAddedIds.has(charm.id)}
+                        title={braceletFull ? `Bracelet is full (${MAX_BRACELET_CHARMS} charms)` : undefined}
+                        className={[
+                          'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
+                          braceletAddedIds.has(charm.id)
+                            ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                            : braceletFull
+                              ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-charcoal/45'
+                              : 'border-jscolors-pink bg-white text-jscolors-navy hover:bg-jscolors-pink/10',
+                        ].join(' ')}
+                      >
+                        {braceletAddedIds.has(charm.id)
+                          ? 'On Bracelet ✓'
+                          : braceletFull
+                            ? `Bracelet full (${MAX_BRACELET_CHARMS})`
+                            : 'Add to Bracelet'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleAddToCart(charm)}
+                        disabled={addedIds.has(charm.id)}
+                        className={[
+                          'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
+                          addedIds.has(charm.id)
+                            ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                            : 'border-jscolors-gold bg-jscolors-navy text-jscolors-cream hover:bg-jscolors-navy/90',
+                        ].join(' ')}
+                      >
+                        {addedIds.has(charm.id) ? 'Added ✓' : 'Add to Cart'}
+                      </button>
+                    </div>
                   </article>
                 </motion.div>
               ))}
