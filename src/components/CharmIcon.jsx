@@ -27,6 +27,16 @@ export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text
     )
   }
 
+  if (charm.iconType === 'image') {
+    return (
+      <img
+        src={charm.image}
+        alt={charm.name}
+        className={`${className} object-contain`}
+      />
+    )
+  }
+
   return (
     <svg className={`${className} ${accentClass}`} viewBox={vb} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {charm.paths
