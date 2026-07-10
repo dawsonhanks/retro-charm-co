@@ -1,6 +1,6 @@
 import crypto from 'node:crypto'
 
-const NOTIFICATION_URL = 'https://theretrocharmco.com/api/square-webhook'
+const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
 const FROM_EMAIL = 'Retro Charm Co <orders@theretrocharmco.com>'
 const FALLBACK_FROM_EMAIL = 'Retro Charm Co <onboarding@resend.dev>'
 
