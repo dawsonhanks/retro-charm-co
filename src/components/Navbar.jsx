@@ -8,7 +8,7 @@ const links = [
   { to: '/', label: 'Home' },
   { to: '/create', label: 'Charm Studio' },
   { to: '/find-us', label: 'Find Us' },
-  { to: '/about', label: 'About' },
+  { to: '/about', label: 'Customer Photos' },
 ]
 
 export function Navbar() {

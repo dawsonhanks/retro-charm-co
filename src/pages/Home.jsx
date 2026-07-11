@@ -3,33 +3,12 @@ import { lazy, Suspense } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HowItWorks } from '../components/HowItWorks'
-import { EmailSignup } from '../components/EmailSignup'
 import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccents'
-import { instagram } from '../data/social'
-import { instagramPosts } from '../data/instagramPosts'
-import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
 const heroWords = ['Italian', 'Charm', 'Bracelets']
-
-const testimonials = [
-  {
-    quote: 'My daughter and I made matching bracelets in ten minutes — cutest mom-and-me memory.',
-    name: 'Jamie R.',
-    place: 'Online order',
-  },
-  {
-    quote: 'The retro charms are so detailed. I get compliments every time I wear my stack.',
-    name: 'Mel S.',
-    place: 'Online order',
-  },
-  {
-    quote: 'I loved being able to pick every charm myself online. Felt like customizing candy, but jewelry.',
-    name: 'Priya K.',
-    place: 'Online order',
-  },
-]
+const customerPhotoPlaceholderCount = 6
 
 function PageLoader() {
   return (
@@ -112,91 +91,18 @@ export default function Home() {
         </div>
       </Suspense>
 
-      <section className="mx-auto max-w-6xl px-4 py-16 md:py-24" aria-labelledby="love-heading">
-        <div className="text-center">
-
-          <h2 id="love-heading" className="font-display text-3xl font-bold text-jscolors-navy md:text-4xl">
-            Love from the aisle
-          </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
-            Sweet words from shoppers who built bracelets with us — thank you for letting us sparkle alongside you.
-          </p>
-        </div>
-        <ul className="mt-12 grid gap-6 md:grid-cols-3">
-          {testimonials.map((t) => (
-            <li key={t.name} className="retro-card retro-card-hover p-6">
-              <p className="text-sm italic leading-relaxed text-jscolors-charcoal/90">&ldquo;{t.quote}&rdquo;</p>
-              <p className="mt-4 text-sm font-semibold text-jscolors-navy">
-                {t.name}
-                <span className="font-normal text-jscolors-charcoal/60"> — {t.place}</span>
-              </p>
-            </li>
-          ))}
-        </ul>
-      </section>
-
-      <section className="border-y border-jscolors-gold/25 bg-[#f3eef3]/85 py-16 md:py-20" aria-labelledby="ig-heading">
+      <section className="border-y border-jscolors-gold/25 bg-[#f3eef3]/85 py-16 md:py-20" aria-labelledby="customer-photos-heading">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 id="ig-heading" className="font-display text-3xl font-bold text-jscolors-navy">
-            On the &rsquo;Gram
+          <h2 id="customer-photos-heading" className="font-display text-3xl font-bold text-jscolors-navy">
+            Customer Photos
           </h2>
           <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
-            Follow {instagram.handle} for styling ideas, charm drops, and bracelet inspiration.
+            See how our customers style their charm bracelets
           </p>
-          <a
-            href={instagram.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="mt-6 inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-navy px-8 py-3 text-sm font-semibold text-jscolors-cream shadow-md shadow-jscolors-gold/15 transition hover:bg-jscolors-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
-          >
-            Follow {instagram.handle}
-          </a>
-          <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
-            {instagramPosts.length > 0
-              ? instagramPosts.map((post) => (
-                  <a
-                    key={post.url}
-                    href={post.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="group relative aspect-[9/16] overflow-hidden rounded-2xl border-2 border-jscolors-gold/40 bg-gradient-to-b from-jscolors-cream to-jscolors-navy/10 shadow-sm transition hover:border-jscolors-gold hover:shadow-md"
-                  >
-                    <img
-                      src={post.image}
-                      alt={post.alt}
-                      loading="lazy"
-                      className="h-full w-full object-contain"
-                    />
-                    <span className="sr-only">View this post on {instagram.handle}</span>
-                  </a>
-                ))
-              : ['RC', '✦', '☾', '♡', '✿', '★'].map((label, i) => (
-                  <a
-                    key={i}
-                    href={instagram.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex aspect-square items-center justify-center rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80 font-display text-xl text-jscolors-navy/35 transition hover:border-jscolors-gold hover:bg-jscolors-cream hover:text-jscolors-navy/60"
-                  >
-                    <span aria-hidden>{label}</span>
-                    <span className="sr-only">View {instagram.handle} on Instagram</span>
-                  </a>
-                ))}
-          </div>
-
-          <div className="mx-auto mt-10 max-w-md text-left">
-            <p className="text-center font-display text-sm font-semibold text-jscolors-navy">Get charm doodles in your inbox</p>
-            <EmailSignup
-              className="mt-4"
-              source="home-instagram"
-              theme="on-light"
-              onSuccess={(payload) => {
-                const key = STORAGE_KEYS.shopWaitlist
-                const list = readJson(key, [])
-                list.push({ ...payload, kind: 'newsletter', at: new Date().toISOString() })
-                writeJson(key, list)
-              }}
-            />
+          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
+            {Array.from({ length: customerPhotoPlaceholderCount }, (_, i) => (
+              <div key={i} className="aspect-square rounded-xl bg-gray-200" aria-hidden />
+            ))}
           </div>
         </div>
       </section>

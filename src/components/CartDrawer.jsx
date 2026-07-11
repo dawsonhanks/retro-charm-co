@@ -2,6 +2,8 @@ import { createPortal } from 'react-dom'
 import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useCart } from '../context/CartContext.jsx'
+import { CartItemThumbnail } from './CartItemThumbnail'
+import { BraceletBuildsPreview } from './BraceletBuildsPreview'
 
 function formatPrice(value) {
   return `$${Number(value).toFixed(2)}`
@@ -9,7 +11,7 @@ function formatPrice(value) {
 
 export function CartDrawer({ isOpen, onClose }) {
   const navigate = useNavigate()
-  const { items, removeItem, updateQuantity, cartTotal } = useCart()
+  const { items, removeItem, updateQuantity, cartTotal, braceletBuilds } = useCart()
 
   function handleCheckout() {
     onClose()
@@ -55,6 +57,7 @@ export function CartDrawer({ isOpen, onClose }) {
             </div>
 
             <div className="flex-1 overflow-y-auto px-5 py-4">
+              <BraceletBuildsPreview builds={braceletBuilds} className="mb-4" />
               {items.length === 0 ? (
                 <p className="py-12 text-center text-navy/70">Your cart is empty.</p>
               ) : (
@@ -64,22 +67,27 @@ export function CartDrawer({ isOpen, onClose }) {
                       key={item.id}
                       className="rounded-2xl border border-gold/30 bg-white/60 p-4"
                     >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="font-display font-semibold text-navy">{item.name}</p>
-                          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-navy/60">
-                            {item.metal}
-                          </p>
-                          <p className="mt-2 font-semibold text-charcoal">{formatPrice(item.price)}</p>
+                      <div className="flex items-start gap-3">
+                        <CartItemThumbnail item={item} />
+                        <div className="min-w-0 flex-1">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0">
+                              <p className="font-display font-semibold text-navy">{item.name}</p>
+                              <p className="mt-1 text-xs font-medium uppercase tracking-wide text-navy/60">
+                                {item.metal}
+                              </p>
+                              <p className="mt-2 font-semibold text-charcoal">{formatPrice(item.price)}</p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeItem(item.id)}
+                              className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-navy/60 transition hover:bg-pink/35 hover:text-navy"
+                              aria-label={`Remove ${item.name}`}
+                            >
+                              Remove
+                            </button>
+                          </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => removeItem(item.id)}
-                          className="rounded-lg px-2 py-1 text-xs font-medium text-navy/60 transition hover:bg-pink/35 hover:text-navy"
-                          aria-label={`Remove ${item.name}`}
-                        >
-                          Remove
-                        </button>
                       </div>
                       <div className="mt-3 flex items-center gap-3">
                         <button

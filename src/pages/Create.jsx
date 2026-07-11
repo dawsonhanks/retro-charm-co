@@ -14,96 +14,102 @@ const CharmBuilder = lazy(() =>
 )
 
 const SILVER_CHARMS = [
+  // Plain filler
+  { id: 's-plain-filler', category: 'Charms', name: 'Plain Filler', price: 3.95, metal: 'silver', stock: 20 },
+
   // Starter Bracelets
 
   // Letter Charms
-  { id: 's-letter-a', category: 'Letter Charms', name: 'Letter A', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-a-silver.webp' },
-  { id: 's-letter-c', category: 'Letter Charms', name: 'Letter C', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-c-silver.webp' },
-  { id: 's-letter-e', category: 'Letter Charms', name: 'Letter E', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-e-silver.webp' },
-  { id: 's-letter-h', category: 'Letter Charms', name: 'Letter H', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-h-silver.webp' },
-  { id: 's-letter-j', category: 'Letter Charms', name: 'Letter J', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-j-silver.webp' },
-  { id: 's-letter-k', category: 'Letter Charms', name: 'Letter K', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-k-silver.webp' },
-  { id: 's-letter-l', category: 'Letter Charms', name: 'Letter L', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-l-silver.webp' },
-  { id: 's-letter-m', category: 'Letter Charms', name: 'Letter M', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-m-silver.webp' },
-  { id: 's-letter-n', category: 'Letter Charms', name: 'Letter N', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-n-silver.webp' },
-  { id: 's-letter-p', category: 'Letter Charms', name: 'Letter P', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-p-silver.webp' },
-  { id: 's-letter-r', category: 'Letter Charms', name: 'Letter R', price: 4, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-r-silver.webp' },
+  { id: 's-letter-a', category: 'Letter Charms', name: 'Letter A', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-a-silver.webp' },
+  { id: 's-letter-c', category: 'Letter Charms', name: 'Letter C', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-c-silver.webp' },
+  { id: 's-letter-e', category: 'Letter Charms', name: 'Letter E', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-e-silver.webp' },
+  { id: 's-letter-h', category: 'Letter Charms', name: 'Letter H', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-h-silver.webp' },
+  { id: 's-letter-j', category: 'Letter Charms', name: 'Letter J', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-j-silver.webp' },
+  { id: 's-letter-k', category: 'Letter Charms', name: 'Letter K', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-k-silver.webp' },
+  { id: 's-letter-l', category: 'Letter Charms', name: 'Letter L', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-l-silver.webp' },
+  { id: 's-letter-m', category: 'Letter Charms', name: 'Letter M', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-m-silver.webp' },
+  { id: 's-letter-n', category: 'Letter Charms', name: 'Letter N', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-n-silver.webp' },
+  { id: 's-letter-p', category: 'Letter Charms', name: 'Letter P', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-p-silver.webp' },
+  { id: 's-letter-r', category: 'Letter Charms', name: 'Letter R', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-r-silver.webp' },
 
   // Charms
-  { id: 's-labubu', category: 'Charms', name: 'Labubu', price: 4, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/labubu-silver.webp' },
-  { id: 's-paw-print-blue', category: 'Charms', name: 'Paw Print - Blue', price: 4, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/paw-print-blue-silver.webp' },
-  { id: 's-dangle-red-ruby', category: 'Charms', name: 'Dangle - Red/Ruby', price: 4, metal: 'silver', stock: 20, image: '/images/charms/birthstone-dangles/dangle-red-ruby-silver.webp' },
-  { id: 's-heart-coin-dangle-antique-bronze', category: 'Charms', name: 'Heart Coin Dangle - Antique Bronze', price: 4, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-antique-bronze-silver.webp' },
-  { id: 's-heart-dangle-silver-2', category: 'Charms', name: 'Heart Dangle - Silver (2)', price: 4, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-2-silver.webp' },
-  { id: 's-pearl-dangle', category: 'Charms', name: 'Pearl Dangle', price: 4, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/pearl-dangle-silver.webp' },
-  { id: 's-star-dangle-silver', category: 'Charms', name: 'Star Dangle - Silver', price: 4, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/star-dangle-silver-silver.webp' },
-  { id: 's-strawberry-dangle-2', category: 'Charms', name: 'Strawberry Dangle (2)', price: 4, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-2-silver.webp' },
-  { id: 's-cross-black', category: 'Charms', name: 'Cross - Black', price: 4, metal: 'silver', stock: 20, image: '/images/charms/faith/cross-black-silver.webp' },
-  { id: 's-fish-symbol', category: 'Charms', name: 'Fish Symbol', price: 4, metal: 'silver', stock: 20, image: '/images/charms/faith/fish-symbol-silver.webp' },
-  { id: 's-lv-logo', category: 'Charms', name: 'LV Logo', price: 4, metal: 'silver', stock: 20, image: '/images/charms/fashion/lv-logo-silver.webp' },
-  { id: 's-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 4, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-pink-silver.webp' },
-  { id: 's-flower-turquoise', category: 'Charms', name: 'Flower - Turquoise', price: 4, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-turquoise-silver.webp' },
-  { id: 's-flower-yellow', category: 'Charms', name: 'Flower - Yellow', price: 4, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-yellow-silver.webp' },
-  { id: 's-cherries', category: 'Charms', name: 'Cherries', price: 4, metal: 'silver', stock: 20, image: '/images/charms/food-drink/cherries-silver.webp' },
-  { id: 's-turquoise-stone', category: 'Charms', name: 'Turquoise Stone', price: 4, metal: 'silver', stock: 20, image: '/images/charms/gemstones/turquoise-stone-silver.webp' },
-  { id: 's-double-heart-red-pink', category: 'Charms', name: 'Double Heart - Red/Pink', price: 4, metal: 'silver', stock: 20, image: '/images/charms/hearts/double-heart-red-pink-silver.webp' },
-  { id: 's-heart-red', category: 'Charms', name: 'Heart - Red', price: 4, metal: 'silver', stock: 20, image: '/images/charms/hearts/heart-red-silver.webp' },
-  { id: 's-star-black', category: 'Charms', name: 'Star - Black', price: 4, metal: 'silver', stock: 20, image: '/images/charms/stars/star-black-silver.webp' },
-  { id: 's-star-gold', category: 'Charms', name: 'Star - Gold', price: 4, metal: 'silver', stock: 20, image: '/images/charms/stars/star-gold-silver.webp' },
-  { id: 's-star-green', category: 'Charms', name: 'Star - Green', price: 4, metal: 'silver', stock: 20, image: '/images/charms/stars/star-green-silver.webp' },
-  { id: 's-basketball', category: 'Charms', name: 'Basketball', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/basketball-silver.webp' },
-  { id: 's-checkered-blue-white', category: 'Charms', name: 'Checkered - Blue/White', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-blue-white-silver.webp' },
-  { id: 's-checkered-pink', category: 'Charms', name: 'Checkered - Pink', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-pink-silver.webp' },
-  { id: 's-checkered-flag-silver', category: 'Charms', name: 'Checkered Flag - Silver', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-flag-silver-silver.webp' },
-  { id: 's-pickleball-paddle', category: 'Charms', name: 'Pickleball Paddle', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/pickleball-paddle-silver.webp' },
-  { id: 's-rolling-stones-tongue', category: 'Charms', name: 'Rolling Stones Tongue', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/rolling-stones-tongue-silver.webp' },
-  { id: 's-smiley-face', category: 'Charms', name: 'Smiley Face', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/smiley-face-silver.webp' },
-  { id: 's-smiley-face-yellow', category: 'Charms', name: 'Smiley Face Yellow', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/smiley-face-yellow-silver.webp' },
-  { id: 's-soccer-ball', category: 'Charms', name: 'Soccer Ball', price: 4, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/soccer-ball-silver.webp' },
-  { id: 's-palm-tree-sunset', category: 'Charms', name: 'Palm Tree Sunset', price: 4, metal: 'silver', stock: 20, image: '/images/charms/travel-places/palm-tree-sunset-silver.webp' },
-  { id: 's-mom', category: 'Charms', name: 'MOM', price: 4, metal: 'silver', stock: 20, image: '/images/charms/words-phrases/mom-silver.webp' },
-  { id: 's-treat-people-with-kindness', category: 'Charms', name: 'Treat People With Kindness', price: 4, metal: 'silver', stock: 20, image: '/images/charms/words-phrases/treat-people-with-kindness-silver.webp' },
+  { id: 's-labubu', category: 'Charms', name: 'Labubu', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/labubu-silver.webp' },
+  { id: 's-paw-print-blue', category: 'Charms', name: 'Paw Print - Blue', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/paw-print-blue-silver.webp' },
+  { id: 's-dangle-red-ruby', category: 'Charms', name: 'Dangle - Red/Ruby', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/birthstone-dangles/dangle-red-ruby-silver.webp' },
+  { id: 's-heart-coin-dangle-antique-bronze', category: 'Charms', name: 'Heart Coin Dangle - Antique Bronze', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-antique-bronze-silver.webp' },
+  { id: 's-heart-dangle-silver-2', category: 'Charms', name: 'Heart Dangle - Silver (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-2-silver.webp' },
+  { id: 's-pearl-dangle', category: 'Charms', name: 'Pearl Dangle', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/pearl-dangle-silver.webp' },
+  { id: 's-star-dangle-silver', category: 'Charms', name: 'Star Dangle - Silver', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/star-dangle-silver-silver.webp' },
+  { id: 's-strawberry-dangle-2', category: 'Charms', name: 'Strawberry Dangle (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-2-silver.webp' },
+  { id: 's-cross-black', category: 'Charms', name: 'Cross - Black', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/faith/cross-black-silver.webp' },
+  { id: 's-fish-symbol', category: 'Charms', name: 'Fish Symbol', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/faith/fish-symbol-silver.webp' },
+  { id: 's-lv-logo', category: 'Charms', name: 'LV Logo', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/fashion/lv-logo-silver.webp' },
+  { id: 's-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-pink-silver.webp' },
+  { id: 's-flower-turquoise', category: 'Charms', name: 'Flower - Turquoise', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-turquoise-silver.webp' },
+  { id: 's-flower-yellow', category: 'Charms', name: 'Flower - Yellow', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/flowers/flower-yellow-silver.webp' },
+  { id: 's-cherries', category: 'Charms', name: 'Cherries', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/food-drink/cherries-silver.webp' },
+  { id: 's-turquoise-stone', category: 'Charms', name: 'Turquoise Stone', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/gemstones/turquoise-stone-silver.webp' },
+  { id: 's-double-heart-red-pink', category: 'Charms', name: 'Double Heart - Red/Pink', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/hearts/double-heart-red-pink-silver.webp' },
+  { id: 's-heart-red', category: 'Charms', name: 'Heart - Red', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/hearts/heart-red-silver.webp' },
+  { id: 's-star-black', category: 'Charms', name: 'Star - Black', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-black-silver.webp' },
+  { id: 's-star-gold', category: 'Charms', name: 'Star - Gold', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-gold-silver.webp' },
+  { id: 's-star-green', category: 'Charms', name: 'Star - Green', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-green-silver.webp' },
+  { id: 's-basketball', category: 'Charms', name: 'Basketball', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/basketball-silver.webp' },
+  { id: 's-checkered-blue-white', category: 'Charms', name: 'Checkered - Blue/White', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-blue-white-silver.webp' },
+  { id: 's-checkered-pink', category: 'Charms', name: 'Checkered - Pink', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-pink-silver.webp' },
+  { id: 's-checkered-flag-silver', category: 'Charms', name: 'Checkered Flag - Silver', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/checkered-flag-silver-silver.webp' },
+  { id: 's-pickleball-paddle', category: 'Charms', name: 'Pickleball Paddle', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/pickleball-paddle-silver.webp' },
+  { id: 's-rolling-stones-tongue', category: 'Charms', name: 'Rolling Stones Tongue', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/rolling-stones-tongue-silver.webp' },
+  { id: 's-smiley-face', category: 'Charms', name: 'Smiley Face', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/smiley-face-silver.webp' },
+  { id: 's-smiley-face-yellow', category: 'Charms', name: 'Smiley Face Yellow', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/smiley-face-yellow-silver.webp' },
+  { id: 's-soccer-ball', category: 'Charms', name: 'Soccer Ball', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/symbols-sports/soccer-ball-silver.webp' },
+  { id: 's-palm-tree-sunset', category: 'Charms', name: 'Palm Tree Sunset', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/travel-places/palm-tree-sunset-silver.webp' },
+  { id: 's-mom', category: 'Charms', name: 'MOM', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/words-phrases/mom-silver.webp' },
+  { id: 's-treat-people-with-kindness', category: 'Charms', name: 'Treat People With Kindness', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/words-phrases/treat-people-with-kindness-silver.webp' },
 ]
 
 const GOLD_CHARMS = [
+  // Plain filler
+  { id: 'g-plain-filler', category: 'Charms', name: 'Plain Filler', price: 3.95, metal: 'gold', stock: 20 },
+
   // Starter Bracelets
 
   // Charms
-  { id: 'g-fish-dangle-green-white', category: 'Charms', name: 'Fish Dangle - Green/White', price: 4, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/fish-dangle-green-white-gold.webp' },
-  { id: 'g-pearl-gold', category: 'Charms', name: 'Pearl - Gold', price: 4, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/pearl-gold-gold.webp' },
-  { id: 'g-dangle-blue-teal', category: 'Charms', name: 'Dangle - Blue/Teal', price: 4, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-blue-teal-gold.webp' },
-  { id: 'g-dangle-clear', category: 'Charms', name: 'Dangle - Clear', price: 4, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-clear-gold.webp' },
-  { id: 'g-dangle-garnet', category: 'Charms', name: 'Dangle - Garnet', price: 4, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-garnet-gold.webp' },
-  { id: 'g-dangle-green', category: 'Charms', name: 'Dangle - Green', price: 4, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-green-gold.webp' },
-  { id: 'g-dangle-pink-magenta', category: 'Charms', name: 'Dangle - Pink/Magenta', price: 4, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-pink-magenta-gold.webp' },
-  { id: 'g-bow-red-with-pearl', category: 'Charms', name: 'Bow - Red with Pearl', price: 4, metal: 'gold', stock: 20, image: '/images/charms/bows/bow-red-with-pearl-gold.webp' },
-  { id: 'g-cherries-dangle', category: 'Charms', name: 'Cherries Dangle', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/cherries-dangle-gold.webp' },
-  { id: 'g-fish-dangle-teal-white-2', category: 'Charms', name: 'Fish Dangle - Teal/White (2)', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/fish-dangle-teal-white-2-gold.webp' },
-  { id: 'g-heart-coin-dangle-silver-sunburst', category: 'Charms', name: 'Heart Coin Dangle - Silver Sunburst', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-silver-sunburst-gold.webp' },
-  { id: 'g-heart-dangle-gold', category: 'Charms', name: 'Heart Dangle - Gold', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-gold-gold.webp' },
-  { id: 'g-heart-dangle-silver', category: 'Charms', name: 'Heart Dangle - Silver', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-gold.webp' },
-  { id: 'g-star-dangle-gold', category: 'Charms', name: 'Star Dangle - Gold', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/star-dangle-gold-gold.webp' },
-  { id: 'g-strawberry-dangle', category: 'Charms', name: 'Strawberry Dangle', price: 4, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-gold.webp' },
-  { id: 'g-cross-black', category: 'Charms', name: 'Cross - Black', price: 4, metal: 'gold', stock: 20, image: '/images/charms/faith/cross-black-gold.webp' },
-  { id: 'g-wwjd', category: 'Charms', name: 'WWJD', price: 4, metal: 'gold', stock: 20, image: '/images/charms/faith/wwjd-gold.webp' },
-  { id: 'g-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 4, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-pink-gold.webp' },
-  { id: 'g-flower-turquoise', category: 'Charms', name: 'Flower - Turquoise', price: 4, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-turquoise-gold.webp' },
-  { id: 'g-tulip-flower', category: 'Charms', name: 'Tulip Flower', price: 4, metal: 'gold', stock: 20, image: '/images/charms/flowers/tulip-flower-gold.webp' },
-  { id: 'g-cherries-pink-background', category: 'Charms', name: 'Cherries - Pink Background', price: 4, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherries-pink-background-gold.webp' },
-  { id: 'g-cherry-heart-checkered', category: 'Charms', name: 'Cherry Heart Checkered', price: 4, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherry-heart-checkered-gold.webp' },
-  { id: 'g-diet-coke-can', category: 'Charms', name: 'Diet Coke Can', price: 4, metal: 'gold', stock: 20, image: '/images/charms/food-drink/diet-coke-can-gold.webp' },
-  { id: 'g-strawberry', category: 'Charms', name: 'Strawberry', price: 4, metal: 'gold', stock: 20, image: '/images/charms/food-drink/strawberry-gold.webp' },
-  { id: 'g-watermelon', category: 'Charms', name: 'Watermelon', price: 4, metal: 'gold', stock: 20, image: '/images/charms/food-drink/watermelon-gold.webp' },
-  { id: 'g-charm-red-rectangle', category: 'Charms', name: 'Charm - Red Rectangle', price: 4, metal: 'gold', stock: 20, image: '/images/charms/gemstones/charm-red-rectangle-gold.webp' },
-  { id: 'g-heart-red', category: 'Charms', name: 'Heart - Red', price: 4, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-gold.webp' },
-  { id: 'g-heart-red-and-gold', category: 'Charms', name: 'Heart - Red and Gold', price: 4, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-and-gold-gold.webp' },
-  { id: 'g-star-red-layered', category: 'Charms', name: 'Star - Red Layered', price: 4, metal: 'gold', stock: 20, image: '/images/charms/stars/star-red-layered-gold.webp' },
-  { id: 'g-checkered-flag-gold', category: 'Charms', name: 'Checkered Flag - Gold', price: 4, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/checkered-flag-gold-gold.webp' },
-  { id: 'g-dice', category: 'Charms', name: 'Dice', price: 4, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/dice-gold.webp' },
-  { id: 'g-music-note', category: 'Charms', name: 'Music Note', price: 4, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/music-note-gold.webp' },
-  { id: 'g-american-flag', category: 'Charms', name: 'American Flag', price: 4, metal: 'gold', stock: 20, image: '/images/charms/travel-places/american-flag-gold.webp' },
-  { id: 'g-italian-flag', category: 'Charms', name: 'Italian Flag', price: 4, metal: 'gold', stock: 20, image: '/images/charms/travel-places/italian-flag-gold.webp' },
-  { id: 'g-montana-state-charm', category: 'Charms', name: 'Montana State Charm', price: 4, metal: 'gold', stock: 20, image: '/images/charms/travel-places/montana-state-charm-gold.webp' },
+  { id: 'g-fish-dangle-green-white', category: 'Charms', name: 'Fish Dangle - Green/White', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/fish-dangle-green-white-gold.webp' },
+  { id: 'g-pearl-gold', category: 'Charms', name: 'Pearl - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/pearl-gold-gold.webp' },
+  { id: 'g-dangle-blue-teal', category: 'Charms', name: 'Dangle - Blue/Teal', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-blue-teal-gold.webp' },
+  { id: 'g-dangle-clear', category: 'Charms', name: 'Dangle - Clear', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-clear-gold.webp' },
+  { id: 'g-dangle-garnet', category: 'Charms', name: 'Dangle - Garnet', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-garnet-gold.webp' },
+  { id: 'g-dangle-green', category: 'Charms', name: 'Dangle - Green', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-green-gold.webp' },
+  { id: 'g-dangle-pink-magenta', category: 'Charms', name: 'Dangle - Pink/Magenta', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-pink-magenta-gold.webp' },
+  { id: 'g-bow-red-with-pearl', category: 'Charms', name: 'Bow - Red with Pearl', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/bows/bow-red-with-pearl-gold.webp' },
+  { id: 'g-cherries-dangle', category: 'Charms', name: 'Cherries Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/cherries-dangle-gold.webp' },
+  { id: 'g-fish-dangle-teal-white-2', category: 'Charms', name: 'Fish Dangle - Teal/White (2)', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/fish-dangle-teal-white-2-gold.webp' },
+  { id: 'g-heart-coin-dangle-silver-sunburst', category: 'Charms', name: 'Heart Coin Dangle - Silver Sunburst', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-silver-sunburst-gold.webp' },
+  { id: 'g-heart-dangle-gold', category: 'Charms', name: 'Heart Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-gold-gold.webp' },
+  { id: 'g-heart-dangle-silver', category: 'Charms', name: 'Heart Dangle - Silver', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-gold.webp' },
+  { id: 'g-star-dangle-gold', category: 'Charms', name: 'Star Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/star-dangle-gold-gold.webp' },
+  { id: 'g-strawberry-dangle', category: 'Charms', name: 'Strawberry Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-gold.webp' },
+  { id: 'g-cross-black', category: 'Charms', name: 'Cross - Black', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/faith/cross-black-gold.webp' },
+  { id: 'g-wwjd', category: 'Charms', name: 'WWJD', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/faith/wwjd-gold.webp' },
+  { id: 'g-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-pink-gold.webp' },
+  { id: 'g-flower-turquoise', category: 'Charms', name: 'Flower - Turquoise', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-turquoise-gold.webp' },
+  { id: 'g-tulip-flower', category: 'Charms', name: 'Tulip Flower', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/tulip-flower-gold.webp' },
+  { id: 'g-cherries-pink-background', category: 'Charms', name: 'Cherries - Pink Background', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherries-pink-background-gold.webp' },
+  { id: 'g-cherry-heart-checkered', category: 'Charms', name: 'Cherry Heart Checkered', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherry-heart-checkered-gold.webp' },
+  { id: 'g-diet-coke-can', category: 'Charms', name: 'Diet Coke Can', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/diet-coke-can-gold.webp' },
+  { id: 'g-strawberry', category: 'Charms', name: 'Strawberry', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/strawberry-gold.webp' },
+  { id: 'g-watermelon', category: 'Charms', name: 'Watermelon', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/watermelon-gold.webp' },
+  { id: 'g-charm-red-rectangle', category: 'Charms', name: 'Charm - Red Rectangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/gemstones/charm-red-rectangle-gold.webp' },
+  { id: 'g-heart-red', category: 'Charms', name: 'Heart - Red', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-gold.webp' },
+  { id: 'g-heart-red-and-gold', category: 'Charms', name: 'Heart - Red and Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-and-gold-gold.webp' },
+  { id: 'g-star-red-layered', category: 'Charms', name: 'Star - Red Layered', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/stars/star-red-layered-gold.webp' },
+  { id: 'g-checkered-flag-gold', category: 'Charms', name: 'Checkered Flag - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/checkered-flag-gold-gold.webp' },
+  { id: 'g-dice', category: 'Charms', name: 'Dice', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/dice-gold.webp' },
+  { id: 'g-music-note', category: 'Charms', name: 'Music Note', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/music-note-gold.webp' },
+  { id: 'g-american-flag', category: 'Charms', name: 'American Flag', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/travel-places/american-flag-gold.webp' },
+  { id: 'g-italian-flag', category: 'Charms', name: 'Italian Flag', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/travel-places/italian-flag-gold.webp' },
+  { id: 'g-montana-state-charm', category: 'Charms', name: 'Montana State Charm', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/travel-places/montana-state-charm-gold.webp' },
 ]
 
 const FILTERS = [
@@ -185,7 +191,29 @@ function MetalBadge({ metal }) {
   )
 }
 
+function PlainFillerGraphic({ metal, className = 'h-24 w-24' }) {
+  const isGold = metal === 'gold'
+  const stroke = isGold ? '#d4af37' : '#b8bcc6'
+
+  return (
+    <div
+      className={`mx-auto flex items-center justify-center rounded-2xl border-2 border-jscolors-gold/40 ${
+        isGold ? 'bg-gradient-to-br from-amber-50 to-amber-200' : 'bg-gradient-to-br from-slate-100 to-slate-300'
+      } ${className}`}
+    >
+      <svg className="h-12 w-6" viewBox="0 0 20 40" fill="none" aria-hidden>
+        <rect x="3" y="10" width="14" height="20" rx="3" stroke={stroke} strokeWidth="3" fill="rgba(255,255,255,0.65)" />
+        <line x1="10" y1="14" x2="10" y2="26" stroke={stroke} strokeWidth="1.5" opacity="0.5" />
+      </svg>
+    </div>
+  )
+}
+
 function CharmPlaceholder({ charm }) {
+  if (charm.id === 's-plain-filler' || charm.id === 'g-plain-filler') {
+    return <PlainFillerGraphic metal={charm.metal} />
+  }
+
   if (charm.image) {
     return (
       <img
@@ -248,7 +276,14 @@ export default function Create() {
   }
 
   function handleAddToCart(charm) {
-    addItem({ id: charm.id, name: charm.name, price: charm.price, metal: charm.metal, quantity: 1 })
+    addItem({
+      id: charm.id,
+      name: charm.name,
+      price: charm.price,
+      metal: charm.metal,
+      image: charm.image,
+      quantity: 1,
+    })
     setAddedIds((prev) => new Set(prev).add(charm.id))
     setTimeout(() => {
       setAddedIds((prev) => {
@@ -259,7 +294,13 @@ export default function Create() {
     }, 1200)
   }
 
-  const inventory = useMemo(() => [...SILVER_CHARMS, ...GOLD_CHARMS], [])
+  const inventory = useMemo(() => {
+    const sPlain = SILVER_CHARMS.find((c) => c.id === 's-plain-filler')
+    const gPlain = GOLD_CHARMS.find((c) => c.id === 'g-plain-filler')
+    const restSilver = SILVER_CHARMS.filter((c) => c.id !== 's-plain-filler')
+    const restGold = GOLD_CHARMS.filter((c) => c.id !== 'g-plain-filler')
+    return [sPlain, gPlain, ...restSilver, ...restGold].filter(Boolean)
+  }, [])
 
   const filtered = useMemo(() => {
     if (filter === 'all') return inventory

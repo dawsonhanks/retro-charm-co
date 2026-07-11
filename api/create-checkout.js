@@ -13,6 +13,7 @@ for (const b of BASE_OPTIONS) {
 }
 
 const MAX_QUANTITY_PER_LINE_ITEM = 50
+const SHIPPING_CHARGE = 5.0
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -62,6 +63,15 @@ export default async function handler(req, res) {
       },
     })
   }
+
+  lineItems.push({
+    name: 'Shipping',
+    quantity: '1',
+    base_price_money: {
+      amount: Math.round(SHIPPING_CHARGE * 100),
+      currency: 'USD',
+    },
+  })
 
   // Reuse a client-supplied idempotency key when it looks sane so that retries of the
   // exact same cart don't create duplicate Square payment links. Fall back to a fresh

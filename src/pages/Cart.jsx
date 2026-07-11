@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
+import { CartItemThumbnail } from '../components/CartItemThumbnail'
+import { BraceletBuildsPreview } from '../components/BraceletBuildsPreview'
 import { useCart } from '../context/CartContext.jsx'
 import { hashCartItems } from '../utils/idempotency'
 
@@ -10,7 +12,7 @@ function formatPrice(value) {
 }
 
 export default function Cart() {
-  const { items, cartTotal, clearCart } = useCart()
+  const { items, cartTotal, clearCart, braceletBuilds } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
 
@@ -76,17 +78,19 @@ export default function Cart() {
           </div>
         ) : (
           <div className="mt-10 space-y-6">
+            <BraceletBuildsPreview builds={braceletBuilds} />
             <ul className="divide-y divide-jscolors-gold/25 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 shadow-lg">
               {items.map((item) => (
-                <li key={item.id} className="flex flex-col gap-2 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
+                <li key={item.id} className="flex items-start gap-4 px-6 py-5 sm:items-center">
+                  <CartItemThumbnail item={item} />
+                  <div className="min-w-0 flex-1">
                     <p className="font-display text-lg font-semibold text-jscolors-navy">{item.name}</p>
                     <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-navy/60">{item.metal}</p>
                     <p className="mt-2 text-sm text-jscolors-charcoal/80">
                       {formatPrice(item.price)} × {item.quantity}
                     </p>
                   </div>
-                  <p className="font-semibold text-jscolors-navy">{formatPrice(item.price * item.quantity)}</p>
+                  <p className="shrink-0 font-semibold text-jscolors-navy">{formatPrice(item.price * item.quantity)}</p>
                 </li>
               ))}
             </ul>

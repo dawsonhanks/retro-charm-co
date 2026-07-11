@@ -1,6 +1,7 @@
 export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text-jscolors-pink' }) {
   if (!charm) return null
   const vb = charm.viewBox || '0 0 24 24'
+  const colorClass = charm.iconClass ?? accentClass
 
   if (charm.iconType === 'letter') {
     return (
@@ -38,7 +39,7 @@ export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text
   }
 
   return (
-    <svg className={`${className} ${accentClass}`} viewBox={vb} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
+    <svg className={`${className} ${colorClass}`} viewBox={vb} fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden>
       {charm.paths
         ? charm.paths.map((p, i) => <path key={i} d={p.d} fill={p.fillRule ? 'currentColor' : 'none'} fillRule={p.fillRule} />)
         : charm.path && <path d={charm.path} />}

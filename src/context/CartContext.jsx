@@ -1,8 +1,140 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { BASE_OPTIONS, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
 
 const STORAGE_KEY = 'retro-charm-cart'
+const BUILDS_STORAGE_KEY = 'retro-charm-bracelet-builds'
 
 const CartContext = createContext(null)
+
+function buildItemCounts(metal, charms) {
+  const counts = new Map()
+  counts.set(metal, (counts.get(metal) ?? 0) + 1)
+  for (const charm of charms) {
+    counts.set(charm.id, (counts.get(charm.id) ?? 0) + 1)
+  }
+  return counts
+}
+
+function resolveCartItemTemplate(id, newBuild) {
+  const base = BASE_OPTIONS.find((b) => b.id === id)
+  if (base) {
+    return { id: base.id, name: base.label, price: base.price, metal: base.id }
+  }
+
+  const charm = getCharmById(id)
+  const snapshot = newBuild.charms.find((c) => c.id === id)
+  if (charm) {
+    return {
+      id: charm.id,
+      name: charm.name,
+      price: charm.price,
+      metal: charm.metal,
+      image: charm.image ?? snapshot?.image,
+    }
+  }
+
+  if (snapshot) {
+    return {
+      id: snapshot.id,
+      name: snapshot.name,
+      price: DEFAULT_CHARM_PRICE,
+      metal: newBuild.metal,
+      image: snapshot.image,
+    }
+  }
+
+  return null
+}
+
+function applyBuildDiffToItems(prevItems, oldBuild, newBuild) {
+  const oldCounts = buildItemCounts(oldBuild.metal, oldBuild.charms)
+  const newCounts = buildItemCounts(newBuild.metal, newBuild.charms)
+  const allIds = new Set([...oldCounts.keys(), ...newCounts.keys()])
+
+  let nextItems = [...prevItems]
+
+  for (const id of allIds) {
+    const oldQty = oldCounts.get(id) ?? 0
+    const newQty = newCounts.get(id) ?? 0
+    const delta = newQty - oldQty
+    if (delta === 0) continue
+
+    const existingIndex = nextItems.findIndex((item) => item.id === id)
+
+    if (delta > 0) {
+      if (existingIndex >= 0) {
+        nextItems[existingIndex] = {
+          ...nextItems[existingIndex],
+          quantity: nextItems[existingIndex].quantity + delta,
+        }
+      } else {
+        const template = resolveCartItemTemplate(id, newBuild)
+        if (template) {
+          nextItems.push({ ...template, quantity: delta })
+        }
+      }
+      continue
+    }
+
+    if (existingIndex < 0) continue
+
+    const nextQuantity = nextItems[existingIndex].quantity + delta
+    if (nextQuantity <= 0) {
+      nextItems = nextItems.filter((item) => item.id !== id)
+    } else {
+      nextItems[existingIndex] = {
+        ...nextItems[existingIndex],
+        quantity: nextQuantity,
+      }
+    }
+  }
+
+  return nextItems
+}
+
+function cartItemsToCounts(items) {
+  const counts = new Map()
+  for (const item of items) {
+    counts.set(item.id, (counts.get(item.id) ?? 0) + item.quantity)
+  }
+  return counts
+}
+
+function canAllocate(available, required) {
+  for (const [id, qty] of required) {
+    if ((available.get(id) ?? 0) < qty) return false
+  }
+  return true
+}
+
+function deductAllocation(available, required) {
+  for (const [id, qty] of required) {
+    available.set(id, (available.get(id) ?? 0) - qty)
+  }
+}
+
+/**
+ * Keep only builds that can still be fully "paid for" by the current cart totals.
+ * Builds are checked in add-order; shared charms (e.g. two bracelets with Letter R)
+ * are allocated to the earliest build first.
+ */
+function pruneUnrepresentedBuilds(items, builds) {
+  if (builds.length === 0) return builds
+  if (items.length === 0) return []
+
+  const available = cartItemsToCounts(items)
+  const kept = []
+
+  for (const build of builds) {
+    const required = buildItemCounts(build.metal, build.charms)
+    if (canAllocate(available, required)) {
+      deductAllocation(available, required)
+      kept.push(build)
+    }
+  }
+
+  return kept
+}
 
 function loadCart() {
   try {
@@ -15,12 +147,28 @@ function loadCart() {
   }
 }
 
+function loadBraceletBuilds() {
+  try {
+    const stored = localStorage.getItem(BUILDS_STORAGE_KEY)
+    if (!stored) return []
+    const parsed = JSON.parse(stored)
+    return Array.isArray(parsed) ? parsed : []
+  } catch {
+    return []
+  }
+}
+
 export function CartProvider({ children }) {
   const [items, setItems] = useState(loadCart)
+  const [braceletBuilds, setBraceletBuilds] = useState(loadBraceletBuilds)
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items])
+
+  useEffect(() => {
+    localStorage.setItem(BUILDS_STORAGE_KEY, JSON.stringify(braceletBuilds))
+  }, [braceletBuilds])
 
   const addItem = (item) => {
     setItems((prev) => {
@@ -28,7 +176,11 @@ export function CartProvider({ children }) {
       if (existing) {
         return prev.map((i) =>
           i.id === item.id
-            ? { ...i, quantity: i.quantity + (item.quantity ?? 1) }
+            ? {
+                ...i,
+                quantity: i.quantity + (item.quantity ?? 1),
+                image: i.image ?? item.image,
+              }
             : i,
         )
       }
@@ -36,8 +188,20 @@ export function CartProvider({ children }) {
     })
   }
 
+  const applyItemsChangeAndPruneBuilds = (computeNextItems) => {
+    const snapshot = { nextItems: null }
+    setItems((prevItems) => {
+      snapshot.nextItems = computeNextItems(prevItems)
+      return snapshot.nextItems
+    })
+    setBraceletBuilds((prevBuilds) => {
+      if (snapshot.nextItems === null) return prevBuilds
+      return pruneUnrepresentedBuilds(snapshot.nextItems, prevBuilds)
+    })
+  }
+
   const removeItem = (id) => {
-    setItems((prev) => prev.filter((i) => i.id !== id))
+    applyItemsChangeAndPruneBuilds((prev) => prev.filter((i) => i.id !== id))
   }
 
   const updateQuantity = (id, qty) => {
@@ -45,13 +209,46 @@ export function CartProvider({ children }) {
       removeItem(id)
       return
     }
-    setItems((prev) =>
+    applyItemsChangeAndPruneBuilds((prev) =>
       prev.map((i) => (i.id === id ? { ...i, quantity: qty } : i)),
     )
   }
 
   const clearCart = () => {
     setItems([])
+    setBraceletBuilds([])
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([]))
+    localStorage.setItem(BUILDS_STORAGE_KEY, JSON.stringify([]))
+  }
+
+  const addBraceletBuild = (build) => {
+    setBraceletBuilds((prev) => [
+      ...prev,
+      {
+        buildId: build.buildId ?? crypto.randomUUID(),
+        metal: build.metal,
+        charms: build.charms,
+      },
+    ])
+  }
+
+  const removeBraceletBuild = (buildId) => {
+    setBraceletBuilds((prev) => prev.filter((b) => b.buildId !== buildId))
+  }
+
+  const replaceBraceletBuild = (buildId, newBuild) => {
+    setBraceletBuilds((prevBuilds) => {
+      const oldBuild = prevBuilds.find((b) => b.buildId === buildId)
+      if (!oldBuild) return prevBuilds
+
+      setItems((prevItems) => applyBuildDiffToItems(prevItems, oldBuild, newBuild))
+
+      return prevBuilds.map((b) =>
+        b.buildId === buildId
+          ? { buildId, metal: newBuild.metal, charms: newBuild.charms }
+          : b,
+      )
+    })
   }
 
   const cartCount = useMemo(
@@ -72,6 +269,10 @@ export function CartProvider({ children }) {
     clearCart,
     cartCount,
     cartTotal,
+    braceletBuilds,
+    addBraceletBuild,
+    removeBraceletBuild,
+    replaceBraceletBuild,
   }
 
   return <CartContext.Provider value={value}>{children}</CartContext.Provider>

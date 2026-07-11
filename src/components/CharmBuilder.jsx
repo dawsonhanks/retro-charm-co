@@ -16,7 +16,7 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE } from '../data/charms'
+import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 import { useCart } from '../context/CartContext.jsx'
@@ -24,6 +24,8 @@ import {
   BASE_LINK_COUNT,
   addCharmToLinkOrder,
   createInitialLinkOrder,
+  createCharmLink,
+  createPlainLink,
   getCharmsFromLinkOrder,
   loadInitialLinkOrder,
   removeCharmFromLinkOrder,
@@ -37,7 +39,8 @@ export function CharmBuilder({
   onLinkOrderChange,
 }) {
   const navigate = useNavigate()
-  const { addItem } = useCart()
+  const { addItem, addBraceletBuild, replaceBraceletBuild, braceletBuilds } = useCart()
+  const [editingBuildId, setEditingBuildId] = useState(null)
   const [baseId, setBaseId] = useState(() => {
     const saved = readJson(STORAGE_KEYS.savedBuild, null)
     return saved?.baseId ?? BASE_OPTIONS[0].id
@@ -69,9 +72,9 @@ export function CharmBuilder({
 
   const summaryLine = useMemo(() => {
     const baseStr = `$${base.price.toFixed(2)} base`
-    if (n === 0) return `Your bracelet: ${baseStr} + 0 charms = $${base.price.toFixed(2)}`
+    if (n === 0) return `${baseStr} + 0 charms = $${base.price.toFixed(2)}`
     const charmPart = `${n} charms × $${DEFAULT_CHARM_PRICE.toFixed(2)} = $${charmTotal.toFixed(2)}`
-    return `Your bracelet: ${baseStr} + ${charmPart} = $${grand.toFixed(2)}`
+    return `${baseStr} + ${charmPart} = $${grand.toFixed(2)}`
   }, [base.price, n, charmTotal, grand])
 
   function addCharm(c) {
@@ -88,18 +91,59 @@ export function CharmBuilder({
   }
 
   function reset() {
+    setEditingBuildId(null)
+    updateLinkOrder(createInitialLinkOrder())
+    setBaseId(BASE_OPTIONS[0].id)
+    writeJson(STORAGE_KEYS.savedBuild, null)
+  }
+
+  function handleContinueBuild(buildId) {
+    const build = braceletBuilds.find((b) => b.buildId === buildId)
+    if (!build) return
+
+    setEditingBuildId(build.buildId)
+    setBaseId(build.metal)
+    updateLinkOrder(linkOrderFromSavedCharms(build.charms))
+    writeJson(STORAGE_KEYS.savedBuild, null)
+  }
+
+  function handleStartNewBracelet() {
+    setEditingBuildId(null)
     updateLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
   function addToCart() {
-    addItem({ id: base.id, name: base.label, price: base.price, metal: base.id, quantity: 1 })
+    const currentBuild = {
+      metal: base.id,
+      charms: selected.map((c) => ({
+        id: c.id,
+        image: c.image,
+        name: c.name,
+      })),
+    }
 
-    selected.forEach((c) => {
-      addItem({ id: c.id, name: c.name, price: c.price, metal: c.metal, quantity: 1 })
-    })
+    if (editingBuildId) {
+      replaceBraceletBuild(editingBuildId, currentBuild)
+    } else {
+      addItem({ id: base.id, name: base.label, price: base.price, metal: base.id, quantity: 1 })
 
+      selected.forEach((c) => {
+        addItem({
+          id: c.id,
+          name: c.name,
+          price: c.price,
+          metal: c.metal,
+          image: c.image,
+          quantity: 1,
+        })
+      })
+
+      addBraceletBuild(currentBuild)
+    }
+
+    setEditingBuildId(null)
     updateLinkOrder(createInitialLinkOrder())
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
@@ -145,7 +189,47 @@ export function CharmBuilder({
         </div>
       )}
 
-      <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${instructionLabel ? 'mt-6' : 'mt-8'}`}>
+      {braceletBuilds.length > 0 && (
+        <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-jscolors-gold/35 bg-white/80 p-4 shadow-sm">
+          <p className="text-sm font-semibold text-jscolors-navy">Continue a previous build</p>
+          <ul className="mt-3 space-y-2" role="listbox" aria-label="Continue a previous build">
+            {braceletBuilds.map((build) => (
+              <li key={build.buildId}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={editingBuildId === build.buildId}
+                  onClick={() => handleContinueBuild(build.buildId)}
+                  className={`w-full rounded-xl border-2 px-4 py-3 text-left transition ${
+                    editingBuildId === build.buildId
+                      ? 'border-jscolors-pink bg-jscolors-pink/10'
+                      : 'border-jscolors-gold/30 bg-white hover:border-jscolors-gold'
+                  }`}
+                >
+                  <PreviousBuildOptionPreview build={build} />
+                </button>
+              </li>
+            ))}
+            <li>
+              <button
+                type="button"
+                role="option"
+                aria-selected={editingBuildId === null}
+                onClick={handleStartNewBracelet}
+                className={`w-full rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold transition ${
+                  editingBuildId === null
+                    ? 'border-jscolors-pink bg-jscolors-pink/10 text-jscolors-navy'
+                    : 'border-jscolors-gold/30 bg-white text-jscolors-navy hover:border-jscolors-gold'
+                }`}
+              >
+                Start a new bracelet instead
+              </button>
+            </li>
+          </ul>
+        </div>
+      )}
+
+      <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${instructionLabel ? 'mt-6' : braceletBuilds.length > 0 ? 'mt-6' : 'mt-8'}`}>
         <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your base</p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           {BASE_OPTIONS.map((b) => (
@@ -219,6 +303,57 @@ export function CharmBuilder({
         </div>
       </div>
     </section>
+  )
+}
+
+function linkOrderFromSavedCharms(savedCharms) {
+  const charmsOnTrack = savedCharms
+    .map((c) => getCharmById(c.id))
+    .filter((charm) => charm && charm.category !== 'starter')
+
+  if (charmsOnTrack.length === 0) {
+    return createInitialLinkOrder()
+  }
+
+  const totalSlots = Math.max(BASE_LINK_COUNT, charmsOnTrack.length)
+  return Array.from({ length: totalSlots }, (_, i) =>
+    i < charmsOnTrack.length ? createCharmLink(charmsOnTrack[i]) : createPlainLink(),
+  )
+}
+
+function PreviousBuildOptionPreview({ build }) {
+  const metalLabel = build.metal === 'gold' ? 'Gold' : 'Silver'
+  const charmCount = build.charms.length
+  const summary =
+    charmCount === 0
+      ? 'No charms yet'
+      : `${charmCount} charm${charmCount === 1 ? '' : 's'} · starts with ${build.charms[0].name}`
+
+  return (
+    <div className="flex items-center gap-3">
+      <div className="flex shrink-0 items-center">
+        {build.charms.length > 0 ? (
+          build.charms.slice(0, 4).map((charm, index) => (
+            <div
+              key={`${charm.id}-${index}`}
+              className={`${index > 0 ? '-ml-2' : ''} rounded-full border-2 border-jscolors-gold bg-white p-0.5 shadow-sm`}
+            >
+              {charm.image ? (
+                <img src={charm.image} alt="" className="h-7 w-7 object-contain" />
+              ) : (
+                <div className="h-7 w-7 rounded-full bg-gray-200" aria-hidden />
+              )}
+            </div>
+          ))
+        ) : (
+          <div className="h-8 w-8 rounded-full border-2 border-dashed border-jscolors-gold/40 bg-jscolors-cream/80" aria-hidden />
+        )}
+      </div>
+      <div className="min-w-0">
+        <p className="font-display font-semibold text-jscolors-navy">{metalLabel} bracelet</p>
+        <p className="mt-0.5 truncate text-xs text-jscolors-charcoal/75">{summary}</p>
+      </div>
+    </div>
   )
 }
 
