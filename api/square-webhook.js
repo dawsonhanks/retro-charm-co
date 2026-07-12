@@ -1,4 +1,5 @@
 import crypto from 'node:crypto'
+import { charms, BASE_OPTIONS } from '../src/data/charms.js'
 
 const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
 const FROM_EMAIL = 'RetroCharm Co <orders@theretrocharmco.com>'
@@ -32,6 +33,71 @@ function verifySquareSignature(signature, rawBody, signatureKey) {
   }
 
   return crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
+}
+
+const CATALOG_NAMES = new Map()
+for (const charm of charms) {
+  CATALOG_NAMES.set(charm.id, charm.name)
+}
+for (const base of BASE_OPTIONS) {
+  CATALOG_NAMES.set(base.id, base.label)
+}
+
+function charmDisplayName(id) {
+  return CATALOG_NAMES.get(id) ?? id
+}
+
+function formatMetalLabel(metal) {
+  if (metal === 'silver') return 'Silver'
+  if (metal === 'gold') return 'Gold'
+  return metal
+}
+
+function formatBraceletBuilds(metadata) {
+  if (!metadata || typeof metadata !== 'object') {
+    return ''
+  }
+
+  const braceletEntries = Object.entries(metadata)
+    .filter(([key]) => /^bracelet_\d+$/.test(key))
+    .sort(([keyA], [keyB]) => {
+      const numA = Number(keyA.replace('bracelet_', ''))
+      const numB = Number(keyB.replace('bracelet_', ''))
+      return numA - numB
+    })
+
+  if (braceletEntries.length === 0) {
+    return ''
+  }
+
+  const lines = []
+
+  for (const [key, value] of braceletEntries) {
+    if (typeof value !== 'string') {
+      continue
+    }
+
+    const colonIndex = value.indexOf(':')
+    if (colonIndex === -1) {
+      continue
+    }
+
+    const metal = value.slice(0, colonIndex)
+    const idsPart = value.slice(colonIndex + 1)
+    const ids = idsPart ? idsPart.split(',') : []
+    const braceletNum = key.replace('bracelet_', '')
+    const charmLabels = ids
+      .map((id, index) => `${index + 1}) ${charmDisplayName(id)}`)
+      .join('  ')
+
+    lines.push(`Bracelet ${braceletNum} (${formatMetalLabel(metal)}): ${charmLabels}`)
+  }
+
+  if (lines.length === 0) {
+    return ''
+  }
+
+  return ['Bracelet arrangements:', ...lines].join('\n')
 }
 
 function formatAmount(amountMoney) {
@@ -70,7 +136,7 @@ function formatShippingSection(recipient) {
 
 async function fetchOrderRecipient(orderId, accessToken) {
   if (!orderId || !accessToken) {
-    return null
+    return { recipient: null, metadata: null }
   }
 
   try {
@@ -84,18 +150,23 @@ async function fetchOrderRecipient(orderId, accessToken) {
     if (!res.ok) {
       const errorBody = await res.text()
       console.error(`Square order lookup failed (${res.status}):`, errorBody)
-      return null
+      return { recipient: null, metadata: null }
     }
 
     const data = await res.json()
-    return data.order?.fulfillments?.[0]?.shipment_details?.recipient ?? null
+    const order = data.order
+
+    return {
+      recipient: order?.fulfillments?.[0]?.shipment_details?.recipient ?? null,
+      metadata: order?.metadata ?? null,
+    }
   } catch (error) {
     console.error('Square order lookup error:', error)
-    return null
+    return { recipient: null, metadata: null }
   }
 }
 
-async function sendOrderEmail({ to, payment, timestamp, shippingSection }) {
+async function sendOrderEmail({ to, payment, timestamp, braceletSection, shippingSection }) {
   const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
     throw new Error('RESEND_API_KEY is not configured')
@@ -105,16 +176,22 @@ async function sendOrderEmail({ to, payment, timestamp, shippingSection }) {
   const orderId = payment?.order_id ?? 'Unknown'
   const amount = formatAmount(payment?.amount_money)
 
-  const text = [
+  const textParts = [
     'A new order has been completed on RetroCharm Co.',
     '',
     `Payment amount: ${amount}`,
     `Payment ID: ${paymentId}`,
     `Order ID: ${orderId}`,
     `Timestamp: ${timestamp}`,
-    '',
-    shippingSection,
-  ].join('\n')
+  ]
+
+  if (braceletSection) {
+    textParts.push('', braceletSection)
+  }
+
+  textParts.push('', shippingSection)
+
+  const text = textParts.join('\n')
 
   const payload = {
     from: FROM_EMAIL,
@@ -196,15 +273,17 @@ export default async function handler(req, res) {
         } else {
           try {
             const timestamp = event.created_at ?? payment?.updated_at ?? new Date().toISOString()
-            const recipient = await fetchOrderRecipient(
+            const { recipient, metadata } = await fetchOrderRecipient(
               payment?.order_id,
               process.env.SQUARE_ACCESS_TOKEN,
             )
+            const braceletSection = formatBraceletBuilds(metadata)
             const shippingSection = formatShippingSection(recipient)
             await sendOrderEmail({
               to: notificationEmail,
               payment,
               timestamp,
+              braceletSection,
               shippingSection,
             })
             console.log('Order notification sent', {

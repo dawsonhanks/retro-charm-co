@@ -14,6 +14,66 @@ for (const b of BASE_OPTIONS) {
 
 const MAX_QUANTITY_PER_LINE_ITEM = 50
 const SHIPPING_CHARGE = 5.0
+const MAX_BRACELET_BUILDS_METADATA = 10
+const MAX_METADATA_VALUE_LENGTH = 450
+
+function isValidBraceletBuild(build) {
+  if (!build || typeof build !== 'object') return false
+  if (build.metal !== 'silver' && build.metal !== 'gold') return false
+  if (!Array.isArray(build.charms)) return false
+
+  for (const charm of build.charms) {
+    if (!charm || typeof charm.id !== 'string' || !CANONICAL_ITEMS.has(charm.id)) {
+      return false
+    }
+  }
+
+  return true
+}
+
+function buildBraceletMetadataValue(metal, charms) {
+  const ids = charms.map((charm) => charm.id)
+  const prefix = `${metal}:`
+  let value = prefix + ids.join(',')
+
+  if (value.length <= MAX_METADATA_VALUE_LENGTH) {
+    return value
+  }
+
+  console.warn(
+    `Bracelet metadata value exceeds ${MAX_METADATA_VALUE_LENGTH} characters; truncating charm list`,
+  )
+
+  const truncatedIds = []
+  for (const id of ids) {
+    const candidate = prefix + [...truncatedIds, id].join(',')
+    if (candidate.length > MAX_METADATA_VALUE_LENGTH) break
+    truncatedIds.push(id)
+  }
+
+  return prefix + truncatedIds.join(',')
+}
+
+function buildOrderBraceletMetadata(braceletBuilds) {
+  if (!Array.isArray(braceletBuilds) || braceletBuilds.length === 0) {
+    return null
+  }
+
+  const builds = braceletBuilds.slice(0, MAX_BRACELET_BUILDS_METADATA)
+
+  for (const build of builds) {
+    if (!isValidBraceletBuild(build)) {
+      return null
+    }
+  }
+
+  const metadata = {}
+  builds.forEach((build, index) => {
+    metadata[`bracelet_${index + 1}`] = buildBraceletMetadataValue(build.metal, build.charms)
+  })
+
+  return metadata
+}
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -32,7 +92,7 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Site URL is not configured' })
   }
 
-  const { items, idempotencyKey } = req.body ?? {}
+  const { items, idempotencyKey, braceletBuilds } = req.body ?? {}
 
   if (!Array.isArray(items) || items.length === 0) {
     return res.status(400).json({ error: 'Cart items are required' })
@@ -81,7 +141,18 @@ export default async function handler(req, res) {
       ? idempotencyKey
       : randomUUID()
 
+  const braceletMetadata = buildOrderBraceletMetadata(braceletBuilds)
+
   try {
+    const order = {
+      location_id: locationId,
+      line_items: lineItems,
+    }
+
+    if (braceletMetadata) {
+      order.metadata = braceletMetadata
+    }
+
     const squareRes = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
       method: 'POST',
       headers: {
@@ -95,10 +166,7 @@ export default async function handler(req, res) {
           redirect_url: `${siteUrl}/order-confirmation?order=${encodeURIComponent(safeIdempotencyKey)}`,
           ask_for_shipping_address: true,
         },
-        order: {
-          location_id: locationId,
-          line_items: lineItems,
-        },
+        order,
       }),
     })
 

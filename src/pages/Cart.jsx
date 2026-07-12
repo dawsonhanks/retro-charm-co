@@ -33,6 +33,7 @@ export default function Cart() {
         body: JSON.stringify({
           items: items.map(({ id, name, price, quantity }) => ({ id, name, price, quantity })),
           idempotencyKey: hashCartItems(items),
+          braceletBuilds,
         }),
       })
 

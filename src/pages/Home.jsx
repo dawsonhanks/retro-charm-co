@@ -8,7 +8,20 @@ import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccent
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
 const heroWords = ['Italian', 'Charm', 'Bracelets']
-const customerPhotoPlaceholderCount = 6
+const CUSTOMER_PHOTOS = [
+  {
+    src: '/images/customer-photos/customer-photo-1.jpg',
+    alt: 'Two customers showing layered Italian charm bracelets with gold and silver links, featuring heart, flag, and fish dangle charms',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-2.jpg',
+    alt: 'Close-up of a wrist wearing stacked bracelets with a silver Italian charm bracelet, gold chain, and gold beaded cross bracelet',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-3.jpg',
+    alt: 'Two customers wearing gold Italian charm bracelets with checkered and pearl dangle charms',
+  },
+]
 
 function PageLoader() {
   return (
@@ -100,8 +113,10 @@ export default function Home() {
             See how our customers style their charm bracelets
           </p>
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
-            {Array.from({ length: customerPhotoPlaceholderCount }, (_, i) => (
-              <div key={i} className="aspect-square rounded-xl bg-gray-200" aria-hidden />
+            {CUSTOMER_PHOTOS.map((photo) => (
+              <div key={photo.src} className="aspect-square overflow-hidden rounded-xl">
+                <img src={photo.src} alt={photo.alt} className="h-full w-full object-cover" />
+              </div>
             ))}
           </div>
         </div>
