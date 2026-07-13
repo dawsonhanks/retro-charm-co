@@ -1,7 +1,8 @@
-import { getCharmById } from '../data/charms'
+import { DEFAULT_BRACELET_SIZE, getCharmById } from '../data/charms'
 import { readJson, STORAGE_KEYS } from './storage'
 
-export const BASE_LINK_COUNT = 18
+/** @deprecated Use DEFAULT_BRACELET_SIZE — kept for preview components */
+export const BASE_LINK_COUNT = DEFAULT_BRACELET_SIZE
 
 /** @typedef {{ id: string, type: 'plain' }} PlainLink */
 /** @typedef {{ id: string, type: 'charm', charm: import('../data/charms').Charm }} CharmLink */
@@ -27,14 +28,16 @@ export function createCharmLink(charm) {
   return { id: createLinkId(), type: 'charm', charm }
 }
 
-/** @returns {BraceletLink[]} */
-export function createInitialLinkOrder() {
-  return Array.from({ length: BASE_LINK_COUNT }, () => createPlainLink())
+/** @param {number} [slotCount] @returns {BraceletLink[]} */
+export function createInitialLinkOrder(slotCount = DEFAULT_BRACELET_SIZE) {
+  return Array.from({ length: slotCount }, () => createPlainLink())
 }
 
 /** @returns {BraceletLink[]} */
 export function loadInitialLinkOrder() {
   const saved = readJson(STORAGE_KEYS.savedBuild, null)
+  const slotCount = saved?.charmCount ?? DEFAULT_BRACELET_SIZE
+
   if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
     return saved.linkOrder
       .map((link) => {
@@ -48,9 +51,9 @@ export function loadInitialLinkOrder() {
       .filter(Boolean)
   }
   if (Array.isArray(saved?.charmIds)) {
-    return linkOrderFromCharmIds(saved.charmIds, getCharmById)
+    return linkOrderFromCharmIds(saved.charmIds, getCharmById, slotCount)
   }
-  return createInitialLinkOrder()
+  return createInitialLinkOrder(slotCount)
 }
 
 /**
@@ -88,7 +91,7 @@ export function addCharmToLinkOrder(linkOrder, charm) {
   const hasPlain = linkOrder.some((link) => link.type === 'plain')
 
   if (!hasPlain) {
-    return [...linkOrder, createCharmLink(charm)]
+    return linkOrder
   }
 
   const { start, length } = findLargestPlainRun(linkOrder)
@@ -109,10 +112,6 @@ export function removeCharmFromLinkOrder(linkOrder, linkId) {
   const index = linkOrder.findIndex((link) => link.id === linkId)
   if (index === -1) return linkOrder
 
-  if (linkOrder.length > BASE_LINK_COUNT) {
-    return linkOrder.filter((link) => link.id !== linkId)
-  }
-
   const next = [...linkOrder]
   next[index] = createPlainLink()
   return next
@@ -127,15 +126,27 @@ export function getCharmsFromLinkOrder(linkOrder) {
 }
 
 /**
- * Rebuild link order from legacy saved charm id list.
- * @param {string[]} charmIds
- * @param {(id: string) => import('../data/charms').Charm | undefined} getCharmById
+ * @param {number} slotCount
+ * @param {import('../data/charms').Charm[]} [charmsOnTrack]
  * @returns {BraceletLink[]}
  */
-export function linkOrderFromCharmIds(charmIds, getCharmById) {
-  let order = createInitialLinkOrder()
+export function createLinkOrderForSize(slotCount, charmsOnTrack = []) {
+  return Array.from({ length: slotCount }, (_, i) =>
+    i < charmsOnTrack.length ? createCharmLink(charmsOnTrack[i]) : createPlainLink(),
+  )
+}
+
+/**
+ * Rebuild link order from legacy saved charm id list.
+ * @param {string[]} charmIds
+ * @param {(id: string) => import('../data/charms').Charm | undefined} getCharmByIdFn
+ * @param {number} [slotCount]
+ * @returns {BraceletLink[]}
+ */
+export function linkOrderFromCharmIds(charmIds, getCharmByIdFn, slotCount = DEFAULT_BRACELET_SIZE) {
+  let order = createInitialLinkOrder(slotCount)
   for (const id of charmIds) {
-    const charm = getCharmById(id)
+    const charm = getCharmByIdFn(id)
     if (charm && charm.category !== 'starter') {
       order = addCharmToLinkOrder(order, charm)
     }

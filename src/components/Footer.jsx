@@ -7,7 +7,7 @@ const footerLinks = [
   { to: '/', label: 'Home' },
   { to: '/create', label: 'Charm Studio' },
   { to: '/find-us', label: 'Find Us' },
-  { to: '/about', label: 'About' },
+  { to: '/about', label: 'Customer Photos' },
   { to: '/cart', label: 'Cart' },
 ]
 
@@ -31,13 +31,13 @@ export function Footer() {
               <InstagramGlyph />
             </a>
             <a
-              href="https://www.facebook.com/"
+              href="https://www.tiktok.com/@retrocharm.co"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-navy"
-              aria-label="Facebook (placeholder link)"
+              aria-label="Follow @retrocharm.co on TikTok"
             >
-              <FacebookGlyph />
+              <TikTokGlyph />
             </a>
           </div>
         </div>
@@ -85,10 +85,10 @@ function InstagramGlyph() {
   )
 }
 
-function FacebookGlyph() {
+function TikTokGlyph() {
   return (
     <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-      <path d="M24 12.073C24 5.405 18.627 0 12 0S0 5.405 0 12.073c0 6.024 4.389 11.015 10.125 11.927v-8.43H7.078v-3.497h3.047V9.413c0-3.005 1.792-4.669 4.533-4.669 1.313 0 2.686.235 2.686.235v2.953h-1.513c-1.491 0-1.956.926-1.956 1.875v2.268h3.328l-.532 3.497h-2.796v8.43C19.611 23.088 24 18.097 24 12.073z" />
+      <path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-5.2 1.74 2.89 2.89 0 012.31-4.64 2.93 2.93 0 01.88.13V9.4a6.84 6.84 0 00-1-.05A6.33 6.33 0 005 20.1a6.34 6.34 0 0010.86-4.43v-7a8.16 8.16 0 004.77 1.52v-3.4a4.85 4.85 0 01-1-.1z" />
     </svg>
   )
 }

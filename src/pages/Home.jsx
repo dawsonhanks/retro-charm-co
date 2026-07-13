@@ -1,9 +1,10 @@
 import { Helmet } from 'react-helmet-async'
-import { lazy, Suspense } from 'react'
+import { lazy, Suspense, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { HowItWorks } from '../components/HowItWorks'
 import { StarField, SparkleRow, FloatingHearts } from '../components/RetroAccents'
+import { loadInitialLinkOrder } from '../utils/braceletLinks'
 
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
@@ -32,6 +33,9 @@ function PageLoader() {
 }
 
 export default function Home() {
+  const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
+  const [selectedSize, setSelectedSize] = useState(null)
+
   return (
     <>
       <Helmet>
@@ -100,7 +104,14 @@ export default function Home() {
 
       <Suspense fallback={<PageLoader />}>
         <div className="bg-jscolors-cream/70 py-16">
-          <CharmBuilder className="px-4" idPrefix="home-builder" />
+          <CharmBuilder
+            className="px-4"
+            idPrefix="home-builder"
+            linkOrder={linkOrder}
+            onLinkOrderChange={setLinkOrder}
+            selectedSize={selectedSize}
+            onSelectedSizeChange={setSelectedSize}
+          />
         </div>
       </Suspense>
 

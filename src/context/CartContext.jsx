@@ -227,6 +227,7 @@ export function CartProvider({ children }) {
       {
         buildId: build.buildId ?? crypto.randomUUID(),
         metal: build.metal,
+        charmCount: build.charmCount,
         charms: build.charms,
       },
     ])
@@ -245,7 +246,7 @@ export function CartProvider({ children }) {
 
       return prevBuilds.map((b) =>
         b.buildId === buildId
-          ? { buildId, metal: newBuild.metal, charms: newBuild.charms }
+          ? { buildId, metal: newBuild.metal, charmCount: newBuild.charmCount, charms: newBuild.charms }
           : b,
       )
     })

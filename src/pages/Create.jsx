@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from '../context/CartContext.jsx'
-import { getCharmById, MAX_BRACELET_CHARMS } from '../data/charms'
+import { getCharmById } from '../data/charms'
 import {
   addCharmToLinkOrder,
   getCharmsFromLinkOrder,
@@ -20,27 +20,27 @@ const SILVER_CHARMS = [
   // Starter Bracelets
 
   // Letter Charms
-  { id: 's-letter-a', category: 'Letter Charms', name: 'Letter A', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-a-silver.webp' },
-  { id: 's-letter-c', category: 'Letter Charms', name: 'Letter C', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-c-silver.webp' },
-  { id: 's-letter-e', category: 'Letter Charms', name: 'Letter E', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-e-silver.webp' },
-  { id: 's-letter-h', category: 'Letter Charms', name: 'Letter H', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-h-silver.webp' },
-  { id: 's-letter-j', category: 'Letter Charms', name: 'Letter J', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-j-silver.webp' },
-  { id: 's-letter-k', category: 'Letter Charms', name: 'Letter K', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-k-silver.webp' },
-  { id: 's-letter-l', category: 'Letter Charms', name: 'Letter L', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-l-silver.webp' },
-  { id: 's-letter-m', category: 'Letter Charms', name: 'Letter M', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-m-silver.webp' },
-  { id: 's-letter-n', category: 'Letter Charms', name: 'Letter N', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-n-silver.webp' },
-  { id: 's-letter-p', category: 'Letter Charms', name: 'Letter P', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-p-silver.webp' },
-  { id: 's-letter-r', category: 'Letter Charms', name: 'Letter R', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-r-silver.webp' },
+  { id: 's-letter-a', category: 'Charms', name: 'Letter A', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-a-silver.webp' },
+  { id: 's-letter-c', category: 'Charms', name: 'Letter C', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-c-silver.webp' },
+  { id: 's-letter-e', category: 'Charms', name: 'Letter E', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-e-silver.webp' },
+  { id: 's-letter-h', category: 'Charms', name: 'Letter H', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-h-silver.webp' },
+  { id: 's-letter-j', category: 'Charms', name: 'Letter J', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-j-silver.webp' },
+  { id: 's-letter-k', category: 'Charms', name: 'Letter K', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-k-silver.webp' },
+  { id: 's-letter-l', category: 'Charms', name: 'Letter L', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-l-silver.webp' },
+  { id: 's-letter-m', category: 'Charms', name: 'Letter M', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-m-silver.webp' },
+  { id: 's-letter-n', category: 'Charms', name: 'Letter N', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-n-silver.webp' },
+  { id: 's-letter-p', category: 'Charms', name: 'Letter P', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-p-silver.webp' },
+  { id: 's-letter-r', category: 'Charms', name: 'Letter R', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-r-silver.webp' },
 
   // Charms
   { id: 's-labubu', category: 'Charms', name: 'Labubu', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/labubu-silver.webp' },
   { id: 's-paw-print-blue', category: 'Charms', name: 'Paw Print - Blue', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/animals-characters/paw-print-blue-silver.webp' },
-  { id: 's-dangle-red-ruby', category: 'Charms', name: 'Dangle - Red/Ruby', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/birthstone-dangles/dangle-red-ruby-silver.webp' },
-  { id: 's-heart-coin-dangle-antique-bronze', category: 'Charms', name: 'Heart Coin Dangle - Antique Bronze', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-antique-bronze-silver.webp' },
-  { id: 's-heart-dangle-silver-2', category: 'Charms', name: 'Heart Dangle - Silver (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-2-silver.webp' },
-  { id: 's-pearl-dangle', category: 'Charms', name: 'Pearl Dangle', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/pearl-dangle-silver.webp' },
-  { id: 's-star-dangle-silver', category: 'Charms', name: 'Star Dangle - Silver', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/star-dangle-silver-silver.webp' },
-  { id: 's-strawberry-dangle-2', category: 'Charms', name: 'Strawberry Dangle (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-2-silver.webp' },
+  { id: 's-dangle-red-ruby', category: 'Dangle Charms', name: 'Dangle - Red/Ruby', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/birthstone-dangles/dangle-red-ruby-silver.webp' },
+  { id: 's-heart-coin-dangle-antique-bronze', category: 'Dangle Charms', name: 'Heart Coin Dangle - Antique Bronze', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-antique-bronze-silver.webp' },
+  { id: 's-heart-dangle-silver-2', category: 'Dangle Charms', name: 'Heart Dangle - Silver (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-2-silver.webp' },
+  { id: 's-pearl-dangle', category: 'Dangle Charms', name: 'Pearl Dangle', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/pearl-dangle-silver.webp' },
+  { id: 's-star-dangle-silver', category: 'Dangle Charms', name: 'Star Dangle - Silver', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/star-dangle-silver-silver.webp' },
+  { id: 's-strawberry-dangle-2', category: 'Dangle Charms', name: 'Strawberry Dangle (2)', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-2-silver.webp' },
   { id: 's-cross-black', category: 'Charms', name: 'Cross - Black', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/faith/cross-black-silver.webp' },
   { id: 's-fish-symbol', category: 'Charms', name: 'Fish Symbol', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/faith/fish-symbol-silver.webp' },
   { id: 's-lv-logo', category: 'Charms', name: 'LV Logo', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/fashion/lv-logo-silver.webp' },
@@ -75,21 +75,21 @@ const GOLD_CHARMS = [
   // Starter Bracelets
 
   // Charms
-  { id: 'g-fish-dangle-green-white', category: 'Charms', name: 'Fish Dangle - Green/White', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/fish-dangle-green-white-gold.webp' },
+  { id: 'g-fish-dangle-green-white', category: 'Dangle Charms', name: 'Fish Dangle - Green/White', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/fish-dangle-green-white-gold.webp' },
   { id: 'g-pearl-gold', category: 'Charms', name: 'Pearl - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/pearl-gold-gold.webp' },
-  { id: 'g-dangle-blue-teal', category: 'Charms', name: 'Dangle - Blue/Teal', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-blue-teal-gold.webp' },
-  { id: 'g-dangle-clear', category: 'Charms', name: 'Dangle - Clear', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-clear-gold.webp' },
-  { id: 'g-dangle-garnet', category: 'Charms', name: 'Dangle - Garnet', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-garnet-gold.webp' },
-  { id: 'g-dangle-green', category: 'Charms', name: 'Dangle - Green', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-green-gold.webp' },
-  { id: 'g-dangle-pink-magenta', category: 'Charms', name: 'Dangle - Pink/Magenta', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-pink-magenta-gold.webp' },
+  { id: 'g-dangle-blue-teal', category: 'Dangle Charms', name: 'Dangle - Blue/Teal', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-blue-teal-gold.webp' },
+  { id: 'g-dangle-clear', category: 'Dangle Charms', name: 'Dangle - Clear', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-clear-gold.webp' },
+  { id: 'g-dangle-garnet', category: 'Dangle Charms', name: 'Dangle - Garnet', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-garnet-gold.webp' },
+  { id: 'g-dangle-green', category: 'Dangle Charms', name: 'Dangle - Green', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-green-gold.webp' },
+  { id: 'g-dangle-pink-magenta', category: 'Dangle Charms', name: 'Dangle - Pink/Magenta', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/birthstone-dangles/dangle-pink-magenta-gold.webp' },
   { id: 'g-bow-red-with-pearl', category: 'Charms', name: 'Bow - Red with Pearl', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/bows/bow-red-with-pearl-gold.webp' },
-  { id: 'g-cherries-dangle', category: 'Charms', name: 'Cherries Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/cherries-dangle-gold.webp' },
-  { id: 'g-fish-dangle-teal-white-2', category: 'Charms', name: 'Fish Dangle - Teal/White (2)', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/fish-dangle-teal-white-2-gold.webp' },
-  { id: 'g-heart-coin-dangle-silver-sunburst', category: 'Charms', name: 'Heart Coin Dangle - Silver Sunburst', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-silver-sunburst-gold.webp' },
-  { id: 'g-heart-dangle-gold', category: 'Charms', name: 'Heart Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-gold-gold.webp' },
-  { id: 'g-heart-dangle-silver', category: 'Charms', name: 'Heart Dangle - Silver', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-gold.webp' },
-  { id: 'g-star-dangle-gold', category: 'Charms', name: 'Star Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/star-dangle-gold-gold.webp' },
-  { id: 'g-strawberry-dangle', category: 'Charms', name: 'Strawberry Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-gold.webp' },
+  { id: 'g-cherries-dangle', category: 'Dangle Charms', name: 'Cherries Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/cherries-dangle-gold.webp' },
+  { id: 'g-fish-dangle-teal-white-2', category: 'Dangle Charms', name: 'Fish Dangle - Teal/White (2)', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/fish-dangle-teal-white-2-gold.webp' },
+  { id: 'g-heart-coin-dangle-silver-sunburst', category: 'Dangle Charms', name: 'Heart Coin Dangle - Silver Sunburst', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-coin-dangle-silver-sunburst-gold.webp' },
+  { id: 'g-heart-dangle-gold', category: 'Dangle Charms', name: 'Heart Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-gold-gold.webp' },
+  { id: 'g-heart-dangle-silver', category: 'Dangle Charms', name: 'Heart Dangle - Silver', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/heart-dangle-silver-gold.webp' },
+  { id: 'g-star-dangle-gold', category: 'Dangle Charms', name: 'Star Dangle - Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/star-dangle-gold-gold.webp' },
+  { id: 'g-strawberry-dangle', category: 'Dangle Charms', name: 'Strawberry Dangle', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/dangle-charms/strawberry-dangle-gold.webp' },
   { id: 'g-cross-black', category: 'Charms', name: 'Cross - Black', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/faith/cross-black-gold.webp' },
   { id: 'g-wwjd', category: 'Charms', name: 'WWJD', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/faith/wwjd-gold.webp' },
   { id: 'g-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-pink-gold.webp' },
@@ -117,8 +117,8 @@ const FILTERS = [
   { id: 'silver', label: 'Silver' },
   { id: 'gold', label: 'Gold' },
   { id: 'Starter Bracelets', label: 'Starter Bracelets' },
-  { id: 'Letter Charms', label: 'Letter Charms' },
   { id: 'Charms', label: 'Charms' },
+  { id: 'Dangle Charms', label: 'Dangle Charms' },
 ]
 
 function formatPrice(value) {
@@ -257,13 +257,15 @@ export default function Create() {
   const [addedIds, setAddedIds] = useState(() => new Set())
   const [braceletAddedIds, setBraceletAddedIds] = useState(() => new Set())
   const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
+  const [selectedSize, setSelectedSize] = useState(null)
 
   const braceletCharmCount = useMemo(() => getCharmsFromLinkOrder(linkOrder).length, [linkOrder])
-  const braceletFull = braceletCharmCount >= MAX_BRACELET_CHARMS
+  const braceletFull = selectedSize != null && braceletCharmCount >= selectedSize
+  const braceletUnavailable = selectedSize == null
 
   function handleAddToBracelet(catalogCharm) {
     const charm = getCharmById(catalogCharm.id)
-    if (!charm || charm.category === 'starter' || braceletFull) return
+    if (!charm || charm.category === 'starter' || braceletFull || braceletUnavailable) return
     setLinkOrder((prev) => addCharmToLinkOrder(prev, charm))
     setBraceletAddedIds((prev) => new Set(prev).add(catalogCharm.id))
     setTimeout(() => {
@@ -338,9 +340,11 @@ export default function Create() {
           <CharmBuilder
             className="px-4"
             idPrefix="gallery-builder"
-            instructionLabel="Tap to add · drag to rearrange · 18 links to start"
+            instructionLabel={selectedSize == null ? 'Choose your base and size to start building' : undefined}
             linkOrder={linkOrder}
             onLinkOrderChange={setLinkOrder}
+            selectedSize={selectedSize}
+            onSelectedSizeChange={setSelectedSize}
           />
         </div>
       </Suspense>
@@ -417,22 +421,30 @@ export default function Create() {
                       <button
                         type="button"
                         onClick={() => handleAddToBracelet(charm)}
-                        disabled={braceletFull || braceletAddedIds.has(charm.id)}
-                        title={braceletFull ? `Bracelet is full (${MAX_BRACELET_CHARMS} charms)` : undefined}
+                        disabled={braceletUnavailable || braceletFull || braceletAddedIds.has(charm.id)}
+                        title={
+                          braceletUnavailable
+                            ? 'Choose a bracelet size in the builder first'
+                            : braceletFull
+                              ? `Bracelet is full (${selectedSize} charms)`
+                              : undefined
+                        }
                         className={[
                           'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
                           braceletAddedIds.has(charm.id)
                             ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
-                            : braceletFull
+                            : braceletUnavailable || braceletFull
                               ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-charcoal/45'
                               : 'border-jscolors-pink bg-white text-jscolors-navy hover:bg-jscolors-pink/10',
                         ].join(' ')}
                       >
                         {braceletAddedIds.has(charm.id)
                           ? 'On Bracelet ✓'
-                          : braceletFull
-                            ? `Bracelet full (${MAX_BRACELET_CHARMS})`
-                            : 'Add to Bracelet'}
+                          : braceletUnavailable
+                            ? 'Choose size first'
+                            : braceletFull
+                              ? `Bracelet full (${selectedSize})`
+                              : 'Add to Bracelet'}
                       </button>
                       <button
                         type="button"

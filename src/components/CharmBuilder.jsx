@@ -16,20 +16,36 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { BASE_OPTIONS, charms, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
+import { BASE_OPTIONS, charms, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getSizeLengthLabel, parseCharmCountInput, SIZE_OPTIONS } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 import { useCart } from '../context/CartContext.jsx'
 import {
-  BASE_LINK_COUNT,
   addCharmToLinkOrder,
   createInitialLinkOrder,
-  createCharmLink,
-  createPlainLink,
+  createLinkOrderForSize,
   getCharmsFromLinkOrder,
   loadInitialLinkOrder,
   removeCharmFromLinkOrder,
 } from '../utils/braceletLinks'
+
+const SIZE_GUIDE_PHOTOS = [
+  {
+    src: '/images/size-guide/measure-wrist.jpg',
+    alt: 'Measuring wrist with a tape measure to determine bracelet size',
+    caption: 'Measure Your Wrist',
+  },
+  {
+    src: '/images/size-guide/select-size.jpg',
+    alt: 'Selecting the number of charm links for a custom Italian charm bracelet',
+    caption: 'Select Your Size',
+  },
+  {
+    src: '/images/size-guide/enjoy-fit.jpg',
+    alt: 'Finished charm bracelet worn comfortably on the wrist',
+    caption: 'Enjoy Your Fit',
+  },
+]
 
 export function CharmBuilder({
   className = '',
@@ -37,6 +53,8 @@ export function CharmBuilder({
   instructionLabel,
   linkOrder: controlledLinkOrder,
   onLinkOrderChange,
+  selectedSize: controlledSelectedSize,
+  onSelectedSizeChange,
 }) {
   const navigate = useNavigate()
   const { addItem, addBraceletBuild, replaceBraceletBuild, braceletBuilds } = useCart()
@@ -46,14 +64,32 @@ export function CharmBuilder({
     return saved?.baseId ?? BASE_OPTIONS[0].id
   })
   const [internalLinkOrder, setInternalLinkOrder] = useState(loadInitialLinkOrder)
+  const [internalSelectedSize, setInternalSelectedSize] = useState(() => {
+    const saved = readJson(STORAGE_KEYS.savedBuild, null)
+    return typeof saved?.charmCount === 'number' ? saved.charmCount : null
+  })
+  const [customSizeInput, setCustomSizeInput] = useState('')
+  const [customSizeError, setCustomSizeError] = useState(null)
+  const [isSizePickerExpanded, setIsSizePickerExpanded] = useState(true)
+  const [sizeChangeError, setSizeChangeError] = useState(null)
   const isControlled = controlledLinkOrder !== undefined && onLinkOrderChange !== undefined
+  const isSizeControlled = controlledSelectedSize !== undefined && onSelectedSizeChange !== undefined
   const linkOrder = isControlled ? controlledLinkOrder : internalLinkOrder
+  const selectedSize = isSizeControlled ? controlledSelectedSize : internalSelectedSize
 
   function updateLinkOrder(updater) {
     if (isControlled) {
       onLinkOrderChange(updater)
     } else {
       setInternalLinkOrder(updater)
+    }
+  }
+
+  function updateSelectedSize(nextSize) {
+    if (isSizeControlled) {
+      onSelectedSizeChange(nextSize)
+    } else {
+      setInternalSelectedSize(nextSize)
     }
   }
 
@@ -65,20 +101,34 @@ export function CharmBuilder({
   const base = BASE_OPTIONS.find((b) => b.id === baseId) ?? BASE_OPTIONS[0]
   const pickerCharms = useMemo(() => charms.filter((c) => c.category !== 'starter'), [])
   const selected = useMemo(() => getCharmsFromLinkOrder(linkOrder), [linkOrder])
-  const charmTotal = selected.length * DEFAULT_CHARM_PRICE
-  const grand = base.price + charmTotal
-  const n = selected.length
-  const baseSlotsFull = linkOrder.length >= BASE_LINK_COUNT && !linkOrder.some((link) => link.type === 'plain')
+  const braceletFull =
+    selectedSize != null && linkOrder.length >= selectedSize && !linkOrder.some((link) => link.type === 'plain')
+  const parsedCustomSize = parseCharmCountInput(customSizeInput)
 
-  const summaryLine = useMemo(() => {
-    const baseStr = `$${base.price.toFixed(2)} base`
-    if (n === 0) return `${baseStr} + 0 charms = $${base.price.toFixed(2)}`
-    const charmPart = `${n} charms × $${DEFAULT_CHARM_PRICE.toFixed(2)} = $${charmTotal.toFixed(2)}`
-    return `${baseStr} + ${charmPart} = $${grand.toFixed(2)}`
-  }, [base.price, n, charmTotal, grand])
+  function clearCustomSizeInput() {
+    setCustomSizeInput('')
+    setCustomSizeError(null)
+  }
+
+  function handleCustomSizeInputChange(event) {
+    const digitsOnly = event.target.value.replace(/\D/g, '').slice(0, 2)
+    setCustomSizeInput(digitsOnly)
+    setCustomSizeError(null)
+  }
+
+  function handleCustomSizeConfirm() {
+    const charmCount = parseCharmCountInput(customSizeInput)
+    if (charmCount == null) {
+      setCustomSizeError('Enter a whole number between 10 and 30 charms.')
+      return
+    }
+
+    clearCustomSizeInput()
+    handleSizeSelect(charmCount)
+  }
 
   function addCharm(c) {
-    if (c.category === 'starter') return
+    if (c.category === 'starter' || selectedSize == null || braceletFull) return
     updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
   }
 
@@ -90,9 +140,34 @@ export function CharmBuilder({
     setBaseId(nextBaseId)
   }
 
+  function handleSizeSelect(charmCount) {
+    const charmsOnTrack = getCharmsFromLinkOrder(linkOrder)
+
+    if (charmsOnTrack.length > charmCount) {
+      setSizeChangeError('Remove some charms first to choose a smaller size.')
+      return
+    }
+
+    const nextCharms = charmsOnTrack.slice(0, charmCount)
+    clearCustomSizeInput()
+    setSizeChangeError(null)
+    updateSelectedSize(charmCount)
+    updateLinkOrder(createLinkOrderForSize(charmCount, nextCharms))
+    setIsSizePickerExpanded(false)
+  }
+
+  function handleChangeSizeClick() {
+    setIsSizePickerExpanded(true)
+    setSizeChangeError(null)
+  }
+
   function reset() {
     setEditingBuildId(null)
-    updateLinkOrder(createInitialLinkOrder())
+    clearCustomSizeInput()
+    setIsSizePickerExpanded(true)
+    setSizeChangeError(null)
+    updateSelectedSize(null)
+    updateLinkOrder(createInitialLinkOrder(DEFAULT_BRACELET_SIZE))
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
@@ -101,22 +176,33 @@ export function CharmBuilder({
     const build = braceletBuilds.find((b) => b.buildId === buildId)
     if (!build) return
 
+    const slotCount = build.charmCount ?? DEFAULT_BRACELET_SIZE
     setEditingBuildId(build.buildId)
     setBaseId(build.metal)
-    updateLinkOrder(linkOrderFromSavedCharms(build.charms))
+    updateSelectedSize(slotCount)
+    updateLinkOrder(linkOrderFromSavedCharms(build.charms, slotCount))
+    setIsSizePickerExpanded(false)
+    setSizeChangeError(null)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
   function handleStartNewBracelet() {
     setEditingBuildId(null)
-    updateLinkOrder(createInitialLinkOrder())
+    clearCustomSizeInput()
+    setIsSizePickerExpanded(true)
+    setSizeChangeError(null)
+    updateSelectedSize(null)
+    updateLinkOrder(createInitialLinkOrder(DEFAULT_BRACELET_SIZE))
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
   function addToCart() {
+    if (selectedSize == null) return
+
     const currentBuild = {
       metal: base.id,
+      charmCount: selectedSize,
       charms: selected.map((c) => ({
         id: c.id,
         image: c.image,
@@ -144,7 +230,8 @@ export function CharmBuilder({
     }
 
     setEditingBuildId(null)
-    updateLinkOrder(createInitialLinkOrder())
+    updateSelectedSize(null)
+    updateLinkOrder(createInitialLinkOrder(DEFAULT_BRACELET_SIZE))
     setBaseId(BASE_OPTIONS[0].id)
     writeJson(STORAGE_KEYS.savedBuild, null)
 
@@ -165,26 +252,39 @@ export function CharmBuilder({
 
   const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
   const sortableIds = linkOrder.map((link) => link.id)
+  const trackInstructionLabel =
+    selectedSize != null
+      ? `Tap to add · drag to rearrange · ${selectedSize ?? DEFAULT_BRACELET_SIZE} link slots`
+      : null
+  const showHeaderInstruction = selectedSize == null && instructionLabel
+  const showDefaultHeading = selectedSize == null && !instructionLabel
 
   return (
     <section
       className={`mx-auto max-w-6xl ${className}`}
-      aria-labelledby={instructionLabel ? `${idPrefix}-instruction` : `${idPrefix}-heading`}
+      aria-labelledby={
+        showHeaderInstruction
+          ? `${idPrefix}-instruction`
+          : trackInstructionLabel
+            ? `${idPrefix}-track-instruction`
+            : `${idPrefix}-heading`
+      }
     >
-      {instructionLabel ? (
+      {showHeaderInstruction && (
         <p
           id={`${idPrefix}-instruction`}
           className="text-center text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold-warm"
         >
           {instructionLabel}
         </p>
-      ) : (
+      )}
+      {showDefaultHeading && (
         <div className="text-center">
           <h2 id={`${idPrefix}-heading`} className="font-display text-2xl font-bold text-jscolors-navy md:text-3xl">
             Interactive Charm Studio
           </h2>
           <p className="mt-2 text-sm text-jscolors-charcoal/80 md:text-base">
-            Tap charms to add them, then drag to rearrange — {BASE_LINK_COUNT} link slots to start, with room to grow.
+            Choose your base and size, then tap charms to add them and drag to rearrange.
           </p>
         </div>
       )}
@@ -229,7 +329,7 @@ export function CharmBuilder({
         </div>
       )}
 
-      <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${instructionLabel ? 'mt-6' : braceletBuilds.length > 0 ? 'mt-6' : 'mt-8'}`}>
+      <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${showHeaderInstruction || showDefaultHeading || braceletBuilds.length > 0 ? 'mt-6' : 'mt-8'}`}>
         <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your base</p>
         <div className="mt-4 flex flex-wrap justify-center gap-3">
           {BASE_OPTIONS.map((b) => (
@@ -248,8 +348,123 @@ export function CharmBuilder({
           ))}
         </div>
 
-        <div className="relative mt-10">
-          <BraceletBaseGraphic stroke={chainStroke} linkCount={linkOrder.length} />
+        {(selectedSize == null || isSizePickerExpanded) && (
+          <div className="mt-8">
+            <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your size</p>
+            <p className="mx-auto mt-2 max-w-full px-2 text-center text-xs text-jscolors-charcoal/75 whitespace-nowrap max-[389px]:text-[9px] sm:text-sm">
+              Small wrist: 16–18 charms · Medium wrist: 19–21 charms · Large wrist: 22–24 charms
+            </p>
+            <div className="mx-auto mt-6 grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
+              {SIZE_GUIDE_PHOTOS.map((photo) => (
+                <div key={photo.src} className="flex flex-col items-center text-center">
+                  <div className="aspect-square w-full max-w-[140px] overflow-hidden rounded-2xl sm:max-w-[160px]">
+                    <img
+                      src={photo.src}
+                      alt={photo.alt}
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
+                  <p className="mt-2 text-xs font-semibold text-jscolors-navy sm:text-sm">{photo.caption}</p>
+                </div>
+              ))}
+            </div>
+            <div className="mx-auto mt-5 max-w-md overflow-hidden rounded-xl border border-jscolors-gold/35 bg-white/80 shadow-sm">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="border-b border-jscolors-gold/25 bg-jscolors-cream/60">
+                    <th className="px-4 py-3 text-left font-semibold text-jscolors-navy">Charms</th>
+                    <th className="px-4 py-3 text-left font-semibold text-jscolors-navy">Length</th>
+                    <th className="sr-only">Select</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {SIZE_OPTIONS.map((option) => (
+                    <tr key={option.charmCount} className="border-b border-jscolors-gold/15 last:border-b-0">
+                      <td className="px-4 py-3 font-medium text-jscolors-navy">{option.charmCount}</td>
+                      <td className="px-4 py-3 text-jscolors-charcoal/80">{option.lengthInches}&quot;</td>
+                      <td className="px-4 py-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => handleSizeSelect(option.charmCount)}
+                          className="rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-1.5 text-xs font-semibold text-jscolors-navy transition hover:border-jscolors-pink hover:bg-jscolors-pink/10"
+                        >
+                          Select
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="mx-auto mt-4 max-w-md rounded-xl border border-jscolors-gold/35 bg-white/80 p-4 shadow-sm">
+              <label htmlFor={`${idPrefix}-custom-size`} className="block text-sm font-semibold text-jscolors-navy">
+                Custom size
+              </label>
+              <p className="mt-1 text-xs text-jscolors-charcoal/75">Enter 10–30 charms if you need a size outside the table.</p>
+              <div className="mt-3 flex items-center gap-2">
+                <input
+                  id={`${idPrefix}-custom-size`}
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={customSizeInput}
+                  onChange={handleCustomSizeInputChange}
+                  placeholder="e.g. 12"
+                  className="w-24 rounded-lg border-2 border-jscolors-gold/35 bg-white px-3 py-2 text-sm font-medium text-jscolors-navy outline-none transition focus:border-jscolors-pink"
+                  aria-describedby={customSizeError ? `${idPrefix}-custom-size-error` : undefined}
+                />
+                <span className="text-sm text-jscolors-charcoal/80">charms</span>
+                <button
+                  type="button"
+                  onClick={handleCustomSizeConfirm}
+                  disabled={parsedCustomSize == null}
+                  className="ml-auto rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-2 text-xs font-semibold text-jscolors-navy transition hover:border-jscolors-pink hover:bg-jscolors-pink/10 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Use custom size
+                </button>
+              </div>
+              {parsedCustomSize != null && (
+                <p className="mt-2 text-xs text-jscolors-charcoal/75">
+                  Estimated length: {getSizeLengthLabel(parsedCustomSize)}
+                </p>
+              )}
+              {customSizeError && (
+                <p id={`${idPrefix}-custom-size-error`} className="mt-2 text-xs text-red-600" role="alert">
+                  {customSizeError}
+                </p>
+              )}
+            </div>
+            {sizeChangeError && (
+              <p className="mx-auto mt-3 max-w-md text-center text-xs text-red-600" role="alert">
+                {sizeChangeError}
+              </p>
+            )}
+          </div>
+        )}
+
+        {selectedSize != null && !isSizePickerExpanded && (
+          <div className="mx-auto mt-8 flex max-w-md flex-wrap items-center justify-between gap-3 rounded-xl border border-jscolors-gold/35 bg-jscolors-cream/50 px-4 py-3">
+            <p className="text-sm font-semibold text-jscolors-navy">{formatSizeSummary(selectedSize)}</p>
+            <button
+              type="button"
+              onClick={handleChangeSizeClick}
+              className="shrink-0 text-sm font-semibold text-jscolors-navy underline decoration-jscolors-gold-warm underline-offset-2 transition hover:text-jscolors-pink"
+            >
+              Change size
+            </button>
+          </div>
+        )}
+
+        {selectedSize != null && (
+          <>
+        <p
+          id={`${idPrefix}-track-instruction`}
+          className={`text-center text-xs font-semibold uppercase tracking-[0.3em] text-jscolors-gold-warm ${isSizePickerExpanded ? 'mt-8' : 'mt-6'}`}
+        >
+          {trackInstructionLabel}
+        </p>
+        <div className="relative mt-2">
+          <BraceletBaseGraphic stroke={chainStroke} linkCount={selectedSize} />
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
               <div className="relative mx-auto flex min-h-[140px] max-w-full items-center justify-center gap-1.5 overflow-x-auto px-4 py-8 md:gap-2">
@@ -261,24 +476,18 @@ export function CharmBuilder({
                     onRemove={removeCharm}
                   />
                 ))}
-                {n === 0 && (
-                  <p className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center text-center text-sm text-jscolors-charcoal/45">
-                    Charms appear here as you tap below
-                  </p>
-                )}
               </div>
             </SortableContext>
           </DndContext>
         </div>
 
-        <p className="mt-4 text-center font-display text-lg font-semibold text-jscolors-navy md:text-xl">{summaryLine}</p>
-        {baseSlotsFull && (
-          <p className="mt-2 text-center text-sm font-medium text-jscolors-pink">
-            All {BASE_LINK_COUNT} slots filled — new charms extend your bracelet.
+        {braceletFull && (
+          <p className="mt-6 text-center text-sm font-medium text-jscolors-pink">
+            All {selectedSize} slots filled — remove a charm to swap something in.
           </p>
         )}
 
-        <div className="mt-8 flex flex-wrap justify-center gap-3">
+        <div className={`flex flex-wrap justify-center gap-3 ${braceletFull ? 'mt-6' : 'mt-8'}`}>
           <button
             type="button"
             onClick={reset}
@@ -298,32 +507,37 @@ export function CharmBuilder({
         <div className="mt-10 border-t border-jscolors-gold/25 pt-8">
           <p className="text-center text-sm font-semibold text-jscolors-navy">Add charms</p>
           <div className="mt-4 max-h-[320px] overflow-y-auto pr-1 md:max-h-[380px]">
-            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={false} />
+            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={braceletFull} />
           </div>
         </div>
+          </>
+        )}
       </div>
     </section>
   )
 }
 
-function linkOrderFromSavedCharms(savedCharms) {
+function formatSizeSummary(charmCount) {
+  const exact = SIZE_OPTIONS.find((option) => option.charmCount === charmCount)
+  if (exact) {
+    return `Size: ${charmCount} charms (${exact.lengthInches} inches)`
+  }
+
+  return `Size: ${charmCount} charms (~${getApproximateLengthInches(charmCount)} inches, approx.)`
+}
+
+function linkOrderFromSavedCharms(savedCharms, slotCount) {
   const charmsOnTrack = savedCharms
     .map((c) => getCharmById(c.id))
     .filter((charm) => charm && charm.category !== 'starter')
 
-  if (charmsOnTrack.length === 0) {
-    return createInitialLinkOrder()
-  }
-
-  const totalSlots = Math.max(BASE_LINK_COUNT, charmsOnTrack.length)
-  return Array.from({ length: totalSlots }, (_, i) =>
-    i < charmsOnTrack.length ? createCharmLink(charmsOnTrack[i]) : createPlainLink(),
-  )
+  return createLinkOrderForSize(slotCount, charmsOnTrack)
 }
 
 function PreviousBuildOptionPreview({ build }) {
   const metalLabel = build.metal === 'gold' ? 'Gold' : 'Silver'
   const charmCount = build.charms.length
+  const sizeLabel = build.charmCount ? `${build.charmCount} links` : null
   const summary =
     charmCount === 0
       ? 'No charms yet'
@@ -350,7 +564,9 @@ function PreviousBuildOptionPreview({ build }) {
         )}
       </div>
       <div className="min-w-0">
-        <p className="font-display font-semibold text-jscolors-navy">{metalLabel} bracelet</p>
+        <p className="font-display font-semibold text-jscolors-navy">
+          {metalLabel} bracelet{sizeLabel ? ` · ${sizeLabel}` : ''}
+        </p>
         <p className="mt-0.5 truncate text-xs text-jscolors-charcoal/75">{summary}</p>
       </div>
     </div>
@@ -414,7 +630,7 @@ function PlainLinkGraphic({ stroke }) {
 }
 
 function BraceletBaseGraphic({ stroke, linkCount }) {
-  const slots = Math.max(linkCount, BASE_LINK_COUNT)
+  const slots = linkCount
   const width = Math.min(920, 40 + slots * 26)
   const height = 80
 
