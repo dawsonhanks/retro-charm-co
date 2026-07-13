@@ -2,6 +2,7 @@ import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
 import { NextMarketBanner } from './components/NextMarketBanner'
+import { ScrollToTop } from './components/ScrollToTop.jsx'
 import Home from './pages/Home.jsx'
 import Create from './pages/Create.jsx'
 import FindUs from './pages/FindUs.jsx'
@@ -27,7 +28,9 @@ function Shell() {
 
 export default function App() {
   return (
-    <Routes>
+    <>
+      <ScrollToTop />
+      <Routes>
       <Route element={<Shell />}>
         <Route index element={<Home />} />
         {/* Old build-and-checkout flow was retired in favor of a single cart (CartContext).
@@ -40,5 +43,6 @@ export default function App() {
         <Route path="order-confirmation" element={<OrderConfirmation />} />
       </Route>
     </Routes>
+    </>
   )
 }
