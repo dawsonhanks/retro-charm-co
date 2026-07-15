@@ -5,6 +5,7 @@ import { useCart } from '../context/CartContext.jsx'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../data/shipping'
 import { CartItemThumbnail } from './CartItemThumbnail'
 import { BraceletBuildsPreview } from './BraceletBuildsPreview'
+import { RemoveCartItemButton } from './RemoveCartItemButton'
 
 function formatPrice(value) {
   return `$${Number(value).toFixed(2)}`
@@ -80,14 +81,10 @@ export function CartDrawer({ isOpen, onClose }) {
                               </p>
                               <p className="mt-2 font-semibold text-jscolors-blue">{formatPrice(item.price)}</p>
                             </div>
-                            <button
-                              type="button"
+                            <RemoveCartItemButton
+                              itemName={item.name}
                               onClick={() => removeItem(item.id)}
-                              className="shrink-0 rounded-lg px-2 py-1 text-xs font-medium text-jscolors-ink/60 transition hover:bg-jscolors-pink/35 hover:text-jscolors-ink"
-                              aria-label={`Remove ${item.name}`}
-                            >
-                              Remove
-                            </button>
+                            />
                           </div>
                         </div>
                       </div>

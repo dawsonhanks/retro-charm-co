@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
 import { CartItemThumbnail } from '../components/CartItemThumbnail'
 import { BraceletBuildsPreview } from '../components/BraceletBuildsPreview'
+import { RemoveCartItemButton } from '../components/RemoveCartItemButton'
 import { useCart } from '../context/CartContext.jsx'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../data/shipping'
 import { createCheckoutSession } from '../utils/checkoutApi'
@@ -14,7 +15,7 @@ function formatPrice(value) {
 }
 
 export default function Cart() {
-  const { items, cartTotal, clearCart, braceletBuilds } = useCart()
+  const { items, cartTotal, clearCart, removeItem, braceletBuilds } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const orderTotal = cartTotal + FLAT_RATE_SHIPPING
@@ -71,7 +72,7 @@ export default function Cart() {
             <BraceletBuildsPreview builds={braceletBuilds} />
             <ul className="divide-y divide-jscolors-gold/25 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 shadow-lg">
               {items.map((item) => (
-                <li key={item.id} className="flex items-start gap-4 px-6 py-5 sm:items-center">
+                <li key={item.id} className="flex items-start gap-3 px-4 py-5 sm:items-center sm:gap-4 sm:px-6">
                   <CartItemThumbnail item={item} />
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-lg font-semibold text-jscolors-ink">{item.name}</p>
@@ -80,7 +81,13 @@ export default function Cart() {
                       {formatPrice(item.price)} × {item.quantity}
                     </p>
                   </div>
-                  <p className="shrink-0 font-semibold text-jscolors-blue">{formatPrice(item.price * item.quantity)}</p>
+                  <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
+                    <p className="font-semibold text-jscolors-blue">{formatPrice(item.price * item.quantity)}</p>
+                    <RemoveCartItemButton
+                      itemName={item.name}
+                      onClick={() => removeItem(item.id)}
+                    />
+                  </div>
                 </li>
               ))}
             </ul>

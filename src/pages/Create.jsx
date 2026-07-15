@@ -21,7 +21,7 @@ const SILVER_CHARMS = [
 
   // Starter Bracelets
   { id: 's-silver-base', category: 'Starter Bracelets', name: 'Silver Base', price: 10, metal: 'silver', stock: 20, image: '/images/starter-bracelets/silver-base.webp' },
-  { id: 's-silver-apple-watch', category: 'Starter Bracelets', name: 'Silver Apple Watch', price: 10, metal: 'silver', stock: 20, image: '/images/starter-bracelets/silver-apple-watch.webp' },
+  { id: 's-silver-apple-watch', category: 'Starter Bracelets', name: 'Silver Apple Watch', price: 18, metal: 'silver', stock: 20, image: '/images/starter-bracelets/silver-apple-watch.webp' },
 
   // Letter Charms
   { id: 's-letter-a', category: 'Charms', name: 'Letter A', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/letter-charms/letter-a-silver.webp' },
@@ -87,7 +87,7 @@ const GOLD_CHARMS = [
 
   // Starter Bracelets
   { id: 'g-gold-base', category: 'Starter Bracelets', name: 'Gold Base', price: 12, metal: 'gold', stock: 20, image: '/images/starter-bracelets/gold-base.webp' },
-  { id: 'g-gold-apple-watch', category: 'Starter Bracelets', name: 'Gold Apple Watch', price: 12, metal: 'gold', stock: 20, image: '/images/starter-bracelets/gold-apple-watch.webp' },
+  { id: 'g-gold-apple-watch', category: 'Starter Bracelets', name: 'Gold Apple Watch', price: 20, metal: 'gold', stock: 20, image: '/images/starter-bracelets/gold-apple-watch.webp' },
 
   // Charms
   { id: 'g-fish-dangle-green-white', category: 'Dangle Charms', name: 'Fish Dangle - Green/White', price: 4.95, metal: 'gold', stock: 20, image: '/images/charms/animals-characters/fish-dangle-green-white-gold.webp' },

@@ -19,9 +19,9 @@
 
 export const BASE_OPTIONS = [
   { id: 'silver', metal: 'silver', label: 'Silver Bracelet', price: 10, chainClass: 'stroke-slate-300', image: '/images/base-bracelet-silver.webp' },
-  { id: 'silver-watch', metal: 'silver', label: 'Silver Watch Band', price: 10, chainClass: 'stroke-slate-300', image: '/images/base-bracelet-silver-watch.webp' },
+  { id: 'silver-watch', metal: 'silver', label: 'Silver Watch Band', price: 18, chainClass: 'stroke-slate-300', image: '/images/base-bracelet-silver-watch.webp' },
   { id: 'gold', metal: 'gold', label: 'Gold Bracelet', price: 12, chainClass: 'stroke-amber-400', image: '/images/base-bracelet-gold.webp' },
-  { id: 'gold-watch', metal: 'gold', label: 'Gold Watch Band', price: 12, chainClass: 'stroke-amber-400', image: '/images/base-bracelet-gold-watch.webp' },
+  { id: 'gold-watch', metal: 'gold', label: 'Gold Watch Band', price: 20, chainClass: 'stroke-amber-400', image: '/images/base-bracelet-gold-watch.webp' },
 ]
 
 export const DEFAULT_CHARM_PRICE = 3.95
@@ -43,9 +43,9 @@ export const charms = [
 
   // ── Starter Bracelets ─────────────────────────────────────────────────
   { id: 's-silver-base', name: 'Silver Base', category: 'Starter Bracelets', price: 10, metal: 'silver', iconType: 'image', image: '/images/starter-bracelets/silver-base.webp' },
-  { id: 's-silver-apple-watch', name: 'Silver Apple Watch', category: 'Starter Bracelets', price: 10, metal: 'silver', iconType: 'image', image: '/images/starter-bracelets/silver-apple-watch.webp' },
+  { id: 's-silver-apple-watch', name: 'Silver Apple Watch', category: 'Starter Bracelets', price: 18, metal: 'silver', iconType: 'image', image: '/images/starter-bracelets/silver-apple-watch.webp' },
   { id: 'g-gold-base', name: 'Gold Base', category: 'Starter Bracelets', price: 12, metal: 'gold', iconType: 'image', image: '/images/starter-bracelets/gold-base.webp' },
-  { id: 'g-gold-apple-watch', name: 'Gold Apple Watch', category: 'Starter Bracelets', price: 12, metal: 'gold', iconType: 'image', image: '/images/starter-bracelets/gold-apple-watch.webp' },
+  { id: 'g-gold-apple-watch', name: 'Gold Apple Watch', category: 'Starter Bracelets', price: 20, metal: 'gold', iconType: 'image', image: '/images/starter-bracelets/gold-apple-watch.webp' },
 
   // ── Letter Charms (from new photo set) ──────────────────────────────
   { id: 's-letter-a', name: 'Letter A', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/letter-charms/letter-a-silver.webp' },
