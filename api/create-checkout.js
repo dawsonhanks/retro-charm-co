@@ -131,20 +131,26 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Shipping is misconfigured' })
   }
 
-  lineItems.push({
+  // Do NOT add shipping as a line_item — that shows as a product and still leaves
+  // Square's native "Shipping method" section as Free. Use checkout_options.shipping_fee
+  // so Payment Links puts $6 in the Shipping method UI and adds it as a service charge.
+  // https://developer.squareup.com/docs/checkout-api/optional-checkout-configurations
+  const shippingFee = {
     name: SHIPPING_LINE_ITEM_NAME,
-    quantity: '1',
-    base_price_money: {
+    charge: {
       amount: shippingAmountCents,
       currency: 'USD',
     },
-  })
+  }
 
-  console.log('create-checkout line items:', lineItems.map((item) => ({
-    name: item.name,
-    quantity: item.quantity,
-    amount: item.base_price_money.amount,
-  })))
+  console.log('create-checkout payload:', {
+    lineItems: lineItems.map((item) => ({
+      name: item.name,
+      quantity: item.quantity,
+      amount: item.base_price_money.amount,
+    })),
+    shippingFee,
+  })
 
   // Reuse a client-supplied idempotency key when it looks sane so that retries of the
   // exact same cart don't create duplicate Square payment links. Fall back to a fresh
@@ -178,6 +184,7 @@ export default async function handler(req, res) {
         checkout_options: {
           redirect_url: `${siteUrl}/order-confirmation?order=${encodeURIComponent(safeIdempotencyKey)}`,
           ask_for_shipping_address: true,
+          shipping_fee: shippingFee,
         },
         order,
       }),
