@@ -37,7 +37,7 @@ export function NextMarketBanner() {
 
   return (
     <div
-      className="sticky top-14 z-40 border-b border-jscolors-gold/30 bg-jscolors-navy text-jscolors-cream md:top-[4.25rem]"
+      className="sticky top-14 z-40 border-b border-jscolors-gold/30 bg-jscolors-blue text-jscolors-cream md:top-[4.25rem]"
       role="status"
       aria-live="polite"
     >

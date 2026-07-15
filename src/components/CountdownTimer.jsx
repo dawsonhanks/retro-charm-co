@@ -30,8 +30,8 @@ export function CountdownTimer({ targetDate }) {
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
       {units.map((u) => (
         <div key={u.label} className="retro-card border-jscolors-gold/40 p-4 text-center">
-          <p className="font-display text-3xl font-bold tabular-nums text-jscolors-navy md:text-4xl">{u.format(u.value)}</p>
-          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-charcoal/70">{u.label}</p>
+          <p className="font-display text-3xl font-bold tabular-nums text-jscolors-ink md:text-4xl">{u.format(u.value)}</p>
+          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-ink/70">{u.label}</p>
         </div>
       ))}
     </div>

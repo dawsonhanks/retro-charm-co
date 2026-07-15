@@ -74,16 +74,16 @@ function DayCell({ cell }) {
 
   switch (cell.kind) {
     case 'market':
-      cellClass += ' bg-jscolors-navy font-bold text-jscolors-cream'
+      cellClass += ' bg-jscolors-blue font-bold text-jscolors-cream'
       break
     case 'past-market':
-      cellClass += ' bg-jscolors-navy/25 text-jscolors-navy/50'
+      cellClass += ' bg-jscolors-blue/25 text-jscolors-ink/50'
       break
     case 'skipped':
-      cellClass += ' text-jscolors-charcoal/30 line-through'
+      cellClass += ' text-jscolors-ink/30 line-through'
       break
     default:
-      cellClass += ' text-jscolors-charcoal/70'
+      cellClass += ' text-jscolors-ink/70'
   }
 
   if (cell.isToday) {
@@ -103,10 +103,10 @@ export function MarketCalendar() {
 
   return (
     <div className="retro-card p-4">
-      <h3 className="font-display font-bold text-jscolors-navy">{monthLabel}</h3>
+      <h3 className="font-display font-bold text-jscolors-ink">{monthLabel}</h3>
       <div className="mt-3 grid grid-cols-7 justify-items-center gap-y-1">
         {WEEKDAY_LABELS.map((label, i) => (
-          <span key={`${label}-${i}`} className="text-xs text-jscolors-charcoal/50">
+          <span key={`${label}-${i}`} className="text-xs text-jscolors-ink/50">
             {label}
           </span>
         ))}
@@ -114,9 +114,9 @@ export function MarketCalendar() {
           <DayCell key={i} cell={cell} />
         ))}
       </div>
-      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-jscolors-charcoal/60">
+      <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-jscolors-ink/60">
         <li className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-full bg-jscolors-navy" aria-hidden="true" />
+          <span className="h-2 w-2 rounded-full bg-jscolors-blue" aria-hidden="true" />
           Market day
         </li>
         <li className="line-through">No market</li>

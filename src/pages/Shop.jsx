@@ -3,6 +3,8 @@ import { Helmet } from 'react-helmet-async'
 import { Link } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
 import { BASE_OPTIONS, DEFAULT_CHARM_PRICE } from '../data/charms'
+import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../data/shipping'
+import { createCheckoutSession } from '../utils/checkoutApi'
 import { readJson, STORAGE_KEYS } from '../utils/storage'
 
 function formatPrice(value) {
@@ -44,22 +46,7 @@ export default function Shop() {
     ]
 
     try {
-      const res = await fetch('/api/create-checkout', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items }),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        throw new Error(data.error || 'Checkout failed. Please try again.')
-      }
-
-      if (!data.checkoutUrl) {
-        throw new Error('No checkout URL returned. Please try again.')
-      }
-
+      const data = await createCheckoutSession({ items })
       window.location.href = data.checkoutUrl
     } catch (err) {
       setError(err.message || 'Checkout failed. Please try again.')
@@ -68,7 +55,8 @@ export default function Shop() {
   }
 
   const basePrice = build ? getBasePrice(build.baseId) : 0
-  const orderTotal = (hasBase ? basePrice : 0) + charmNames.length * DEFAULT_CHARM_PRICE
+  const subtotal = (hasBase ? basePrice : 0) + charmNames.length * DEFAULT_CHARM_PRICE
+  const orderTotal = subtotal + (hasBase ? FLAT_RATE_SHIPPING : 0)
 
   return (
     <>
@@ -80,15 +68,15 @@ export default function Shop() {
       <section className="mx-auto max-w-3xl px-4 py-12 md:py-16">
         <div className="text-center">
           <SparkleRow className="mx-auto" />
-          <h1 className="mt-6 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">Your Order</h1>
+          <h1 className="mt-6 font-display text-4xl font-bold text-jscolors-ink md:text-5xl">Your Order</h1>
         </div>
 
         {!build ? (
           <div className="mt-12 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 p-10 text-center shadow-lg">
-            <p className="text-lg text-jscolors-charcoal/80">No build saved yet.</p>
+            <p className="text-lg text-jscolors-ink/80">No build saved yet.</p>
             <Link
               to="/create"
-              className="mt-6 inline-block rounded-full bg-jscolors-navy px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-navy/90"
+              className="mt-6 inline-block rounded-full bg-jscolors-cta px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-cta-hover"
             >
               Build your bracelet
             </Link>
@@ -99,15 +87,15 @@ export default function Shop() {
               {hasBase && (
                 <li className="flex items-center justify-between gap-4 px-6 py-5">
                   <div className="min-w-0 flex-1">
-                    <p className="font-display text-lg font-semibold text-jscolors-navy">{build.baseLabel}</p>
-                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-navy/60">Base bracelet</p>
+                    <p className="font-display text-lg font-semibold text-jscolors-ink">{build.baseLabel}</p>
+                    <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-ink/60">Base bracelet</p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
-                    <p className="font-semibold text-jscolors-navy">{formatPrice(basePrice)}</p>
+                    <p className="font-semibold text-jscolors-blue">{formatPrice(basePrice)}</p>
                     <button
                       type="button"
                       onClick={removeBase}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-lg leading-none text-jscolors-navy/60 transition hover:bg-jscolors-pink/35 hover:text-jscolors-navy"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-lg leading-none text-jscolors-ink/60 transition hover:bg-jscolors-pink/35 hover:text-jscolors-ink"
                       aria-label={`Remove ${build.baseLabel}`}
                     >
                       ×
@@ -118,13 +106,13 @@ export default function Shop() {
 
               {charmNames.map((name, i) => (
                 <li key={`${name}-${i}`} className="flex items-center justify-between gap-4 px-6 py-5">
-                  <p className="min-w-0 flex-1 font-display text-lg font-semibold text-jscolors-navy">{name}</p>
+                  <p className="min-w-0 flex-1 font-display text-lg font-semibold text-jscolors-ink">{name}</p>
                   <div className="flex shrink-0 items-center gap-3">
-                    <p className="font-semibold text-jscolors-navy">{formatPrice(DEFAULT_CHARM_PRICE)}</p>
+                    <p className="font-semibold text-jscolors-blue">{formatPrice(DEFAULT_CHARM_PRICE)}</p>
                     <button
                       type="button"
                       onClick={() => removeCharm(i)}
-                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-lg leading-none text-jscolors-navy/60 transition hover:bg-jscolors-pink/35 hover:text-jscolors-navy"
+                      className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-lg leading-none text-jscolors-ink/60 transition hover:bg-jscolors-pink/35 hover:text-jscolors-ink"
                       aria-label={`Remove ${name}`}
                     >
                       ×
@@ -135,9 +123,21 @@ export default function Shop() {
             </ul>
 
             <div className="retro-card border-jscolors-gold/35 p-6">
-              <div className="flex items-center justify-between">
-                <span className="font-display text-lg font-semibold text-jscolors-navy">Order total</span>
-                <span className="font-display text-2xl font-bold text-jscolors-navy">{formatPrice(orderTotal)}</span>
+              <div className="space-y-2 text-sm">
+                <div className="flex items-center justify-between text-jscolors-ink/80">
+                  <span>Subtotal</span>
+                  <span className="font-semibold text-jscolors-blue">{formatPrice(subtotal)}</span>
+                </div>
+                {hasBase && (
+                  <div className="flex items-center justify-between text-jscolors-ink/80">
+                    <span>{SHIPPING_LINE_ITEM_NAME}</span>
+                    <span className="font-semibold text-jscolors-blue">{formatPrice(FLAT_RATE_SHIPPING)}</span>
+                  </div>
+                )}
+              </div>
+              <div className="mt-4 flex items-center justify-between border-t border-jscolors-gold/25 pt-4">
+                <span className="font-display text-lg font-semibold text-jscolors-ink">Order total</span>
+                <span className="font-display text-2xl font-bold text-jscolors-blue">{formatPrice(orderTotal)}</span>
               </div>
 
               {error && (
@@ -147,21 +147,21 @@ export default function Shop() {
               )}
 
               {!hasBase && (
-                <p className="mt-4 text-sm text-jscolors-charcoal/80">A base bracelet is required to checkout</p>
+                <p className="mt-4 text-sm text-jscolors-ink/80">A base bracelet is required to checkout</p>
               )}
 
               <button
                 type="button"
                 onClick={handleCheckout}
                 disabled={loading || !hasBase}
-                className="mt-6 w-full rounded-full bg-jscolors-navy px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-navy/90 disabled:cursor-not-allowed disabled:opacity-60"
+                className="mt-6 w-full rounded-full bg-jscolors-cta px-6 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
               >
                 {loading ? 'Redirecting to checkout…' : 'Checkout'}
               </button>
 
               <Link
                 to="/create"
-                className="mt-4 block text-center text-sm font-medium text-jscolors-navy/70 transition hover:text-jscolors-navy"
+                className="mt-4 block text-center text-sm font-medium text-jscolors-blue transition hover:text-jscolors-blue-hover"
               >
                 ← Edit your build
               </Link>

@@ -1,10 +1,10 @@
 import { motion } from 'framer-motion'
 import { CHARM_CATEGORY_FILTERS } from '../data/charms'
 
-export function FilterBar({ active, onChange }) {
+export function FilterBar({ active, onChange, filters = CHARM_CATEGORY_FILTERS, layoutId = 'filter-pill' }) {
   return (
     <div className="flex flex-wrap justify-center gap-2 md:gap-3" role="tablist" aria-label="Filter charms by category">
-      {CHARM_CATEGORY_FILTERS.map((cat) => {
+      {filters.map((cat) => {
         const isActive = active === cat.id
         return (
           <button
@@ -19,13 +19,13 @@ export function FilterBar({ active, onChange }) {
           >
             {isActive && (
               <motion.span
-                layoutId="filter-pill"
+                layoutId={layoutId}
                 className="absolute inset-0 rounded-full bg-jscolors-pink shadow-md"
                 style={{ zIndex: 0 }}
                 transition={{ type: 'spring', stiffness: 400, damping: 34 }}
               />
             )}
-            <span className={`relative z-10 ${isActive ? 'text-white' : 'text-jscolors-navy hover:text-jscolors-pink'}`}>
+            <span className={`relative z-10 ${isActive ? 'text-white' : 'text-jscolors-ink hover:text-jscolors-pink'}`}>
               {cat.label}
             </span>
           </button>

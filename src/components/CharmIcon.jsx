@@ -11,7 +11,7 @@ export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text
           x="12"
           y="13"
           textAnchor="middle"
-          className="fill-jscolors-navy"
+          className="fill-jscolors-blue"
           style={{ fontFamily: 'var(--font-display), Georgia, serif', fontSize: '11px', fontWeight: 700 }}
         >
           {charm.letter}
@@ -61,8 +61,8 @@ export function CharmPickerGrid({ charms: list, onPick, maxReached }) {
             title={c.name}
             className="flex flex-col items-center rounded-xl border border-jscolors-gold/25 bg-white/90 p-2 text-center shadow-sm transition hover:border-jscolors-gold hover:shadow-md disabled:cursor-not-allowed disabled:opacity-45"
           >
-            <CharmSvgIcon charm={c} className="h-7 w-7 text-jscolors-charcoal" accentClass="text-jscolors-pink" />
-            <span className="mt-1 line-clamp-2 text-[10px] font-medium leading-tight text-jscolors-charcoal">{c.name}</span>
+            <CharmSvgIcon charm={c} className="h-7 w-7 text-jscolors-ink" accentClass="text-jscolors-pink" />
+            <span className="mt-1 line-clamp-2 text-[10px] font-medium leading-tight text-jscolors-ink">{c.name}</span>
           </button>
         )
       })}

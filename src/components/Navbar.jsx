@@ -19,11 +19,15 @@ export function Navbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream/90 backdrop-blur-md">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4" aria-label="Main">
-        <Link to="/" className="group flex items-center gap-2 font-display text-lg font-semibold text-jscolors-navy md:text-xl">
-          <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border-2 border-jscolors-gold/80 bg-[#f6eef1] text-[#b08a4e] transition group-hover:border-jscolors-navy">
-            ✦
-          </span>
-          <span className="text-balance">RetroCharm Co</span>
+        <Link to="/" className="group shrink-0" aria-label="RetroCharm Co home">
+          <img
+            src="/images/brand/retro-charm-logo.png"
+            alt="RetroCharm Co"
+            width={158}
+            height={117}
+            className="h-12 w-auto object-contain transition group-hover:opacity-90 md:h-14"
+            decoding="async"
+          />
         </Link>
 
         <ul className="hidden items-center gap-1 md:flex">
@@ -33,7 +37,7 @@ export function Navbar() {
                 to={to}
                 className={({ isActive }) =>
                   `rounded-full px-4 py-2 text-sm font-medium transition ${
-                    isActive ? 'bg-jscolors-navy text-jscolors-cream' : 'text-jscolors-navy/90 hover:bg-jscolors-pink/35 hover:text-jscolors-navy'
+                    isActive ? 'bg-jscolors-blue text-jscolors-cream' : 'text-jscolors-ink/90 hover:bg-jscolors-pink/35 hover:text-jscolors-ink'
                   }`
                 }
               >
@@ -46,7 +50,7 @@ export function Navbar() {
         <div className="flex items-center gap-2">
           <button
             type="button"
-            className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy transition hover:bg-jscolors-pink/35"
+            className="relative inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-ink transition hover:bg-jscolors-pink/35"
             aria-label="Open cart"
             aria-expanded={cartOpen}
             onClick={() => setCartOpen((o) => !o)}
@@ -65,7 +69,7 @@ export function Navbar() {
 
           <button
             type="button"
-            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-navy md:hidden"
+            className="inline-flex h-11 w-11 items-center justify-center rounded-xl border border-jscolors-gold/50 text-jscolors-ink md:hidden"
             aria-expanded={open}
             aria-controls="mobile-menu"
             onClick={() => setOpen((o) => !o)}
@@ -117,7 +121,7 @@ export function Navbar() {
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                       `block rounded-xl px-4 py-3 text-base font-medium ${
-                        isActive ? 'bg-jscolors-navy text-jscolors-cream' : 'text-jscolors-navy hover:bg-jscolors-pink/35'
+                        isActive ? 'bg-jscolors-blue text-jscolors-cream' : 'text-jscolors-ink hover:bg-jscolors-pink/35'
                       }`
                     }
                   >

@@ -1,7 +1,8 @@
 import { BASE_LINK_COUNT } from '../utils/braceletLinks'
+import { BASE_OPTIONS } from '../data/charms'
 
 /**
- * @param {{ buildId: string, metal: 'silver' | 'gold', charms: { id: string, image?: string, name: string }[] }[]} builds
+ * @param {{ buildId: string, baseId?: string, metal: 'silver' | 'gold', charms: { id: string, image?: string, name: string }[] }[]} builds
  * @param {{ className?: string }} props
  */
 export function BraceletBuildsPreview({ builds, className = '' }) {
@@ -9,7 +10,7 @@ export function BraceletBuildsPreview({ builds, className = '' }) {
 
   return (
     <div className={`space-y-3 ${className}`}>
-      <p className="text-xs font-semibold uppercase tracking-wide text-jscolors-navy/60">Your bracelet builds</p>
+      <p className="text-xs font-semibold uppercase tracking-wide text-jscolors-ink/60">Your bracelet builds</p>
       {builds.map((build) => (
         <BraceletBuildRow key={build.buildId} build={build} />
       ))}
@@ -20,10 +21,12 @@ export function BraceletBuildsPreview({ builds, className = '' }) {
 function BraceletBuildRow({ build }) {
   const chainStroke = build.metal === 'gold' ? '#d4af37' : '#b8bcc6'
   const linkCount = Math.max(build.charms.length * 2 + 2, BASE_LINK_COUNT)
+  const base = BASE_OPTIONS.find((b) => b.id === (build.baseId ?? build.metal))
+  const label = base?.label ?? `${build.metal} bracelet`
 
   return (
     <div className="rounded-2xl border border-jscolors-gold/30 bg-white/70 p-3 shadow-sm">
-      <p className="mb-2 text-xs font-medium capitalize text-jscolors-navy/70">{build.metal} bracelet</p>
+      <p className="mb-2 text-xs font-medium text-jscolors-ink/70">{label}</p>
       <div className="relative">
         <BraceletBaseGraphic stroke={chainStroke} linkCount={linkCount} />
         <div className="relative mx-auto flex max-w-full items-center justify-center gap-0.5 overflow-x-auto px-2 py-5">

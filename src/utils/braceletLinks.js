@@ -1,4 +1,4 @@
-import { DEFAULT_BRACELET_SIZE, getCharmById } from '../data/charms'
+import { DEFAULT_BRACELET_SIZE, getCharmById, isFillerCharm } from '../data/charms'
 import { readJson, STORAGE_KEYS } from './storage'
 
 /** @deprecated Use DEFAULT_BRACELET_SIZE — kept for preview components */
@@ -88,6 +88,8 @@ export function findLargestPlainRun(linkOrder) {
  * @returns {BraceletLink[]}
  */
 export function addCharmToLinkOrder(linkOrder, charm) {
+  if (isFillerCharm(charm)) return linkOrder
+
   const hasPlain = linkOrder.some((link) => link.type === 'plain')
 
   if (!hasPlain) {
@@ -118,11 +120,14 @@ export function removeCharmFromLinkOrder(linkOrder, linkId) {
 }
 
 /**
+ * Real (customer-chosen) charms on the track — excludes plain slots and filler placeholders.
  * @param {BraceletLink[]} linkOrder
  * @returns {import('../data/charms').Charm[]}
  */
 export function getCharmsFromLinkOrder(linkOrder) {
-  return linkOrder.filter((link) => link.type === 'charm').map((link) => link.charm)
+  return linkOrder
+    .filter((link) => link.type === 'charm' && link.charm && !isFillerCharm(link.charm))
+    .map((link) => link.charm)
 }
 
 /**
@@ -131,8 +136,9 @@ export function getCharmsFromLinkOrder(linkOrder) {
  * @returns {BraceletLink[]}
  */
 export function createLinkOrderForSize(slotCount, charmsOnTrack = []) {
+  const realCharms = charmsOnTrack.filter((charm) => charm && !isFillerCharm(charm))
   return Array.from({ length: slotCount }, (_, i) =>
-    i < charmsOnTrack.length ? createCharmLink(charmsOnTrack[i]) : createPlainLink(),
+    i < realCharms.length ? createCharmLink(realCharms[i]) : createPlainLink(),
   )
 }
 
@@ -147,7 +153,7 @@ export function linkOrderFromCharmIds(charmIds, getCharmByIdFn, slotCount = DEFA
   let order = createInitialLinkOrder(slotCount)
   for (const id of charmIds) {
     const charm = getCharmByIdFn(id)
-    if (charm && charm.category !== 'starter') {
+    if (charm && charm.category !== 'Starter Bracelets') {
       order = addCharmToLinkOrder(order, charm)
     }
   }

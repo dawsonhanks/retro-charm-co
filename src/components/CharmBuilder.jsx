@@ -16,9 +16,12 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { BASE_OPTIONS, charms, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getSizeLengthLabel, parseCharmCountInput, SIZE_OPTIONS } from '../data/charms'
+import { BASE_OPTIONS, charms, CHARM_CATEGORY_FILTERS, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getFillerCharmForMetal, getSizeLengthLabel, isFillerCharm, parseCharmCountInput, SIZE_OPTIONS } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
+import { CharmSearchInput } from './CharmSearchInput'
+import { FilterBar } from './FilterBar'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
+import { filterCharmList } from '../utils/charmFilters'
 import { useCart } from '../context/CartContext.jsx'
 import {
   addCharmToLinkOrder,
@@ -28,6 +31,8 @@ import {
   loadInitialLinkOrder,
   removeCharmFromLinkOrder,
 } from '../utils/braceletLinks'
+
+const PICKER_FILTERS = CHARM_CATEGORY_FILTERS.filter((f) => f.id !== 'Starter Bracelets')
 
 const SIZE_GUIDE_PHOTOS = [
   {
@@ -72,6 +77,8 @@ export function CharmBuilder({
   const [customSizeError, setCustomSizeError] = useState(null)
   const [isSizePickerExpanded, setIsSizePickerExpanded] = useState(true)
   const [sizeChangeError, setSizeChangeError] = useState(null)
+  const [pickerFilter, setPickerFilter] = useState('all')
+  const [searchQuery, setSearchQuery] = useState('')
   const isControlled = controlledLinkOrder !== undefined && onLinkOrderChange !== undefined
   const isSizeControlled = controlledSelectedSize !== undefined && onSelectedSizeChange !== undefined
   const linkOrder = isControlled ? controlledLinkOrder : internalLinkOrder
@@ -94,12 +101,15 @@ export function CharmBuilder({
   }
 
   const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } }),
     useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates }),
   )
 
   const base = BASE_OPTIONS.find((b) => b.id === baseId) ?? BASE_OPTIONS[0]
-  const pickerCharms = useMemo(() => charms.filter((c) => c.category !== 'starter'), [])
+  const pickerCharms = useMemo(() => {
+    const available = charms.filter((c) => c.category !== 'Starter Bracelets' && !isFillerCharm(c))
+    return filterCharmList(available, { filter: pickerFilter, query: searchQuery })
+  }, [pickerFilter, searchQuery])
   const selected = useMemo(() => getCharmsFromLinkOrder(linkOrder), [linkOrder])
   const braceletFull =
     selectedSize != null && linkOrder.length >= selectedSize && !linkOrder.some((link) => link.type === 'plain')
@@ -128,7 +138,7 @@ export function CharmBuilder({
   }
 
   function addCharm(c) {
-    if (c.category === 'starter' || selectedSize == null || braceletFull) return
+    if (c.category === 'Starter Bracelets' || isFillerCharm(c) || selectedSize == null || braceletFull) return
     updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
   }
 
@@ -178,7 +188,7 @@ export function CharmBuilder({
 
     const slotCount = build.charmCount ?? DEFAULT_BRACELET_SIZE
     setEditingBuildId(build.buildId)
-    setBaseId(build.metal)
+    setBaseId(build.baseId ?? build.metal)
     updateSelectedSize(slotCount)
     updateLinkOrder(linkOrderFromSavedCharms(build.charms, slotCount))
     setIsSizePickerExpanded(false)
@@ -201,7 +211,8 @@ export function CharmBuilder({
     if (selectedSize == null) return
 
     const currentBuild = {
-      metal: base.id,
+      baseId: base.id,
+      metal: base.metal,
       charmCount: selectedSize,
       charms: selected.map((c) => ({
         id: c.id,
@@ -213,9 +224,10 @@ export function CharmBuilder({
     if (editingBuildId) {
       replaceBraceletBuild(editingBuildId, currentBuild)
     } else {
-      addItem({ id: base.id, name: base.label, price: base.price, metal: base.id, quantity: 1 })
+      addItem({ id: base.id, name: base.label, price: base.price, metal: base.metal, image: base.image, quantity: 1 })
 
       selected.forEach((c) => {
+        if (isFillerCharm(c)) return
         addItem({
           id: c.id,
           name: c.name,
@@ -250,7 +262,7 @@ export function CharmBuilder({
     })
   }
 
-  const chainStroke = base.id === 'gold' ? '#d4af37' : '#b8bcc6'
+  const chainStroke = base.metal === 'gold' ? '#d4af37' : '#b8bcc6'
   const sortableIds = linkOrder.map((link) => link.id)
   const trackInstructionLabel =
     selectedSize != null
@@ -280,10 +292,10 @@ export function CharmBuilder({
       )}
       {showDefaultHeading && (
         <div className="text-center">
-          <h2 id={`${idPrefix}-heading`} className="font-display text-2xl font-bold text-jscolors-navy md:text-3xl">
+          <h2 id={`${idPrefix}-heading`} className="font-display text-2xl font-bold text-jscolors-ink md:text-3xl">
             Interactive Charm Studio
           </h2>
-          <p className="mt-2 text-sm text-jscolors-charcoal/80 md:text-base">
+          <p className="mt-2 text-sm text-jscolors-ink/80 md:text-base">
             Choose your base and size, then tap charms to add them and drag to rearrange.
           </p>
         </div>
@@ -291,7 +303,7 @@ export function CharmBuilder({
 
       {braceletBuilds.length > 0 && (
         <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-jscolors-gold/35 bg-white/80 p-4 shadow-sm">
-          <p className="text-sm font-semibold text-jscolors-navy">Continue a previous build</p>
+          <p className="text-sm font-semibold text-jscolors-ink">Continue a previous build</p>
           <ul className="mt-3 space-y-2" role="listbox" aria-label="Continue a previous build">
             {braceletBuilds.map((build) => (
               <li key={build.buildId}>
@@ -318,8 +330,8 @@ export function CharmBuilder({
                 onClick={handleStartNewBracelet}
                 className={`w-full rounded-xl border-2 px-4 py-3 text-left text-sm font-semibold transition ${
                   editingBuildId === null
-                    ? 'border-jscolors-pink bg-jscolors-pink/10 text-jscolors-navy'
-                    : 'border-jscolors-gold/30 bg-white text-jscolors-navy hover:border-jscolors-gold'
+                    ? 'border-jscolors-pink bg-jscolors-pink/10 text-jscolors-ink'
+                    : 'border-jscolors-gold/30 bg-white text-jscolors-ink hover:border-jscolors-gold'
                 }`}
               >
                 Start a new bracelet instead
@@ -330,28 +342,39 @@ export function CharmBuilder({
       )}
 
       <div className={`retro-card border-jscolors-gold/35 p-5 md:p-8 ${showHeaderInstruction || showDefaultHeading || braceletBuilds.length > 0 ? 'mt-6' : 'mt-8'}`}>
-        <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your base</p>
-        <div className="mt-4 flex flex-wrap justify-center gap-3">
+        <p className="text-center text-sm font-semibold text-jscolors-ink">Choose your base</p>
+        <div className="mt-4 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap sm:justify-center sm:gap-4">
           {BASE_OPTIONS.map((b) => (
             <button
               key={b.id}
               type="button"
               onClick={() => handleBaseChange(b.id)}
-              className={`rounded-full border-2 px-5 py-2.5 text-sm font-semibold transition ${
+              className={`flex w-full flex-col items-center overflow-hidden rounded-2xl border-2 bg-white text-left transition sm:w-[168px] ${
                 baseId === b.id
-                  ? 'border-jscolors-pink bg-jscolors-pink text-white shadow-md'
-                  : 'border-jscolors-gold/40 bg-white text-jscolors-navy hover:border-jscolors-gold'
+                  ? 'border-jscolors-pink shadow-md'
+                  : 'border-jscolors-gold/40 hover:border-jscolors-gold'
               }`}
             >
-              {b.label} — ${b.price}
+              <img
+                src={b.image}
+                alt={b.label}
+                className="aspect-[3/2] w-full object-contain bg-white p-2"
+              />
+              <span
+                className={`w-full px-3 py-2.5 text-center text-sm font-semibold ${
+                  baseId === b.id ? 'bg-jscolors-pink text-white' : 'text-jscolors-ink'
+                }`}
+              >
+                {b.label} — ${b.price}
+              </span>
             </button>
           ))}
         </div>
 
         {(selectedSize == null || isSizePickerExpanded) && (
           <div className="mt-8">
-            <p className="text-center text-sm font-semibold text-jscolors-navy">Choose your size</p>
-            <p className="mx-auto mt-2 max-w-full px-2 text-center text-xs text-jscolors-charcoal/75 whitespace-nowrap max-[389px]:text-[9px] sm:text-sm">
+            <p className="text-center text-sm font-semibold text-jscolors-ink">Choose your size</p>
+            <p className="mx-auto mt-2 max-w-full px-2 text-center text-xs text-jscolors-ink/75 whitespace-nowrap max-[389px]:text-[9px] sm:text-sm">
               Small wrist: 16–18 charms · Medium wrist: 19–21 charms · Large wrist: 22–24 charms
             </p>
             <div className="mx-auto mt-6 grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
@@ -364,7 +387,7 @@ export function CharmBuilder({
                       className="h-full w-full object-cover"
                     />
                   </div>
-                  <p className="mt-2 text-xs font-semibold text-jscolors-navy sm:text-sm">{photo.caption}</p>
+                  <p className="mt-2 text-xs font-semibold text-jscolors-ink sm:text-sm">{photo.caption}</p>
                 </div>
               ))}
             </div>
@@ -372,21 +395,21 @@ export function CharmBuilder({
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-jscolors-gold/25 bg-jscolors-cream/60">
-                    <th className="px-4 py-3 text-left font-semibold text-jscolors-navy">Charms</th>
-                    <th className="px-4 py-3 text-left font-semibold text-jscolors-navy">Length</th>
+                    <th className="px-4 py-3 text-left font-semibold text-jscolors-ink">Charms</th>
+                    <th className="px-4 py-3 text-left font-semibold text-jscolors-ink">Length</th>
                     <th className="sr-only">Select</th>
                   </tr>
                 </thead>
                 <tbody>
                   {SIZE_OPTIONS.map((option) => (
                     <tr key={option.charmCount} className="border-b border-jscolors-gold/15 last:border-b-0">
-                      <td className="px-4 py-3 font-medium text-jscolors-navy">{option.charmCount}</td>
-                      <td className="px-4 py-3 text-jscolors-charcoal/80">{option.lengthInches}&quot;</td>
+                      <td className="px-4 py-3 font-medium text-jscolors-ink">{option.charmCount}</td>
+                      <td className="px-4 py-3 text-jscolors-ink/80">{option.lengthInches}&quot;</td>
                       <td className="px-4 py-3 text-right">
                         <button
                           type="button"
                           onClick={() => handleSizeSelect(option.charmCount)}
-                          className="rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-1.5 text-xs font-semibold text-jscolors-navy transition hover:border-jscolors-pink hover:bg-jscolors-pink/10"
+                          className="rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-1.5 text-xs font-semibold text-jscolors-ink transition hover:border-jscolors-pink hover:bg-jscolors-pink/10"
                         >
                           Select
                         </button>
@@ -397,10 +420,10 @@ export function CharmBuilder({
               </table>
             </div>
             <div className="mx-auto mt-4 max-w-md rounded-xl border border-jscolors-gold/35 bg-white/80 p-4 shadow-sm">
-              <label htmlFor={`${idPrefix}-custom-size`} className="block text-sm font-semibold text-jscolors-navy">
+              <label htmlFor={`${idPrefix}-custom-size`} className="block text-sm font-semibold text-jscolors-ink">
                 Custom size
               </label>
-              <p className="mt-1 text-xs text-jscolors-charcoal/75">Enter 10–30 charms if you need a size outside the table.</p>
+              <p className="mt-1 text-xs text-jscolors-ink/75">Enter 10–30 charms if you need a size outside the table.</p>
               <div className="mt-3 flex items-center gap-2">
                 <input
                   id={`${idPrefix}-custom-size`}
@@ -410,21 +433,21 @@ export function CharmBuilder({
                   value={customSizeInput}
                   onChange={handleCustomSizeInputChange}
                   placeholder="e.g. 12"
-                  className="w-24 rounded-lg border-2 border-jscolors-gold/35 bg-white px-3 py-2 text-sm font-medium text-jscolors-navy outline-none transition focus:border-jscolors-pink"
+                  className="w-24 rounded-lg border-2 border-jscolors-gold/35 bg-white px-3 py-2 text-sm font-medium text-jscolors-ink outline-none transition focus:border-jscolors-pink"
                   aria-describedby={customSizeError ? `${idPrefix}-custom-size-error` : undefined}
                 />
-                <span className="text-sm text-jscolors-charcoal/80">charms</span>
+                <span className="text-sm text-jscolors-ink/80">charms</span>
                 <button
                   type="button"
                   onClick={handleCustomSizeConfirm}
                   disabled={parsedCustomSize == null}
-                  className="ml-auto rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-2 text-xs font-semibold text-jscolors-navy transition hover:border-jscolors-pink hover:bg-jscolors-pink/10 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="ml-auto rounded-full border-2 border-jscolors-gold/40 bg-white px-4 py-2 text-xs font-semibold text-jscolors-ink transition hover:border-jscolors-pink hover:bg-jscolors-pink/10 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   Use custom size
                 </button>
               </div>
               {parsedCustomSize != null && (
-                <p className="mt-2 text-xs text-jscolors-charcoal/75">
+                <p className="mt-2 text-xs text-jscolors-ink/75">
                   Estimated length: {getSizeLengthLabel(parsedCustomSize)}
                 </p>
               )}
@@ -444,11 +467,11 @@ export function CharmBuilder({
 
         {selectedSize != null && !isSizePickerExpanded && (
           <div className="mx-auto mt-8 flex max-w-md flex-wrap items-center justify-between gap-3 rounded-xl border border-jscolors-gold/35 bg-jscolors-cream/50 px-4 py-3">
-            <p className="text-sm font-semibold text-jscolors-navy">{formatSizeSummary(selectedSize)}</p>
+            <p className="text-sm font-semibold text-jscolors-ink">{formatSizeSummary(selectedSize)}</p>
             <button
               type="button"
               onClick={handleChangeSizeClick}
-              className="shrink-0 text-sm font-semibold text-jscolors-navy underline decoration-jscolors-gold-warm underline-offset-2 transition hover:text-jscolors-pink"
+              className="shrink-0 text-sm font-semibold text-jscolors-ink underline decoration-jscolors-gold-warm underline-offset-2 transition hover:text-jscolors-pink"
             >
               Change size
             </button>
@@ -467,11 +490,12 @@ export function CharmBuilder({
           <BraceletBaseGraphic stroke={chainStroke} linkCount={selectedSize} />
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-              <div className="relative mx-auto flex min-h-[140px] max-w-full items-center justify-center gap-1.5 overflow-x-auto px-4 py-8 md:gap-2">
+              <div className="relative mx-auto flex min-h-[120px] max-w-full items-center justify-center gap-px overflow-x-auto px-3 py-8 sm:px-4">
                 {linkOrder.map((link) => (
                   <SortableBraceletLink
                     key={link.id}
                     link={link}
+                    metal={base.metal}
                     chainStroke={chainStroke}
                     onRemove={removeCharm}
                   />
@@ -491,23 +515,48 @@ export function CharmBuilder({
           <button
             type="button"
             onClick={reset}
-            className="rounded-full border-2 border-jscolors-charcoal/25 bg-white px-6 py-3 text-sm font-semibold text-jscolors-navy hover:border-jscolors-gold"
+            className="rounded-full border-2 border-jscolors-charcoal/25 bg-white px-6 py-3 text-sm font-semibold text-jscolors-ink hover:border-jscolors-gold"
           >
             Reset
           </button>
           <button
             type="button"
             onClick={addToCart}
-            className="rounded-full bg-jscolors-gold px-6 py-3 text-sm font-semibold text-jscolors-navy shadow hover:brightness-105"
+            className="rounded-full bg-jscolors-cta px-6 py-3 text-sm font-semibold text-jscolors-cream shadow hover:bg-jscolors-cta-hover"
           >
             Add to Cart →
           </button>
         </div>
 
         <div className="mt-10 border-t border-jscolors-gold/25 pt-8">
-          <p className="text-center text-sm font-semibold text-jscolors-navy">Add charms</p>
+          <p className="text-center text-sm font-semibold text-jscolors-ink">Add charms</p>
+          <div className="mx-auto mt-4 max-w-xl">
+            <CharmSearchInput
+              id={`${idPrefix}-charm-search`}
+              value={searchQuery}
+              onChange={setSearchQuery}
+              onClear={() => setSearchQuery('')}
+            />
+          </div>
+          <div className="mt-4">
+            <FilterBar
+              active={pickerFilter}
+              onChange={setPickerFilter}
+              filters={PICKER_FILTERS}
+              layoutId={`${idPrefix}-filter-pill`}
+            />
+          </div>
           <div className="mt-4 max-h-[320px] overflow-y-auto pr-1 md:max-h-[380px]">
-            <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={braceletFull} />
+            {pickerCharms.length === 0 ? (
+              <div className="mx-auto max-w-xl rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-white/60 p-8 text-center">
+                <p className="font-display text-xl font-semibold text-jscolors-ink">No charms match that filter</p>
+                <p className="mt-2 text-sm text-jscolors-ink/80">
+                  Try a different search, metal, or category — fresh favorites are always rolling in.
+                </p>
+              </div>
+            ) : (
+              <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={braceletFull} />
+            )}
           </div>
         </div>
           </>
@@ -529,25 +578,27 @@ function formatSizeSummary(charmCount) {
 function linkOrderFromSavedCharms(savedCharms, slotCount) {
   const charmsOnTrack = savedCharms
     .map((c) => getCharmById(c.id))
-    .filter((charm) => charm && charm.category !== 'starter')
+    .filter((charm) => charm && charm.category !== 'Starter Bracelets' && !isFillerCharm(charm))
 
   return createLinkOrderForSize(slotCount, charmsOnTrack)
 }
 
 function PreviousBuildOptionPreview({ build }) {
-  const metalLabel = build.metal === 'gold' ? 'Gold' : 'Silver'
-  const charmCount = build.charms.length
+  const base = BASE_OPTIONS.find((b) => b.id === (build.baseId ?? build.metal))
+  const metalLabel = base?.label ?? (build.metal === 'gold' ? 'Gold' : 'Silver')
+  const realCharms = (build.charms ?? []).filter((c) => !isFillerCharm(c))
+  const charmCount = realCharms.length
   const sizeLabel = build.charmCount ? `${build.charmCount} links` : null
   const summary =
     charmCount === 0
       ? 'No charms yet'
-      : `${charmCount} charm${charmCount === 1 ? '' : 's'} · starts with ${build.charms[0].name}`
+      : `${charmCount} charm${charmCount === 1 ? '' : 's'} · starts with ${realCharms[0].name}`
 
   return (
     <div className="flex items-center gap-3">
       <div className="flex shrink-0 items-center">
-        {build.charms.length > 0 ? (
-          build.charms.slice(0, 4).map((charm, index) => (
+        {realCharms.length > 0 ? (
+          realCharms.slice(0, 4).map((charm, index) => (
             <div
               key={`${charm.id}-${index}`}
               className={`${index > 0 ? '-ml-2' : ''} rounded-full border-2 border-jscolors-gold bg-white p-0.5 shadow-sm`}
@@ -564,20 +615,23 @@ function PreviousBuildOptionPreview({ build }) {
         )}
       </div>
       <div className="min-w-0">
-        <p className="font-display font-semibold text-jscolors-navy">
-          {metalLabel} bracelet{sizeLabel ? ` · ${sizeLabel}` : ''}
+        <p className="font-display font-semibold text-jscolors-ink">
+          {metalLabel}{sizeLabel ? ` · ${sizeLabel}` : ''}
         </p>
-        <p className="mt-0.5 truncate text-xs text-jscolors-charcoal/75">{summary}</p>
+        <p className="mt-0.5 truncate text-xs text-jscolors-ink/75">{summary}</p>
       </div>
     </div>
   )
 }
 
-function SortableBraceletLink({ link, chainStroke, onRemove }) {
-  const isCharm = link.type === 'charm'
+function SortableBraceletLink({ link, metal, chainStroke, onRemove }) {
+  const isRealCharm = link.type === 'charm' && link.charm && !isFillerCharm(link.charm)
+  const fillerCharm = getFillerCharmForMetal(metal)
+  // Plain/filler slots must stay droppable (and draggable) so real charms can
+  // reorder into them. @dnd-kit's `disabled` flags disable that interaction —
+  // `{ droppable: true }` was incorrectly turning drops OFF.
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: link.id,
-    disabled: !isCharm ? { draggable: false, droppable: true } : false,
   })
 
   const style = {
@@ -587,10 +641,25 @@ function SortableBraceletLink({ link, chainStroke, onRemove }) {
     opacity: isDragging ? 0.65 : 1,
   }
 
-  if (!isCharm) {
+  if (!isRealCharm) {
     return (
-      <div ref={setNodeRef} style={style} className="relative shrink-0">
-        <PlainLinkGraphic stroke={chainStroke} />
+      <div
+        ref={setNodeRef}
+        style={style}
+        className="relative shrink-0 touch-none rounded-md border border-jscolors-gold/40 bg-white p-0.5 shadow-sm"
+        {...attributes}
+        {...listeners}
+      >
+        {fillerCharm?.image ? (
+          <img
+            src={fillerCharm.image}
+            alt={fillerCharm.name}
+            className="h-9 w-9 object-contain sm:h-10 sm:w-10"
+            draggable={false}
+          />
+        ) : (
+          <PlainLinkGraphic stroke={chainStroke} />
+        )}
       </div>
     )
   }
@@ -599,11 +668,11 @@ function SortableBraceletLink({ link, chainStroke, onRemove }) {
     <div
       ref={setNodeRef}
       style={style}
-      className="group relative shrink-0 rounded-full border-2 border-jscolors-gold bg-white p-2 shadow-md touch-none"
+      className="group relative shrink-0 touch-none rounded-md border border-jscolors-gold bg-white p-0.5 shadow-sm"
       {...attributes}
       {...listeners}
     >
-      <CharmSvgIcon charm={link.charm} className="h-8 w-8 text-jscolors-pink" />
+      <CharmSvgIcon charm={link.charm} className="h-9 w-9 text-jscolors-pink sm:h-10 sm:w-10" />
       <button
         type="button"
         onClick={(e) => {
@@ -611,7 +680,7 @@ function SortableBraceletLink({ link, chainStroke, onRemove }) {
           onRemove(link.id)
         }}
         onPointerDown={(e) => e.stopPropagation()}
-        className="absolute -right-1.5 -top-1.5 flex h-5 w-5 items-center justify-center rounded-full border border-jscolors-gold/60 bg-white text-xs leading-none text-jscolors-navy/70 opacity-0 shadow transition hover:bg-jscolors-pink/40 hover:text-jscolors-navy group-hover:opacity-100 focus:opacity-100"
+        className="absolute -right-1 -top-1 flex h-5 w-5 items-center justify-center rounded-full border border-jscolors-gold/60 bg-white text-xs leading-none text-jscolors-ink/70 opacity-0 shadow transition hover:bg-jscolors-pink/40 hover:text-jscolors-ink group-hover:opacity-100 focus:opacity-100"
         aria-label={`Remove ${link.charm.name}`}
       >
         ×
@@ -631,7 +700,7 @@ function PlainLinkGraphic({ stroke }) {
 
 function BraceletBaseGraphic({ stroke, linkCount }) {
   const slots = linkCount
-  const width = Math.min(920, 40 + slots * 26)
+  const width = Math.min(1100, 40 + slots * 22)
   const height = 80
 
   return (

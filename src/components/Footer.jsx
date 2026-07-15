@@ -16,7 +16,17 @@ export function Footer() {
     <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#7d5b6c] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
         <div>
-          <p className="font-display text-xl font-semibold text-jscolors-cream">RetroCharm Co</p>
+          <div className="flex items-center gap-3">
+            <img
+              src="/images/brand/retro-charm-icon-mark.png"
+              alt=""
+              width={48}
+              height={38}
+              className="h-10 w-auto object-contain"
+              decoding="async"
+            />
+            <p className="font-display text-xl font-semibold text-jscolors-cream">RetroCharm Co</p>
+          </div>
           <p className="mt-3 max-w-sm text-sm leading-relaxed text-jscolors-cream/75">
             Custom Italian charm bracelets, built online by you. Pick your base, choose your charms, and order your story.
           </p>
@@ -25,7 +35,7 @@ export function Footer() {
               href={instagram.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-navy"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-ink"
               aria-label={`Follow ${instagram.handle} on Instagram`}
             >
               <InstagramGlyph />
@@ -34,7 +44,7 @@ export function Footer() {
               href="https://www.tiktok.com/@retrocharm.co"
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-navy"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-ink"
               aria-label="Follow @retrocharm.co on TikTok"
             >
               <TikTokGlyph />

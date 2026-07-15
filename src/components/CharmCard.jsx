@@ -27,14 +27,14 @@ export function CharmCard({ charm, index = 0 }) {
       className="retro-card retro-card-hover flex h-full flex-col p-5"
     >
       <div className="flex items-start justify-between gap-3">
-        <span className="rounded-full bg-jscolors-gold/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-jscolors-navy">
+        <span className="rounded-full bg-jscolors-gold/15 px-3 py-1 text-xs font-semibold uppercase tracking-wide text-jscolors-ink">
           {categoryLabel(charm.category)}
         </span>
         <button
           type="button"
           onClick={toggleWishlist}
           className={`rounded-full border-2 px-3 py-1 text-xs font-semibold transition ${
-            onList ? 'border-jscolors-pink bg-jscolors-pink text-white' : 'border-jscolors-gold/50 text-jscolors-navy hover:border-jscolors-gold'
+            onList ? 'border-jscolors-pink bg-jscolors-pink text-white' : 'border-jscolors-gold/50 text-jscolors-ink hover:border-jscolors-gold'
           }`}
           aria-pressed={onList}
         >
@@ -45,8 +45,8 @@ export function CharmCard({ charm, index = 0 }) {
         <div className="flex h-24 w-24 items-center justify-center rounded-2xl border-2 border-jscolors-gold/40 bg-jscolors-cream/80">
           <CharmSvgIcon charm={charm} className="h-14 w-14 text-jscolors-pink" />
         </div>
-        <h3 className="mt-4 font-display text-lg font-semibold text-jscolors-navy">{charm.name}</h3>
-        <p className="mt-2 font-semibold text-jscolors-charcoal">${charm.price.toFixed(2)}</p>
+        <h3 className="mt-4 font-display text-lg font-semibold text-jscolors-ink">{charm.name}</h3>
+        <p className="mt-2 font-semibold text-jscolors-blue">${charm.price.toFixed(2)}</p>
       </div>
     </motion.article>
   )

@@ -15,7 +15,7 @@ export function EmailSignup({
   const [email, setEmail] = useState('')
   const [status, setStatus] = useState(null)
 
-  const labelClass = theme === 'on-light' ? 'text-jscolors-charcoal/85' : 'text-jscolors-cream/90'
+  const labelClass = theme === 'on-light' ? 'text-jscolors-ink/85' : 'text-jscolors-cream/90'
   const errClass = theme === 'on-light' ? 'text-red-600' : 'text-red-300'
   const okClass = theme === 'on-light' ? 'text-emerald-700' : 'text-emerald-300'
 
@@ -44,7 +44,7 @@ export function EmailSignup({
             autoComplete="name"
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-navy outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
+            className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-ink outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
             placeholder="Alex Taylor"
           required={showName}
           disabled={status === 'ok'}
@@ -59,7 +59,7 @@ export function EmailSignup({
           autoComplete="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-navy outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
+          className="w-full rounded-xl border-2 border-jscolors-gold/30 bg-white px-4 py-3 text-jscolors-ink outline-none ring-jscolors-pink/30 transition focus:border-jscolors-gold focus:ring-2"
           placeholder="hello@example.com"
           required
           disabled={status === 'ok'}
@@ -69,7 +69,7 @@ export function EmailSignup({
         <button
           type="submit"
           disabled={status === 'ok'}
-          className="rounded-full bg-jscolors-pink px-6 py-3 text-sm font-semibold text-white shadow-md transition hover:brightness-110"
+          className="rounded-full bg-jscolors-blue px-6 py-3 text-sm font-semibold text-jscolors-cream shadow-md transition hover:bg-jscolors-blue-hover"
         >
           {status === 'ok' ? 'Submitted' : buttonLabel}
         </button>

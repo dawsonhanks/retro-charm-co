@@ -37,7 +37,7 @@ export function FAQ() {
 
   return (
     <section className="mx-auto max-w-3xl px-4 pb-20" aria-labelledby="faq-heading">
-      <h2 id="faq-heading" className="text-center font-display text-2xl font-bold text-jscolors-navy md:text-3xl">
+      <h2 id="faq-heading" className="text-center font-display text-2xl font-bold text-jscolors-ink md:text-3xl">
         Frequently asked questions
       </h2>
       <ul className="mt-8 space-y-3">
@@ -56,7 +56,7 @@ export function FAQ() {
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
                   aria-expanded={isOpen}
                 >
-                  <span className="font-semibold text-jscolors-navy">{item.q}</span>
+                  <span className="font-semibold text-jscolors-ink">{item.q}</span>
                   <span className="shrink-0 text-xl font-light text-jscolors-gold-warm" aria-hidden="true">
                     {isOpen ? '−' : '+'}
                   </span>
@@ -70,7 +70,7 @@ export function FAQ() {
                       transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
                       className="overflow-hidden"
                     >
-                      <p className="px-5 pb-4 text-sm leading-relaxed text-jscolors-charcoal/85">{item.a}</p>
+                      <p className="px-5 pb-4 text-sm leading-relaxed text-jscolors-ink/85">{item.a}</p>
                     </motion.div>
                   )}
                 </AnimatePresence>

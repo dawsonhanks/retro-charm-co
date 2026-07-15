@@ -27,7 +27,14 @@ const CUSTOMER_PHOTOS = [
 function PageLoader() {
   return (
     <div className="flex min-h-[200px] items-center justify-center py-16">
-      <div className="h-10 w-10 animate-spin rounded-full border-2 border-jscolors-gold border-t-jscolors-pink" aria-label="Loading" />
+      <img
+        src="/images/brand/retro-charm-icon-mark.png"
+        alt=""
+        width={56}
+        height={44}
+        className="h-12 w-auto animate-pulse object-contain opacity-90"
+        aria-label="Loading"
+      />
     </div>
   )
 }
@@ -46,7 +53,7 @@ export default function Home() {
         />
       </Helmet>
 
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#f6eef2] via-[#edf1f6] to-[#f6eef2] text-jscolors-charcoal">
+      <section className="relative overflow-hidden bg-gradient-to-b from-jscolors-cream via-[#ddd0b8] to-jscolors-cream text-jscolors-ink">
         <StarField className="absolute left-0 right-0 top-4 mx-auto max-w-4xl opacity-90" />
         <FloatingHearts className="pointer-events-none absolute bottom-8 right-4 hidden w-32 md:block" />
 
@@ -67,7 +74,7 @@ export default function Home() {
                 initial={{ opacity: 0, y: 18 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.08 + i * 0.1, type: 'spring', stiffness: 320, damping: 26 }}
-                className="font-display text-4xl font-bold text-jscolors-navy sm:text-5xl md:text-6xl lg:text-7xl"
+                className="font-display text-4xl font-bold text-jscolors-ink sm:text-5xl md:text-6xl lg:text-7xl"
               >
                 {word}
               </motion.span>
@@ -78,7 +85,7 @@ export default function Home() {
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.45, duration: 0.55 }}
-            className="mt-10 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-navy sm:text-3xl md:text-4xl"
+            className="mt-10 max-w-3xl font-display text-2xl font-semibold leading-snug text-jscolors-ink sm:text-3xl md:text-4xl"
           >
             Charm by Charm, Made by You.
           </motion.h1>
@@ -91,7 +98,7 @@ export default function Home() {
           >
             <Link
               to="/create"
-              className="inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-navy px-10 py-4 text-base font-semibold text-jscolors-cream shadow-lg shadow-jscolors-gold/20 transition hover:bg-jscolors-charcoal focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
+              className="inline-flex items-center justify-center rounded-full border border-jscolors-gold/55 bg-jscolors-cta px-10 py-4 text-base font-semibold text-jscolors-cream shadow-lg shadow-jscolors-cta/25 transition hover:bg-jscolors-cta-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
             >
               Create Your Bracelet
             </Link>
@@ -115,12 +122,12 @@ export default function Home() {
         </div>
       </Suspense>
 
-      <section className="border-y border-jscolors-gold/25 bg-[#f3eef3]/85 py-16 md:py-20" aria-labelledby="customer-photos-heading">
+      <section className="border-y border-jscolors-gold/25 bg-jscolors-cream/90 py-16 md:py-20" aria-labelledby="customer-photos-heading">
         <div className="mx-auto max-w-6xl px-4 text-center">
-          <h2 id="customer-photos-heading" className="font-display text-3xl font-bold text-jscolors-navy">
+          <h2 id="customer-photos-heading" className="font-display text-3xl font-bold text-jscolors-ink">
             Customer Photos
           </h2>
-          <p className="mx-auto mt-3 max-w-2xl text-jscolors-charcoal/80">
+          <p className="mx-auto mt-3 max-w-2xl text-jscolors-ink/75">
             See how our customers style their charm bracelets
           </p>
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">

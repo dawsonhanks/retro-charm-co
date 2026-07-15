@@ -1,15 +1,17 @@
 import { createContext, useContext, useEffect, useMemo, useState } from 'react'
-import { BASE_OPTIONS, DEFAULT_CHARM_PRICE, getCharmById } from '../data/charms'
+import { BASE_OPTIONS, DEFAULT_CHARM_PRICE, getCharmById, isFillerCharm } from '../data/charms'
 
 const STORAGE_KEY = 'retro-charm-cart'
 const BUILDS_STORAGE_KEY = 'retro-charm-bracelet-builds'
 
 const CartContext = createContext(null)
 
-function buildItemCounts(metal, charms) {
+function buildItemCounts(build) {
   const counts = new Map()
-  counts.set(metal, (counts.get(metal) ?? 0) + 1)
-  for (const charm of charms) {
+  const baseId = build.baseId ?? build.metal
+  counts.set(baseId, (counts.get(baseId) ?? 0) + 1)
+  for (const charm of build.charms) {
+    if (isFillerCharm(charm)) continue
     counts.set(charm.id, (counts.get(charm.id) ?? 0) + 1)
   }
   return counts
@@ -18,7 +20,7 @@ function buildItemCounts(metal, charms) {
 function resolveCartItemTemplate(id, newBuild) {
   const base = BASE_OPTIONS.find((b) => b.id === id)
   if (base) {
-    return { id: base.id, name: base.label, price: base.price, metal: base.id }
+    return { id: base.id, name: base.label, price: base.price, metal: base.metal, image: base.image }
   }
 
   const charm = getCharmById(id)
@@ -47,8 +49,8 @@ function resolveCartItemTemplate(id, newBuild) {
 }
 
 function applyBuildDiffToItems(prevItems, oldBuild, newBuild) {
-  const oldCounts = buildItemCounts(oldBuild.metal, oldBuild.charms)
-  const newCounts = buildItemCounts(newBuild.metal, newBuild.charms)
+  const oldCounts = buildItemCounts(oldBuild)
+  const newCounts = buildItemCounts(newBuild)
   const allIds = new Set([...oldCounts.keys(), ...newCounts.keys()])
 
   let nextItems = [...prevItems]
@@ -126,7 +128,7 @@ function pruneUnrepresentedBuilds(items, builds) {
   const kept = []
 
   for (const build of builds) {
-    const required = buildItemCounts(build.metal, build.charms)
+    const required = buildItemCounts(build)
     if (canAllocate(available, required)) {
       deductAllocation(available, required)
       kept.push(build)
@@ -226,6 +228,7 @@ export function CartProvider({ children }) {
       ...prev,
       {
         buildId: build.buildId ?? crypto.randomUUID(),
+        baseId: build.baseId ?? build.metal,
         metal: build.metal,
         charmCount: build.charmCount,
         charms: build.charms,
@@ -246,7 +249,13 @@ export function CartProvider({ children }) {
 
       return prevBuilds.map((b) =>
         b.buildId === buildId
-          ? { buildId, metal: newBuild.metal, charmCount: newBuild.charmCount, charms: newBuild.charms }
+          ? {
+              buildId,
+              baseId: newBuild.baseId ?? newBuild.metal,
+              metal: newBuild.metal,
+              charmCount: newBuild.charmCount,
+              charms: newBuild.charms,
+            }
           : b,
       )
     })

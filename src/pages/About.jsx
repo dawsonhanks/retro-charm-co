@@ -31,8 +31,8 @@ export default function About() {
         <FloatingHearts className="pointer-events-none absolute left-8 top-24 w-24 opacity-80" />
         <div className="relative mx-auto max-w-3xl text-center">
           <SparkleRow />
-          <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-navy md:text-5xl">Customer Photos</h1>
-          <p className="mt-6 text-lg leading-relaxed text-jscolors-charcoal/85">
+          <h1 className="mt-8 font-display text-4xl font-bold text-jscolors-ink md:text-5xl">Customer Photos</h1>
+          <p className="mt-6 text-lg leading-relaxed text-jscolors-ink/85">
             See how our customers style their charm bracelets
           </p>
         </div>

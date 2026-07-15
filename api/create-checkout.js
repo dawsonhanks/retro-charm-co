@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { charms, BASE_OPTIONS } from '../src/data/charms.js'
+import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../src/data/shipping.js'
 
 // Single source of truth for what something is allowed to cost. The client
 // tells us which items (by id) and how many, but never gets to dictate the
@@ -13,7 +14,6 @@ for (const b of BASE_OPTIONS) {
 }
 
 const MAX_QUANTITY_PER_LINE_ITEM = 50
-const SHIPPING_CHARGE = 5.0
 const MAX_BRACELET_BUILDS_METADATA = 10
 const MAX_METADATA_VALUE_LENGTH = 450
 
@@ -124,14 +124,27 @@ export default async function handler(req, res) {
     })
   }
 
+  // Square expects integer cents (e.g. $6.00 → 600), never a float dollar amount.
+  const shippingAmountCents = Math.round(Number(FLAT_RATE_SHIPPING) * 100)
+  if (!Number.isInteger(shippingAmountCents) || shippingAmountCents <= 0) {
+    console.error('Invalid FLAT_RATE_SHIPPING config:', FLAT_RATE_SHIPPING)
+    return res.status(500).json({ error: 'Shipping is misconfigured' })
+  }
+
   lineItems.push({
-    name: 'Shipping',
+    name: SHIPPING_LINE_ITEM_NAME,
     quantity: '1',
     base_price_money: {
-      amount: Math.round(SHIPPING_CHARGE * 100),
+      amount: shippingAmountCents,
       currency: 'USD',
     },
   })
+
+  console.log('create-checkout line items:', lineItems.map((item) => ({
+    name: item.name,
+    quantity: item.quantity,
+    amount: item.base_price_money.amount,
+  })))
 
   // Reuse a client-supplied idempotency key when it looks sane so that retries of the
   // exact same cart don't create duplicate Square payment links. Fall back to a fresh
@@ -173,6 +186,7 @@ export default async function handler(req, res) {
     const data = await squareRes.json()
 
     if (!squareRes.ok) {
+      console.error('Square payment-links error:', data)
       const message = data.errors?.[0]?.detail || data.errors?.[0]?.code || 'Failed to create checkout'
       return res.status(squareRes.status).json({ error: message })
     }
@@ -184,7 +198,8 @@ export default async function handler(req, res) {
     }
 
     return res.status(200).json({ checkoutUrl })
-  } catch {
+  } catch (error) {
+    console.error('create-checkout unexpected error:', error)
     return res.status(500).json({ error: 'Failed to create checkout' })
   }
 }
