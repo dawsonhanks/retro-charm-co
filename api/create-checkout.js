@@ -1,6 +1,9 @@
 import { randomUUID } from 'crypto'
-import { charms, BASE_OPTIONS } from '../src/data/charms.js'
+import { charms, BASE_OPTIONS, isFillerCharm } from '../src/data/charms.js'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../src/data/shipping.js'
+
+/** Compact token for filler slots in Square order metadata (keeps values under size limits). */
+const FILLER_METADATA_TOKEN = 'b'
 
 // Single source of truth for what something is allowed to cost. The client
 // tells us which items (by id) and how many, but never gets to dictate the
@@ -31,8 +34,14 @@ function isValidBraceletBuild(build) {
   return true
 }
 
+function encodeCharmIdForMetadata(charm) {
+  if (!charm?.id) return FILLER_METADATA_TOKEN
+  if (isFillerCharm(charm)) return FILLER_METADATA_TOKEN
+  return charm.id
+}
+
 function buildBraceletMetadataValue(metal, charms) {
-  const ids = charms.map((charm) => charm.id)
+  const ids = charms.map((charm) => encodeCharmIdForMetadata(charm))
   const prefix = `${metal}:`
   let value = prefix + ids.join(',')
 

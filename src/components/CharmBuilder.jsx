@@ -25,8 +25,10 @@ import { filterCharmList } from '../utils/charmFilters'
 import { useCart } from '../context/CartContext.jsx'
 import {
   addCharmToLinkOrder,
+  createCharmLink,
   createInitialLinkOrder,
   createLinkOrderForSize,
+  createPlainLink,
   getCharmsFromLinkOrder,
   loadInitialLinkOrder,
   removeCharmFromLinkOrder,
@@ -210,15 +212,29 @@ export function CharmBuilder({
   function addToCart() {
     if (selectedSize == null) return
 
+    // Persist every slot (real charms + fillers) so order emails / rebuilds
+    // keep absolute positions — not just the real-charm subsequence.
+    const filler = getFillerCharmForMetal(base.metal)
+    const slotSequence = linkOrder.map((link) => {
+      if (link.type === 'charm' && link.charm && !isFillerCharm(link.charm)) {
+        return {
+          id: link.charm.id,
+          image: link.charm.image,
+          name: link.charm.name,
+        }
+      }
+      return {
+        id: filler.id,
+        image: filler.image,
+        name: filler.name,
+      }
+    })
+
     const currentBuild = {
       baseId: base.id,
       metal: base.metal,
       charmCount: selectedSize,
-      charms: selected.map((c) => ({
-        id: c.id,
-        image: c.image,
-        name: c.name,
-      })),
+      charms: slotSequence,
     }
 
     if (editingBuildId) {
@@ -576,6 +592,22 @@ function formatSizeSummary(charmCount) {
 }
 
 function linkOrderFromSavedCharms(savedCharms, slotCount) {
+  const hasExplicitFillers = savedCharms.some((c) => isFillerCharm(c))
+  const looksLikeFullSequence =
+    hasExplicitFillers && savedCharms.length > 0 && savedCharms.length === slotCount
+
+  if (looksLikeFullSequence) {
+    return savedCharms.map((entry) => {
+      if (isFillerCharm(entry)) return createPlainLink()
+      const charm = getCharmById(entry.id)
+      if (!charm || charm.category === 'Starter Bracelets' || isFillerCharm(charm)) {
+        return createPlainLink()
+      }
+      return createCharmLink(charm)
+    })
+  }
+
+  // Legacy builds stored only real charms (no fillers) — pack into slots left-to-right.
   const charmsOnTrack = savedCharms
     .map((c) => getCharmById(c.id))
     .filter((charm) => charm && charm.category !== 'Starter Bracelets' && !isFillerCharm(charm))

@@ -43,14 +43,30 @@ for (const base of BASE_OPTIONS) {
   CATALOG_NAMES.set(base.id, base.label)
 }
 
-function charmDisplayName(id) {
-  return CATALOG_NAMES.get(id) ?? id
-}
+const FILLER_METADATA_TOKEN = 'b'
 
 function formatMetalLabel(metal) {
   if (metal === 'silver') return 'Silver'
   if (metal === 'gold') return 'Gold'
   return metal
+}
+
+function isFillerSlotToken(id) {
+  return (
+    id === FILLER_METADATA_TOKEN ||
+    id === 's-plain-filler' ||
+    id === 'g-plain-filler' ||
+    id === 'plain' ||
+    id === '_'
+  )
+}
+
+/** Human-readable label for a slot id in order emails (includes blank fillers). */
+function charmDisplayName(id, metal) {
+  if (isFillerSlotToken(id)) {
+    return metal === 'gold' ? 'Blank gold link' : 'Blank silver link'
+  }
+  return CATALOG_NAMES.get(id) ?? id
 }
 
 function formatBraceletBuilds(metadata) {
@@ -70,7 +86,7 @@ function formatBraceletBuilds(metadata) {
     return ''
   }
 
-  const lines = []
+  const lines = ['Bracelet arrangements:']
 
   for (const [key, value] of braceletEntries) {
     if (typeof value !== 'string') {
@@ -84,20 +100,22 @@ function formatBraceletBuilds(metadata) {
 
     const metal = value.slice(0, colonIndex)
     const idsPart = value.slice(colonIndex + 1)
-    const ids = idsPart ? idsPart.split(',') : []
+    const ids = idsPart ? idsPart.split(',').filter((id) => id.length > 0) : []
     const braceletNum = key.replace('bracelet_', '')
-    const charmLabels = ids
-      .map((id, index) => `${index + 1}) ${charmDisplayName(id)}`)
-      .join('  ')
 
-    lines.push(`Bracelet ${braceletNum} (${formatMetalLabel(metal)}): ${charmLabels}`)
+    lines.push('')
+    lines.push(`Bracelet ${braceletNum} (${formatMetalLabel(metal)}) — ${ids.length} slots:`)
+    ids.forEach((id, index) => {
+      lines.push(`${index + 1}. ${charmDisplayName(id, metal)}`)
+    })
   }
 
-  if (lines.length === 0) {
+  // Only the header was pushed (no valid bracelet entries).
+  if (lines.length === 1) {
     return ''
   }
 
-  return ['Bracelet arrangements:', ...lines].join('\n')
+  return lines.join('\n')
 }
 
 function formatAmount(amountMoney) {
