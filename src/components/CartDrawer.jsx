@@ -5,7 +5,7 @@ import { useCart } from '../context/CartContext.jsx'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../data/shipping'
 import { CartItemThumbnail } from './CartItemThumbnail'
 import { BraceletBuildsPreview } from './BraceletBuildsPreview'
-import { RemoveCartItemButton } from './RemoveCartItemButton'
+import { CartItemQuantityControls, RemoveCartItemButton } from './RemoveCartItemButton'
 
 function formatPrice(value) {
   return `$${Number(value).toFixed(2)}`
@@ -73,39 +73,27 @@ export function CartDrawer({ isOpen, onClose }) {
                       <div className="flex items-start gap-3">
                         <CartItemThumbnail item={item} />
                         <div className="min-w-0 flex-1">
-                          <div className="flex items-start justify-between gap-2">
-                            <div className="min-w-0">
-                              <p className="font-display font-semibold text-jscolors-ink">{item.name}</p>
-                              <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-ink/60">
-                                {item.metal}
-                              </p>
-                              <p className="mt-2 font-semibold text-jscolors-blue">{formatPrice(item.price)}</p>
-                            </div>
+                          <p className="font-display font-semibold text-jscolors-ink">{item.name}</p>
+                          <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-ink/60">
+                            {item.metal}
+                          </p>
+                          <p className="mt-2 font-semibold text-jscolors-blue">{formatPrice(item.price)} each</p>
+                          <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                            <CartItemQuantityControls
+                              itemName={item.name}
+                              quantity={item.quantity}
+                              onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
+                              onIncrease={() => updateQuantity(item.id, item.quantity + 1)}
+                            />
                             <RemoveCartItemButton
                               itemName={item.name}
                               onClick={() => removeItem(item.id)}
                             />
                           </div>
                         </div>
-                      </div>
-                      <div className="mt-3 flex items-center gap-3">
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-jscolors-ink transition hover:bg-jscolors-gold/15"
-                          aria-label={`Decrease quantity of ${item.name}`}
-                        >
-                          −
-                        </button>
-                        <span className="min-w-[1.5rem] text-center font-semibold text-jscolors-ink">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                          className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-jscolors-gold/50 text-jscolors-ink transition hover:bg-jscolors-gold/15"
-                          aria-label={`Increase quantity of ${item.name}`}
-                        >
-                          +
-                        </button>
+                        <p className="shrink-0 pt-0.5 text-sm font-semibold text-jscolors-blue">
+                          {formatPrice(item.price * item.quantity)}
+                        </p>
                       </div>
                     </li>
                   ))}

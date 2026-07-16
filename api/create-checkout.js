@@ -51,8 +51,9 @@ function encodeCharmIdForMetadata(charm) {
   return charm.id
 }
 
-/** Metadata value: `baseId:charmId,charmId,...` (baseId distinguishes bracelet vs watch). */
+/** Metadata value: `baseId:id,id,...` in exact builder order (fillers → compact `b` token). */
 function buildBraceletMetadataValue(baseId, charms) {
+  // Preserve every slot in array order — never sort, group, or drop fillers.
   const ids = charms.map((charm) => encodeCharmIdForMetadata(charm))
   const prefix = `${baseId}:`
   let value = prefix + ids.join(',')
@@ -81,20 +82,26 @@ function buildOrderBraceletMetadata(braceletBuilds) {
   }
 
   const builds = braceletBuilds.slice(0, MAX_BRACELET_BUILDS_METADATA)
-
-  for (const build of builds) {
-    if (!isValidBraceletBuild(build)) {
-      return null
-    }
-  }
-
   const metadata = {}
-  builds.forEach((build, index) => {
+  let written = 0
+
+  builds.forEach((build) => {
+    if (!isValidBraceletBuild(build)) {
+      console.warn('Skipping invalid bracelet build for order metadata', {
+        baseId: build?.baseId,
+        metal: build?.metal,
+        charmCount: Array.isArray(build?.charms) ? build.charms.length : 0,
+      })
+      return
+    }
+
     const baseId = resolveBuildBaseId(build)
-    metadata[`bracelet_${index + 1}`] = buildBraceletMetadataValue(baseId, build.charms)
+    // build.charms is the full left-to-right slot array from the builder (includes fillers).
+    metadata[`bracelet_${written + 1}`] = buildBraceletMetadataValue(baseId, build.charms)
+    written += 1
   })
 
-  return metadata
+  return written > 0 ? metadata : null
 }
 
 export default async function handler(req, res) {

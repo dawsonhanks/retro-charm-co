@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 import { SparkleRow } from '../components/RetroAccents'
 import { CartItemThumbnail } from '../components/CartItemThumbnail'
 import { BraceletBuildsPreview } from '../components/BraceletBuildsPreview'
-import { RemoveCartItemButton } from '../components/RemoveCartItemButton'
+import { CartItemQuantityControls, RemoveCartItemButton } from '../components/RemoveCartItemButton'
 import { useCart } from '../context/CartContext.jsx'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../data/shipping'
 import { createCheckoutSession } from '../utils/checkoutApi'
@@ -15,7 +15,7 @@ function formatPrice(value) {
 }
 
 export default function Cart() {
-  const { items, cartTotal, clearCart, removeItem, braceletBuilds } = useCart()
+  const { items, cartTotal, clearCart, removeItem, updateQuantity, braceletBuilds } = useCart()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const orderTotal = cartTotal + FLAT_RATE_SHIPPING
@@ -72,22 +72,28 @@ export default function Cart() {
             <BraceletBuildsPreview builds={braceletBuilds} />
             <ul className="divide-y divide-jscolors-gold/25 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 shadow-lg">
               {items.map((item) => (
-                <li key={item.id} className="flex items-start gap-3 px-4 py-5 sm:items-center sm:gap-4 sm:px-6">
+                <li key={item.id} className="flex items-start gap-3 px-4 py-5 sm:gap-4 sm:px-6">
                   <CartItemThumbnail item={item} />
                   <div className="min-w-0 flex-1">
                     <p className="font-display text-lg font-semibold text-jscolors-ink">{item.name}</p>
                     <p className="mt-1 text-xs font-medium uppercase tracking-wide text-jscolors-ink/60">{item.metal}</p>
-                    <p className="mt-2 text-sm text-jscolors-blue">
-                      {formatPrice(item.price)} × {item.quantity}
-                    </p>
+                    <p className="mt-1 text-sm text-jscolors-blue">{formatPrice(item.price)} each</p>
+                    <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-2">
+                      <CartItemQuantityControls
+                        itemName={item.name}
+                        quantity={item.quantity}
+                        onDecrease={() => updateQuantity(item.id, item.quantity - 1)}
+                        onIncrease={() => updateQuantity(item.id, item.quantity + 1)}
+                      />
+                      <RemoveCartItemButton
+                        itemName={item.name}
+                        onClick={() => removeItem(item.id)}
+                      />
+                    </div>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-2 sm:flex-row sm:items-center sm:gap-3">
-                    <p className="font-semibold text-jscolors-blue">{formatPrice(item.price * item.quantity)}</p>
-                    <RemoveCartItemButton
-                      itemName={item.name}
-                      onClick={() => removeItem(item.id)}
-                    />
-                  </div>
+                  <p className="shrink-0 pt-1 font-semibold text-jscolors-blue">
+                    {formatPrice(item.price * item.quantity)}
+                  </p>
                 </li>
               ))}
             </ul>

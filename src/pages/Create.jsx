@@ -110,7 +110,6 @@ const GOLD_CHARMS = [
   { id: 'g-wwjd', category: 'Charms', name: 'WWJD', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/faith/wwjd-gold.webp' },
   { id: 'g-flower-pink', category: 'Charms', name: 'Flower - Pink', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-pink-gold.webp' },
   { id: 'g-flower-turquoise', category: 'Charms', name: 'Flower - Turquoise', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/flower-turquoise-gold.webp' },
-  { id: 'g-tulip-flower', category: 'Charms', name: 'Tulip Flower', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/flowers/tulip-flower-gold.webp' },
   { id: 'g-cherries-pink-background', category: 'Charms', name: 'Cherries - Pink Background', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherries-pink-background-gold.webp' },
   { id: 'g-cherry-heart-checkered', category: 'Charms', name: 'Cherry Heart Checkered', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/cherry-heart-checkered-gold.webp' },
   { id: 'g-diet-coke-can', category: 'Charms', name: 'Diet Coke Can', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/food-drink/diet-coke-can-gold.webp' },

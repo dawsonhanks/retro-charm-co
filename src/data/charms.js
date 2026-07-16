@@ -120,7 +120,6 @@ export const charms = [
   { id: 'g-flower-turquoise', name: 'Flower - Turquoise', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/flowers/flower-turquoise-gold.webp' },
   { id: 's-flower-yellow', name: 'Flower - Yellow', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/flowers/flower-yellow-silver.webp' },
   { id: 's-rose', name: 'Rose', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/flowers/rose-silver.webp' },
-  { id: 'g-tulip-flower', name: 'Tulip Flower', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/flowers/tulip-flower-gold.webp' },
   { id: 's-cherries', name: 'Cherries', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/food-drink/cherries-silver.webp' },
   { id: 'g-cherries-pink-background', name: 'Cherries - Pink Background', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/cherries-pink-background-gold.webp' },
   { id: 'g-cherry-heart-checkered', name: 'Cherry Heart Checkered', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/cherry-heart-checkered-gold.webp' },

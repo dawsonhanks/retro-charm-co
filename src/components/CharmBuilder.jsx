@@ -19,6 +19,7 @@ import {
 import { CSS } from '@dnd-kit/utilities'
 import { BASE_OPTIONS, charms, CHARM_CATEGORY_FILTERS, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getCharmCapacity, getFillerCharmForMetal, getSizeLengthLabel, isFillerCharm, isWatchBase, parseCharmCountInput, SIZE_OPTIONS, WATCH_BASE_CHARM_RESERVE } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
+import { CharmPickerScrollArea } from './CharmPickerScrollArea'
 import { CharmSearchInput } from './CharmSearchInput'
 import { FilterBar } from './FilterBar'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
@@ -693,7 +694,7 @@ export function CharmBuilder({
               layoutId={`${idPrefix}-filter-pill`}
             />
           </div>
-          <div className="mt-4 max-h-[320px] overflow-y-auto pr-1 md:max-h-[380px]">
+          <CharmPickerScrollArea>
             {pickerCharms.length === 0 ? (
               <div className="mx-auto max-w-xl rounded-2xl border-2 border-dashed border-jscolors-gold/40 bg-white/60 p-8 text-center">
                 <p className="font-display text-xl font-semibold text-jscolors-ink">No charms match that filter</p>
@@ -710,7 +711,7 @@ export function CharmBuilder({
                 justAddedId={justAddedId}
               />
             )}
-          </div>
+          </CharmPickerScrollArea>
         </div>
           </>
         )}

@@ -58,12 +58,66 @@ for (const base of BASE_OPTIONS) {
   }
 }
 
+/**
+ * Public site origin for email <img> src. Always https:// — never localhost,
+ * relative hosts, or protocol-relative URLs (email clients cannot load those).
+ */
 function getSiteUrl() {
   const configured = process.env.VITE_SITE_URL
-  if (typeof configured === 'string' && configured.trim()) {
-    return configured.trim().replace(/\/$/, '')
+  const candidates = [
+    typeof configured === 'string' ? configured.trim() : '',
+    DEFAULT_SITE_URL,
+  ]
+
+  for (const raw of candidates) {
+    if (!raw) continue
+    try {
+      const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`
+      const url = new URL(withProtocol)
+      if (url.protocol !== 'https:') continue
+      if (url.hostname === 'localhost' || url.hostname === '127.0.0.1') continue
+      return `${url.protocol}//${url.host}`.replace(/\/$/, '')
+    } catch {
+      // try next candidate
+    }
   }
+
   return DEFAULT_SITE_URL
+}
+
+/**
+ * Absolute https URL for a public asset. Catalog paths are `/images/...webp`;
+ * email uses sibling `.png` files (email clients often break on WebP).
+ */
+function absolutePublicImageUrl(siteUrl, relativeOrAbsolutePath) {
+  if (!relativeOrAbsolutePath || typeof relativeOrAbsolutePath !== 'string') {
+    return null
+  }
+
+  let path = relativeOrAbsolutePath.trim()
+  if (!path) return null
+
+  // Already absolute — still normalize to our public https origin when possible.
+  if (/^https?:\/\//i.test(path)) {
+    try {
+      const parsed = new URL(path)
+      path = parsed.pathname
+    } catch {
+      return null
+    }
+  }
+
+  if (!path.startsWith('/')) {
+    path = `/${path}`
+  }
+
+  // Prefer PNG for email clients (Outlook etc. often show blank boxes for WebP).
+  if (path.toLowerCase().endsWith('.webp')) {
+    path = `${path.slice(0, -5)}.png`
+  }
+
+  const origin = (siteUrl || getSiteUrl()).replace(/\/$/, '')
+  return `${origin}${path}`
 }
 
 function escapeHtml(value) {
@@ -132,12 +186,14 @@ function isFillerSlotToken(id) {
 /** Human-readable label for a slot id in order emails (includes blank fillers). */
 function charmDisplayName(id, metal) {
   if (isFillerSlotToken(id)) {
-    return metal === 'gold' ? 'Blank gold link' : 'Blank silver link'
+    return metal === 'gold'
+      ? 'Plain filler (blank gold spacer)'
+      : 'Plain filler (blank silver spacer)'
   }
   return CATALOG_NAMES.get(id) ?? id
 }
 
-/** Relative image path for a slot id (catalog or filler). */
+/** Relative catalog image path for a slot id (catalog or filler). */
 function charmImagePath(id, metal) {
   if (isFillerSlotToken(id)) {
     return metal === 'gold'
@@ -145,6 +201,11 @@ function charmImagePath(id, metal) {
       : '/images/charms/plain-silver-link.webp'
   }
   return CATALOG_IMAGES.get(id) ?? null
+}
+
+/** Absolute https:// PNG URL for an email <img> tag (null if unknown). */
+function charmEmailImageUrl(id, metal, siteUrl) {
+  return absolutePublicImageUrl(siteUrl, charmImagePath(id, metal))
 }
 
 function parseBraceletBuilds(metadata) {
@@ -190,7 +251,7 @@ function formatLineItemsSection(lineItems) {
     return ''
   }
 
-  const lines = ['Items ordered:']
+  const lines = []
 
   for (const item of lineItems) {
     if (!item || typeof item !== 'object') continue
@@ -203,27 +264,32 @@ function formatLineItemsSection(lineItems) {
     lines.push(`- ${quantity} × ${name}${watchTag} — ${unitAmount} each`)
   }
 
-  // Only the header was pushed (no usable line items).
-  if (lines.length === 1) {
+  if (lines.length === 0) {
     return ''
   }
 
   return lines.join('\n')
 }
 
+/**
+ * Fulfillment guide: every slot in saved builder order, including plain fillers.
+ * Do not sort, group, or de-duplicate — positions must match the bracelet.
+ */
 function formatBraceletBuilds(builds) {
   if (!Array.isArray(builds) || builds.length === 0) {
     return ''
   }
 
-  const lines = ['Bracelet arrangements:']
+  const lines = [
+    'Assemble left → right (exact builder sequence, including plain fillers):',
+  ]
 
   for (const build of builds) {
     const kind = build.isWatch ? 'Watch' : 'Bracelet'
     lines.push('')
-    lines.push(`${kind} ${build.num} — ${build.label} — ${build.ids.length} slots:`)
+    lines.push(`${kind} ${build.num} — ${build.label} — ${build.ids.length} positions:`)
     build.ids.forEach((id, index) => {
-      lines.push(`${index + 1}. ${charmDisplayName(id, build.metal)}`)
+      lines.push(`Position ${index + 1}: ${charmDisplayName(id, build.metal)}`)
     })
   }
 
@@ -238,40 +304,57 @@ function formatBraceletBuildsHtml(builds, siteUrl) {
 
   const sections = builds.map((build) => {
     const kind = build.isWatch ? 'Watch' : 'Bracelet'
-    const heading = `${kind} ${build.num} — ${build.label} — ${build.ids.length} slots`
+    const heading = `${kind} ${build.num} — ${build.label} — ${build.ids.length} positions`
+
+    const positionCells = build.ids
+      .map((_, index) => {
+        return `<td style="padding:0 2px 4px;text-align:center;font-size:10px;font-weight:600;color:#666;vertical-align:bottom;">${index + 1}</td>`
+      })
+      .join('\n')
 
     const cells = build.ids
       .map((id) => {
         const name = charmDisplayName(id, build.metal)
-        const path = charmImagePath(id, build.metal)
-        if (!path) {
+        const src = charmEmailImageUrl(id, build.metal, siteUrl)
+        if (!src) {
           return `<td style="padding:2px;border:1px solid #d4c4a8;background:#fff;vertical-align:middle;text-align:center;width:44px;height:44px;font-size:10px;color:#666;">${escapeHtml(name)}</td>`
         }
-        const src = `${siteUrl}${path}`
-        return `<td style="padding:2px;border:1px solid #d4c4a8;background:#fff;vertical-align:middle;">
-  <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" width="40" height="40" style="display:block;width:40px;height:40px;object-fit:contain;" />
+        // Absolute https PNG — email clients cannot load relative/app-bundled/WebP assets reliably.
+        return `<td style="padding:2px;border:1px solid #d4c4a8;background:#fff;vertical-align:middle;width:44px;height:44px;">
+  <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" width="40" height="40" border="0" style="display:block;width:40px;height:40px;border:0;outline:none;text-decoration:none;" />
 </td>`
       })
       .join('\n')
 
     const listItems = build.ids
-      .map((id, index) => `<li>${index + 1}. ${escapeHtml(charmDisplayName(id, build.metal))}</li>`)
+      .map((id, index) => {
+        const name = charmDisplayName(id, build.metal)
+        const fillerNote = isFillerSlotToken(id)
+          ? ' <span style="color:#888;">← blank spacer</span>'
+          : ''
+        return `<li style="margin:0 0 4px;">Position ${index + 1}: ${escapeHtml(name)}${fillerNote}</li>`
+      })
       .join('\n')
 
-    return `<div style="margin:16px 0 20px;">
-  <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#1a1a1a;">${escapeHtml(heading)}</p>
+    return `<div style="margin:16px 0 24px;">
+  <p style="margin:0 0 4px;font-size:14px;font-weight:600;color:#1a1a1a;">${escapeHtml(heading)}</p>
+  <p style="margin:0 0 10px;font-size:12px;color:#666;">Left → right as arranged in the builder (plain fillers included)</p>
   <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:2px;">
+    <tr>
+${positionCells}
+    </tr>
     <tr>
 ${cells}
     </tr>
   </table>
-  <ol style="margin:10px 0 0;padding-left:20px;font-size:13px;color:#333;line-height:1.45;">
+  <ol style="margin:12px 0 0;padding-left:0;list-style:none;font-size:13px;color:#333;line-height:1.45;">
 ${listItems}
   </ol>
 </div>`
   })
 
-  return `<h2 style="margin:24px 0 8px;font-size:16px;color:#1a1a1a;">Bracelet arrangements</h2>
+  return `<h2 style="margin:24px 0 4px;font-size:16px;color:#1a1a1a;">Assemble left → right</h2>
+<p style="margin:0 0 8px;font-size:13px;color:#555;">Use this sequence to build each bracelet. Positions match the customer&rsquo;s layout, including auto-added plain fillers.</p>
 ${sections.join('\n')}`
 }
 
@@ -371,12 +454,16 @@ async function sendOrderEmail({
     `Timestamp: ${timestamp}`,
   ]
 
-  if (lineItemsSection) {
-    textParts.push('', lineItemsSection)
-  }
-
   if (braceletSection) {
     textParts.push('', braceletSection)
+  }
+
+  if (lineItemsSection) {
+    textParts.push(
+      '',
+      'Paid cart items (inventory / quantities — not left-to-right build order):',
+      lineItemsSection,
+    )
   }
 
   textParts.push('', shippingSection)
@@ -390,7 +477,11 @@ async function sendOrderEmail({
 <p style="margin:0 0 16px;font-size:14px;color:#333;"><strong>Timestamp:</strong> ${escapeHtml(timestamp)}</p>`
 
   const lineItemsHtml = lineItemsSection
-    ? `<div style="margin:16px 0;font-size:14px;color:#333;line-height:1.5;">${textToHtmlParagraphs(lineItemsSection)}</div>`
+    ? `<div style="margin:24px 0 0;font-size:14px;color:#333;line-height:1.5;">
+  <h2 style="margin:0 0 8px;font-size:16px;color:#1a1a1a;">Paid cart items</h2>
+  <p style="margin:0 0 8px;font-size:12px;color:#666;">Quantities for inventory — not the left-to-right charm order.</p>
+  ${textToHtmlParagraphs(lineItemsSection)}
+</div>`
     : ''
 
   const shippingHtml = `<div style="margin:24px 0 0;font-size:14px;color:#333;line-height:1.5;">
@@ -403,8 +494,8 @@ async function sendOrderEmail({
 <body style="margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#faf7f2;color:#1a1a1a;">
   <div style="max-width:960px;margin:0 auto;background:#ffffff;border:1px solid #e8dcc8;border-radius:12px;padding:24px;">
     ${headerHtml}
-    ${lineItemsHtml}
     ${braceletHtml}
+    ${lineItemsHtml}
     ${shippingHtml}
   </div>
 </body>

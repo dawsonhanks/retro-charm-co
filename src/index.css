@@ -84,4 +84,36 @@
   .text-balance {
     text-wrap: balance;
   }
+
+  /* Always-visible scrollbar for the charm picker panel (not the page). */
+  .charm-picker-scroll {
+    overflow-y: scroll;
+    overscroll-behavior: contain;
+    padding-right: 0.75rem;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(166, 118, 46, 0.75) rgba(166, 118, 46, 0.18);
+  }
+
+  .charm-picker-scroll::-webkit-scrollbar {
+    width: 8px;
+    -webkit-appearance: none;
+    appearance: none;
+  }
+
+  .charm-picker-scroll::-webkit-scrollbar-track {
+    background: rgba(166, 118, 46, 0.16);
+    border-radius: 999px;
+    margin-block: 4px;
+  }
+
+  .charm-picker-scroll::-webkit-scrollbar-thumb {
+    background: rgba(166, 118, 46, 0.78);
+    border-radius: 999px;
+    border: 2px solid rgba(232, 220, 200, 0.9);
+    min-height: 28px;
+  }
+
+  .charm-picker-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(139, 98, 40, 0.9);
+  }
 }
