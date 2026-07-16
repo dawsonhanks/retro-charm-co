@@ -172,14 +172,17 @@ export function logInventoryMismatches(inventoryMap) {
 /**
  * Whether a charm tile should be treated as out of stock.
  * Missing inventory data or unknown keys default to in stock (fail open).
+ * Stock is tracked per charm variant, so the lookup uses the charm's OWN
+ * metal (from charms.js) — never the selected base metal. A gold-only charm
+ * (e.g. WWJD) can sit on a silver bracelet and must still track gold stock.
  * @param {string} charmName
- * @param {string} baseMetal - metal of the currently selected base
+ * @param {string} charmMetal - the charm's own metal ('silver' | 'gold')
  * @param {Record<string, InventoryEntry> | null | undefined} inventoryMap
  */
-export function isCharmOutOfStock(charmName, baseMetal, inventoryMap) {
+export function isCharmOutOfStock(charmName, charmMetal, inventoryMap) {
   if (!inventoryMap || Object.keys(inventoryMap).length === 0) return false
 
-  const entry = inventoryMap[inventoryKey(charmName, baseMetal)]
+  const entry = inventoryMap[inventoryKey(charmName, charmMetal)]
   if (!entry) return false
 
   return !entry.inStock

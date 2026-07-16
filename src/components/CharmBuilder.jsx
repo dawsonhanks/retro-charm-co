@@ -157,7 +157,7 @@ export function CharmBuilder({
   }, [])
 
   function isOutOfStockForCharm(charm) {
-    return isCharmOutOfStock(charm.name, base.metal, inventoryMap)
+    return isCharmOutOfStock(charm.name, charm.metal, inventoryMap)
   }
 
   function clearCustomSizeInput() {
@@ -184,7 +184,7 @@ export function CharmBuilder({
 
   function addCharm(c) {
     if (c.category === 'Starter Bracelets' || isFillerCharm(c) || selectedSize == null || braceletFull) return
-    if (isCharmOutOfStock(c.name, base.metal, inventoryMap)) return
+    if (isCharmOutOfStock(c.name, c.metal, inventoryMap)) return
     updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
 
     const nextCount = selected.length + 1
