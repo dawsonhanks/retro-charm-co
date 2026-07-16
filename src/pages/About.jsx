@@ -34,6 +34,10 @@ const CUSTOMER_PHOTOS = [
     src: '/images/customer-photos/customer-photo-8.webp',
     alt: 'Wrist wearing stacked gold and silver Italian charm bracelets with cherries, Diet Coke, American flag, and checkerboard charms',
   },
+  {
+    src: '/images/customer-photos/customer-photo-9.jpg',
+    alt: 'Hand with pink nails wearing gold rings and a gold Italian charm bracelet featuring strawberry, dice, WWJD, and twenty links',
+  },
 ]
 
 export default function About() {

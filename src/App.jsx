@@ -1,5 +1,6 @@
 import { lazy, Suspense } from 'react'
 import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
+import { Analytics } from '@vercel/analytics/react'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
 import { NextMarketBanner } from './components/NextMarketBanner'
@@ -48,6 +49,7 @@ function Shell() {
 export default function App() {
   return (
     <>
+      <Analytics />
       <ScrollToTop />
       <Routes>
         <Route element={<Shell />}>
