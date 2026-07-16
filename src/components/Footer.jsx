@@ -1,6 +1,9 @@
+import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EmailSignup } from './EmailSignup'
 import { instagram } from '../data/social'
+
+const CONTACT_EMAIL = 'retro.charm.co.ut@gmail.com'
 
 const footerLinks = [
   { to: '/', label: 'Home' },
@@ -11,6 +14,8 @@ const footerLinks = [
 ]
 
 export function Footer() {
+  const [contactOpen, setContactOpen] = useState(false)
+
   return (
     <footer className="mt-auto border-t-2 border-jscolors-gold/35 bg-[#7d5b6c] text-jscolors-cream">
       <div className="mx-auto grid max-w-6xl gap-10 px-4 py-14 md:grid-cols-2 lg:grid-cols-3">
@@ -63,12 +68,29 @@ export function Footer() {
               </li>
             ))}
             <li>
-              <a
-                href="mailto:retro.charm.co.ut@gmail.com"
-                className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink"
+              <button
+                type="button"
+                onClick={() => setContactOpen((open) => !open)}
+                aria-expanded={contactOpen}
+                className="inline-flex items-center gap-1.5 text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink"
               >
                 Contact Us
-              </a>
+                <svg
+                  className={`h-3.5 w-3.5 transition-transform ${contactOpen ? 'rotate-180' : ''}`}
+                  viewBox="0 0 20 20"
+                  fill="currentColor"
+                  aria-hidden
+                >
+                  <path
+                    fillRule="evenodd"
+                    d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                    clipRule="evenodd"
+                  />
+                </svg>
+              </button>
+              {contactOpen ? (
+                <p className="mt-1.5 break-all text-sm text-jscolors-cream/70">{CONTACT_EMAIL}</p>
+              ) : null}
             </li>
           </ul>
         </div>
