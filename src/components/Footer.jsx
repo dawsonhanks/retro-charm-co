@@ -62,6 +62,14 @@ export function Footer() {
                 </Link>
               </li>
             ))}
+            <li>
+              <a
+                href="mailto:retro.charm.co.ut@gmail.com"
+                className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink"
+              >
+                Contact Us
+              </a>
+            </li>
           </ul>
         </div>
 
