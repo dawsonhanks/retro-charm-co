@@ -7,7 +7,6 @@ import { CharmSearchInput } from '../components/CharmSearchInput'
 import { filterCharmList } from '../utils/charmFilters'
 import {
   addCharmToLinkOrder,
-  getCharmsFromLinkOrder,
   loadInitialLinkOrder,
 } from '../utils/braceletLinks'
 
@@ -284,8 +283,8 @@ export default function Create() {
   const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
   const [selectedSize, setSelectedSize] = useState(null)
 
-  const braceletCharmCount = useMemo(() => getCharmsFromLinkOrder(linkOrder).length, [linkOrder])
-  const braceletFull = selectedSize != null && braceletCharmCount >= selectedSize
+  const charmCapacity = selectedSize != null ? linkOrder.length : null
+  const braceletFull = selectedSize != null && !linkOrder.some((link) => link.type === 'plain')
   const braceletUnavailable = selectedSize == null
 
   function handleAddToBracelet(catalogCharm) {
@@ -391,7 +390,7 @@ export default function Create() {
         </div>
 
         <div className="mt-4" role="tablist" aria-label="Filter charm catalog">
-          <div className="flex gap-2 overflow-x-auto pb-2">
+          <div className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-2">
             {FILTERS.map((f) => {
               const active = filter === f.id
               return (
@@ -466,7 +465,7 @@ export default function Create() {
                             : braceletUnavailable
                               ? 'Choose a bracelet size in the builder first'
                               : braceletFull
-                                ? `Bracelet is full (${selectedSize} charms)`
+                                ? `Bracelet is full (${charmCapacity} charms)`
                                 : undefined
                         }
                         className={[
@@ -485,7 +484,7 @@ export default function Create() {
                             : braceletUnavailable
                               ? 'Choose size first'
                               : braceletFull
-                                ? `Bracelet full (${selectedSize})`
+                                ? `Bracelet full (${charmCapacity})`
                                 : 'Add to Bracelet'}
                       </button>
                       <button

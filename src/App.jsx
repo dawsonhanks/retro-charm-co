@@ -15,10 +15,10 @@ function Shell() {
   const showMarketBanner = pathname === '/find-us'
 
   return (
-    <div className="flex min-h-dvh flex-col bg-jscolors-cream">
+    <div className="flex min-h-dvh min-w-0 max-w-full flex-col overflow-x-clip bg-jscolors-cream">
       <Navbar />
       {showMarketBanner ? <NextMarketBanner /> : null}
-      <main className="flex-1" id="main-content">
+      <main className="min-w-0 flex-1" id="main-content">
         <Outlet />
       </main>
       <Footer />

@@ -20,9 +20,20 @@ const MAX_QUANTITY_PER_LINE_ITEM = 50
 const MAX_BRACELET_BUILDS_METADATA = 10
 const MAX_METADATA_VALUE_LENGTH = 450
 
+function resolveBuildBaseId(build) {
+  if (typeof build?.baseId === 'string' && BASE_OPTIONS.some((b) => b.id === build.baseId)) {
+    return build.baseId
+  }
+  // Legacy builds may only send metal; map to the classic (non-watch) base.
+  if (build?.metal === 'silver' || build?.metal === 'gold') {
+    return build.metal
+  }
+  return null
+}
+
 function isValidBraceletBuild(build) {
   if (!build || typeof build !== 'object') return false
-  if (build.metal !== 'silver' && build.metal !== 'gold') return false
+  if (!resolveBuildBaseId(build)) return false
   if (!Array.isArray(build.charms)) return false
 
   for (const charm of build.charms) {
@@ -40,9 +51,10 @@ function encodeCharmIdForMetadata(charm) {
   return charm.id
 }
 
-function buildBraceletMetadataValue(metal, charms) {
+/** Metadata value: `baseId:charmId,charmId,...` (baseId distinguishes bracelet vs watch). */
+function buildBraceletMetadataValue(baseId, charms) {
   const ids = charms.map((charm) => encodeCharmIdForMetadata(charm))
-  const prefix = `${metal}:`
+  const prefix = `${baseId}:`
   let value = prefix + ids.join(',')
 
   if (value.length <= MAX_METADATA_VALUE_LENGTH) {
@@ -78,7 +90,8 @@ function buildOrderBraceletMetadata(braceletBuilds) {
 
   const metadata = {}
   builds.forEach((build, index) => {
-    metadata[`bracelet_${index + 1}`] = buildBraceletMetadataValue(build.metal, build.charms)
+    const baseId = resolveBuildBaseId(build)
+    metadata[`bracelet_${index + 1}`] = buildBraceletMetadataValue(baseId, build.charms)
   })
 
   return metadata

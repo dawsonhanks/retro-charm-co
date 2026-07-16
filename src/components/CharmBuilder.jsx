@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { AnimatePresence, motion } from 'framer-motion'
 import {
   DndContext,
   closestCenter,
@@ -16,7 +17,7 @@ import {
   horizontalListSortingStrategy,
 } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { BASE_OPTIONS, charms, CHARM_CATEGORY_FILTERS, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getFillerCharmForMetal, getSizeLengthLabel, isFillerCharm, parseCharmCountInput, SIZE_OPTIONS } from '../data/charms'
+import { BASE_OPTIONS, charms, CHARM_CATEGORY_FILTERS, DEFAULT_BRACELET_SIZE, getApproximateLengthInches, getCharmById, getCharmCapacity, getFillerCharmForMetal, getSizeLengthLabel, isFillerCharm, isWatchBase, parseCharmCountInput, SIZE_OPTIONS, WATCH_BASE_CHARM_RESERVE } from '../data/charms'
 import { CharmSvgIcon, CharmPickerGrid } from './CharmIcon'
 import { CharmSearchInput } from './CharmSearchInput'
 import { FilterBar } from './FilterBar'
@@ -79,8 +80,13 @@ export function CharmBuilder({
   const [customSizeError, setCustomSizeError] = useState(null)
   const [isSizePickerExpanded, setIsSizePickerExpanded] = useState(true)
   const [sizeChangeError, setSizeChangeError] = useState(null)
+  const [baseChangeError, setBaseChangeError] = useState(null)
   const [pickerFilter, setPickerFilter] = useState('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [justAddedId, setJustAddedId] = useState(null)
+  const [addToast, setAddToast] = useState(null)
+  const justAddedTimeoutRef = useRef(null)
+  const addToastTimeoutRef = useRef(null)
   const isControlled = controlledLinkOrder !== undefined && onLinkOrderChange !== undefined
   const isSizeControlled = controlledSelectedSize !== undefined && onSelectedSizeChange !== undefined
   const linkOrder = isControlled ? controlledLinkOrder : internalLinkOrder
@@ -108,14 +114,30 @@ export function CharmBuilder({
   )
 
   const base = BASE_OPTIONS.find((b) => b.id === baseId) ?? BASE_OPTIONS[0]
+  const isWatchBand = isWatchBase(base.id)
+  const charmCapacity = selectedSize != null ? getCharmCapacity(selectedSize, base.id) : null
   const pickerCharms = useMemo(() => {
     const available = charms.filter((c) => c.category !== 'Starter Bracelets' && !isFillerCharm(c))
     return filterCharmList(available, { filter: pickerFilter, query: searchQuery })
   }, [pickerFilter, searchQuery])
   const selected = useMemo(() => getCharmsFromLinkOrder(linkOrder), [linkOrder])
+  const onBraceletCounts = useMemo(() => {
+    const counts = {}
+    for (const charm of selected) {
+      counts[charm.id] = (counts[charm.id] ?? 0) + 1
+    }
+    return counts
+  }, [selected])
   const braceletFull =
-    selectedSize != null && linkOrder.length >= selectedSize && !linkOrder.some((link) => link.type === 'plain')
+    charmCapacity != null && linkOrder.length >= charmCapacity && !linkOrder.some((link) => link.type === 'plain')
   const parsedCustomSize = parseCharmCountInput(customSizeInput)
+
+  useEffect(() => {
+    return () => {
+      if (justAddedTimeoutRef.current) clearTimeout(justAddedTimeoutRef.current)
+      if (addToastTimeoutRef.current) clearTimeout(addToastTimeoutRef.current)
+    }
+  }, [])
 
   function clearCustomSizeInput() {
     setCustomSizeInput('')
@@ -142,35 +164,82 @@ export function CharmBuilder({
   function addCharm(c) {
     if (c.category === 'Starter Bracelets' || isFillerCharm(c) || selectedSize == null || braceletFull) return
     updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
+
+    const nextCount = selected.length + 1
+    setJustAddedId(c.id)
+    setAddToast({
+      key: Date.now(),
+      name: c.name,
+      count: nextCount,
+      size: charmCapacity,
+    })
+
+    if (justAddedTimeoutRef.current) clearTimeout(justAddedTimeoutRef.current)
+    if (addToastTimeoutRef.current) clearTimeout(addToastTimeoutRef.current)
+
+    justAddedTimeoutRef.current = setTimeout(() => setJustAddedId(null), 1400)
+    addToastTimeoutRef.current = setTimeout(() => setAddToast(null), 2200)
   }
 
   function removeCharm(linkId) {
     updateLinkOrder((prev) => removeCharmFromLinkOrder(prev, linkId))
+    setBaseChangeError(null)
   }
 
   function handleBaseChange(nextBaseId) {
-    setBaseId(nextBaseId)
-  }
+    if (nextBaseId === baseId) return
 
-  function handleSizeSelect(charmCount) {
-    const charmsOnTrack = getCharmsFromLinkOrder(linkOrder)
-
-    if (charmsOnTrack.length > charmCount) {
-      setSizeChangeError('Remove some charms first to choose a smaller size.')
+    if (selectedSize == null) {
+      setBaseId(nextBaseId)
+      setBaseChangeError(null)
       return
     }
 
-    const nextCharms = charmsOnTrack.slice(0, charmCount)
+    const nextCapacity = getCharmCapacity(selectedSize, nextBaseId)
+    const charmsOnTrack = getCharmsFromLinkOrder(linkOrder)
+
+    if (charmsOnTrack.length > nextCapacity) {
+      const overflow = charmsOnTrack.length - nextCapacity
+      setBaseChangeError(
+        `The watch face takes up space for ${WATCH_BASE_CHARM_RESERVE} charms, so this size only holds ${nextCapacity}. Remove ${overflow} charm${overflow === 1 ? '' : 's'} first, then you can switch.`,
+      )
+      return
+    }
+
+    setBaseId(nextBaseId)
+    setBaseChangeError(null)
+    setSizeChangeError(null)
+    if (nextCapacity !== linkOrder.length) {
+      updateLinkOrder(createLinkOrderForSize(nextCapacity, charmsOnTrack))
+    }
+  }
+
+  function handleSizeSelect(charmCount) {
+    const capacity = getCharmCapacity(charmCount, baseId)
+    const charmsOnTrack = getCharmsFromLinkOrder(linkOrder)
+
+    if (charmsOnTrack.length > capacity) {
+      setSizeChangeError(
+        isWatchBase(baseId)
+          ? `This watch band only holds ${capacity} charms at that size. Remove some charms first, then choose it.`
+          : 'Remove some charms first to choose a smaller size.',
+      )
+      return
+    }
+
+    const nextCharms = charmsOnTrack.slice(0, capacity)
     clearCustomSizeInput()
     setSizeChangeError(null)
+    setBaseChangeError(null)
     updateSelectedSize(charmCount)
-    updateLinkOrder(createLinkOrderForSize(charmCount, nextCharms))
+    updateLinkOrder(createLinkOrderForSize(capacity, nextCharms))
     setIsSizePickerExpanded(false)
   }
 
   function handleChangeSizeClick() {
     setIsSizePickerExpanded(true)
     setSizeChangeError(null)
+    setBaseChangeError(null)
   }
 
   function reset() {
@@ -178,6 +247,7 @@ export function CharmBuilder({
     clearCustomSizeInput()
     setIsSizePickerExpanded(true)
     setSizeChangeError(null)
+    setBaseChangeError(null)
     updateSelectedSize(null)
     updateLinkOrder(createInitialLinkOrder(DEFAULT_BRACELET_SIZE))
     setBaseId(BASE_OPTIONS[0].id)
@@ -188,13 +258,16 @@ export function CharmBuilder({
     const build = braceletBuilds.find((b) => b.buildId === buildId)
     if (!build) return
 
-    const slotCount = build.charmCount ?? DEFAULT_BRACELET_SIZE
+    const nextBaseId = build.baseId ?? build.metal
+    const nominalSize = build.charmCount ?? DEFAULT_BRACELET_SIZE
+    const slotCount = getCharmCapacity(nominalSize, nextBaseId) ?? DEFAULT_BRACELET_SIZE
     setEditingBuildId(build.buildId)
-    setBaseId(build.baseId ?? build.metal)
-    updateSelectedSize(slotCount)
+    setBaseId(nextBaseId)
+    updateSelectedSize(nominalSize)
     updateLinkOrder(linkOrderFromSavedCharms(build.charms, slotCount))
     setIsSizePickerExpanded(false)
     setSizeChangeError(null)
+    setBaseChangeError(null)
     writeJson(STORAGE_KEYS.savedBuild, null)
   }
 
@@ -203,6 +276,7 @@ export function CharmBuilder({
     clearCustomSizeInput()
     setIsSizePickerExpanded(true)
     setSizeChangeError(null)
+    setBaseChangeError(null)
     updateSelectedSize(null)
     updateLinkOrder(createInitialLinkOrder(DEFAULT_BRACELET_SIZE))
     setBaseId(BASE_OPTIONS[0].id)
@@ -281,8 +355,8 @@ export function CharmBuilder({
   const chainStroke = base.metal === 'gold' ? '#d4af37' : '#b8bcc6'
   const sortableIds = linkOrder.map((link) => link.id)
   const trackInstructionLabel =
-    selectedSize != null
-      ? `Tap to add · drag to rearrange · ${selectedSize ?? DEFAULT_BRACELET_SIZE} link slots`
+    charmCapacity != null
+      ? `Tap to add · drag to rearrange · ${charmCapacity} link slots`
       : null
   const showHeaderInstruction = selectedSize == null && instructionLabel
   const showDefaultHeading = selectedSize == null && !instructionLabel
@@ -386,11 +460,21 @@ export function CharmBuilder({
             </button>
           ))}
         </div>
+        {isWatchBand && (
+          <p className="mx-auto mt-3 max-w-lg text-center text-xs text-jscolors-ink/75 text-balance sm:text-sm">
+            The watch face takes up space for {WATCH_BASE_CHARM_RESERVE} charms, so this size holds {WATCH_BASE_CHARM_RESERVE} fewer.
+          </p>
+        )}
+        {baseChangeError && (
+          <p className="mx-auto mt-3 max-w-lg text-center text-xs text-red-600" role="alert">
+            {baseChangeError}
+          </p>
+        )}
 
         {(selectedSize == null || isSizePickerExpanded) && (
           <div className="mt-8">
             <p className="text-center text-sm font-semibold text-jscolors-ink">Choose your size</p>
-            <p className="mx-auto mt-2 max-w-full px-2 text-center text-xs text-jscolors-ink/75 whitespace-nowrap max-[389px]:text-[9px] sm:text-sm">
+            <p className="mx-auto mt-2 max-w-full px-2 text-center text-xs text-jscolors-ink/75 text-balance sm:text-sm">
               Small wrist: 16–18 charms · Medium wrist: 19–21 charms · Large wrist: 22–24 charms
             </p>
             <div className="mx-auto mt-6 grid max-w-2xl grid-cols-3 gap-4 sm:gap-6">
@@ -483,7 +567,7 @@ export function CharmBuilder({
 
         {selectedSize != null && !isSizePickerExpanded && (
           <div className="mx-auto mt-8 flex max-w-md flex-wrap items-center justify-between gap-3 rounded-xl border border-jscolors-gold/35 bg-jscolors-cream/50 px-4 py-3">
-            <p className="text-sm font-semibold text-jscolors-ink">{formatSizeSummary(selectedSize)}</p>
+            <p className="text-sm font-semibold text-jscolors-ink">{formatSizeSummary(selectedSize, charmCapacity, isWatchBand)}</p>
             <button
               type="button"
               onClick={handleChangeSizeClick}
@@ -494,7 +578,7 @@ export function CharmBuilder({
           </div>
         )}
 
-        {selectedSize != null && (
+        {selectedSize != null && charmCapacity != null && (
           <>
         <p
           id={`${idPrefix}-track-instruction`}
@@ -502,11 +586,11 @@ export function CharmBuilder({
         >
           {trackInstructionLabel}
         </p>
-        <div className="relative mt-2">
-          <BraceletBaseGraphic stroke={chainStroke} linkCount={selectedSize} />
+        <div className="relative mt-2 min-w-0">
+          <BraceletBaseGraphic stroke={chainStroke} linkCount={charmCapacity} />
           <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
             <SortableContext items={sortableIds} strategy={horizontalListSortingStrategy}>
-              <div className="relative mx-auto flex min-h-[120px] max-w-full items-center justify-center gap-px overflow-x-auto px-3 py-8 sm:px-4">
+              <div className="relative mx-auto flex min-h-[120px] w-full min-w-0 max-w-full items-center justify-center gap-px overflow-x-auto overscroll-x-contain px-3 py-8 sm:px-4">
                 {linkOrder.map((link) => (
                   <SortableBraceletLink
                     key={link.id}
@@ -523,7 +607,7 @@ export function CharmBuilder({
 
         {braceletFull && (
           <p className="mt-6 text-center text-sm font-medium text-jscolors-pink">
-            All {selectedSize} slots filled — remove a charm to swap something in.
+            All {charmCapacity} slots filled — remove a charm to swap something in.
           </p>
         )}
 
@@ -545,7 +629,54 @@ export function CharmBuilder({
         </div>
 
         <div className="mt-10 border-t border-jscolors-gold/25 pt-8">
-          <p className="text-center text-sm font-semibold text-jscolors-ink">Add charms</p>
+          <div className="flex flex-col items-center gap-1">
+            <p className="text-center text-sm font-semibold text-jscolors-ink">Add charms</p>
+            <p
+              className="text-center text-xs font-medium text-jscolors-ink/70"
+              aria-live="polite"
+            >
+              <span className="tabular-nums text-jscolors-pink">{selected.length}</span>
+              {' of '}
+              <span className="tabular-nums">{charmCapacity}</span>
+              {' charms'}
+            </p>
+            {isWatchBand && (
+              <p className="mx-auto mt-1 max-w-sm text-center text-xs text-jscolors-ink/65 text-balance">
+                The watch face takes up space for {WATCH_BASE_CHARM_RESERVE} charms, so this size holds {WATCH_BASE_CHARM_RESERVE} fewer.
+              </p>
+            )}
+          </div>
+
+          <AnimatePresence mode="wait">
+            {addToast && (
+              <motion.div
+                key={addToast.key}
+                role="status"
+                aria-live="polite"
+                initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: -6, scale: 0.98 }}
+                transition={{ type: 'spring', stiffness: 420, damping: 28 }}
+                className="mx-auto mt-3 w-full max-w-sm"
+              >
+                <div className="flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-4 py-2.5 shadow-md shadow-emerald-900/10">
+                  <span
+                    className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-emerald-500 text-xs font-bold text-white"
+                    aria-hidden
+                  >
+                    ✓
+                  </span>
+                  <p className="min-w-0 flex-1 text-sm font-semibold text-emerald-900">
+                    <span className="line-clamp-1">{addToast.name} added</span>
+                    <span className="mt-0.5 block text-xs font-medium text-emerald-700/90">
+                      {addToast.count} of {addToast.size} charms
+                    </span>
+                  </p>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
           <div className="mx-auto mt-4 max-w-xl">
             <CharmSearchInput
               id={`${idPrefix}-charm-search`}
@@ -571,7 +702,13 @@ export function CharmBuilder({
                 </p>
               </div>
             ) : (
-              <CharmPickerGrid charms={pickerCharms} onPick={addCharm} maxReached={braceletFull} />
+              <CharmPickerGrid
+                charms={pickerCharms}
+                onPick={addCharm}
+                maxReached={braceletFull}
+                onBraceletCounts={onBraceletCounts}
+                justAddedId={justAddedId}
+              />
             )}
           </div>
         </div>
@@ -582,13 +719,17 @@ export function CharmBuilder({
   )
 }
 
-function formatSizeSummary(charmCount) {
+function formatSizeSummary(charmCount, charmCapacity = charmCount, isWatchBand = false) {
   const exact = SIZE_OPTIONS.find((option) => option.charmCount === charmCount)
-  if (exact) {
-    return `Size: ${charmCount} charms (${exact.lengthInches} inches)`
+  const lengthPart = exact
+    ? `${exact.lengthInches} inches`
+    : `~${getApproximateLengthInches(charmCount)} inches, approx.`
+
+  if (isWatchBand && charmCapacity != null && charmCapacity !== charmCount) {
+    return `Size: ${charmCount} (${lengthPart}) · ${charmCapacity} charm slots`
   }
 
-  return `Size: ${charmCount} charms (~${getApproximateLengthInches(charmCount)} inches, approx.)`
+  return `Size: ${charmCount} charms (${lengthPart})`
 }
 
 function linkOrderFromSavedCharms(savedCharms, slotCount) {

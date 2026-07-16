@@ -1,4 +1,4 @@
-import { DEFAULT_BRACELET_SIZE, getCharmById, isFillerCharm } from '../data/charms'
+import { DEFAULT_BRACELET_SIZE, getCharmById, getCharmCapacity, isFillerCharm } from '../data/charms'
 import { readJson, STORAGE_KEYS } from './storage'
 
 /** @deprecated Use DEFAULT_BRACELET_SIZE — kept for preview components */
@@ -36,7 +36,8 @@ export function createInitialLinkOrder(slotCount = DEFAULT_BRACELET_SIZE) {
 /** @returns {BraceletLink[]} */
 export function loadInitialLinkOrder() {
   const saved = readJson(STORAGE_KEYS.savedBuild, null)
-  const slotCount = saved?.charmCount ?? DEFAULT_BRACELET_SIZE
+  const nominalSize = saved?.charmCount ?? DEFAULT_BRACELET_SIZE
+  const slotCount = getCharmCapacity(nominalSize, saved?.baseId) ?? DEFAULT_BRACELET_SIZE
 
   if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
     return saved.linkOrder

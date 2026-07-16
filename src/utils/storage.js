@@ -1,6 +1,5 @@
 export const STORAGE_KEYS = {
   wishlist: 'retrocharm_wishlist',
-  shopWaitlist: 'retrocharm_shop_waitlist',
   savedBuild: 'retrocharm_saved_build',
 }
 

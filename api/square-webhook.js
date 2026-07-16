@@ -2,6 +2,7 @@ import crypto from 'node:crypto'
 import { charms, BASE_OPTIONS } from '../src/data/charms.js'
 
 const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
+const DEFAULT_SITE_URL = 'https://www.theretrocharmco.com'
 const FROM_EMAIL = 'RetroCharm Co <orders@theretrocharmco.com>'
 const FALLBACK_FROM_EMAIL = 'RetroCharm Co <onboarding@resend.dev>'
 
@@ -36,11 +37,49 @@ function verifySquareSignature(signature, rawBody, signatureKey) {
 }
 
 const CATALOG_NAMES = new Map()
+const CATALOG_IMAGES = new Map()
+const WATCH_PRODUCT_IDS = new Set()
+const WATCH_PRODUCT_NAMES = new Set()
+
 for (const charm of charms) {
   CATALOG_NAMES.set(charm.id, charm.name)
+  if (charm.image) CATALOG_IMAGES.set(charm.id, charm.image)
+  if (charm.id.includes('watch') || /\bwatch\b/i.test(charm.name)) {
+    WATCH_PRODUCT_IDS.add(charm.id)
+    WATCH_PRODUCT_NAMES.add(charm.name)
+  }
 }
 for (const base of BASE_OPTIONS) {
   CATALOG_NAMES.set(base.id, base.label)
+  if (base.image) CATALOG_IMAGES.set(base.id, base.image)
+  if (base.id.includes('watch') || /\bwatch\b/i.test(base.label)) {
+    WATCH_PRODUCT_IDS.add(base.id)
+    WATCH_PRODUCT_NAMES.add(base.label)
+  }
+}
+
+function getSiteUrl() {
+  const configured = process.env.VITE_SITE_URL
+  if (typeof configured === 'string' && configured.trim()) {
+    return configured.trim().replace(/\/$/, '')
+  }
+  return DEFAULT_SITE_URL
+}
+
+function escapeHtml(value) {
+  return String(value)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+}
+
+function textToHtmlParagraphs(text) {
+  if (!text) return ''
+  return escapeHtml(text)
+    .split('\n')
+    .map((line) => (line.length === 0 ? '<br>' : line))
+    .join('<br>\n')
 }
 
 const FILLER_METADATA_TOKEN = 'b'
@@ -49,6 +88,35 @@ function formatMetalLabel(metal) {
   if (metal === 'silver') return 'Silver'
   if (metal === 'gold') return 'Gold'
   return metal
+}
+
+function isWatchProductId(id) {
+  return typeof id === 'string' && WATCH_PRODUCT_IDS.has(id)
+}
+
+function isWatchProductName(name) {
+  return typeof name === 'string' && (WATCH_PRODUCT_NAMES.has(name) || /\bwatch\b/i.test(name))
+}
+
+function resolveBaseFromMetadataKey(baseKey) {
+  const base = BASE_OPTIONS.find((b) => b.id === baseKey)
+  if (base) {
+    return {
+      baseId: base.id,
+      metal: base.metal,
+      label: base.label,
+      isWatch: isWatchProductId(base.id),
+    }
+  }
+
+  // Legacy metadata used only metal (`silver` / `gold`) as the prefix.
+  const metal = baseKey === 'gold' || baseKey.startsWith('gold') ? 'gold' : 'silver'
+  return {
+    baseId: baseKey,
+    metal,
+    label: formatMetalLabel(metal),
+    isWatch: isWatchProductId(baseKey) || /\bwatch\b/i.test(baseKey),
+  }
 }
 
 function isFillerSlotToken(id) {
@@ -69,9 +137,19 @@ function charmDisplayName(id, metal) {
   return CATALOG_NAMES.get(id) ?? id
 }
 
-function formatBraceletBuilds(metadata) {
+/** Relative image path for a slot id (catalog or filler). */
+function charmImagePath(id, metal) {
+  if (isFillerSlotToken(id)) {
+    return metal === 'gold'
+      ? '/images/charms/plain-gold-link.webp'
+      : '/images/charms/plain-silver-link.webp'
+  }
+  return CATALOG_IMAGES.get(id) ?? null
+}
+
+function parseBraceletBuilds(metadata) {
   if (!metadata || typeof metadata !== 'object') {
-    return ''
+    return []
   }
 
   const braceletEntries = Object.entries(metadata)
@@ -82,40 +160,119 @@ function formatBraceletBuilds(metadata) {
       return numA - numB
     })
 
-  if (braceletEntries.length === 0) {
-    return ''
-  }
-
-  const lines = ['Bracelet arrangements:']
+  const builds = []
 
   for (const [key, value] of braceletEntries) {
-    if (typeof value !== 'string') {
-      continue
-    }
+    if (typeof value !== 'string') continue
 
     const colonIndex = value.indexOf(':')
-    if (colonIndex === -1) {
-      continue
-    }
+    if (colonIndex === -1) continue
 
-    const metal = value.slice(0, colonIndex)
+    const baseKey = value.slice(0, colonIndex)
+    const { metal, label, isWatch } = resolveBaseFromMetadataKey(baseKey)
     const idsPart = value.slice(colonIndex + 1)
     const ids = idsPart ? idsPart.split(',').filter((id) => id.length > 0) : []
-    const braceletNum = key.replace('bracelet_', '')
 
-    lines.push('')
-    lines.push(`Bracelet ${braceletNum} (${formatMetalLabel(metal)}) — ${ids.length} slots:`)
-    ids.forEach((id, index) => {
-      lines.push(`${index + 1}. ${charmDisplayName(id, metal)}`)
+    builds.push({
+      num: key.replace('bracelet_', ''),
+      metal,
+      label,
+      isWatch,
+      ids,
     })
   }
 
-  // Only the header was pushed (no valid bracelet entries).
+  return builds
+}
+
+function formatLineItemsSection(lineItems) {
+  if (!Array.isArray(lineItems) || lineItems.length === 0) {
+    return ''
+  }
+
+  const lines = ['Items ordered:']
+
+  for (const item of lineItems) {
+    if (!item || typeof item !== 'object') continue
+
+    const name = typeof item.name === 'string' && item.name.trim() ? item.name.trim() : 'Unknown item'
+    const quantity = item.quantity ?? '1'
+    const unitAmount = formatAmount(item.base_price_money)
+    const watchTag = isWatchProductName(name) ? ' [Watch]' : ''
+
+    lines.push(`- ${quantity} × ${name}${watchTag} — ${unitAmount} each`)
+  }
+
+  // Only the header was pushed (no usable line items).
   if (lines.length === 1) {
     return ''
   }
 
   return lines.join('\n')
+}
+
+function formatBraceletBuilds(builds) {
+  if (!Array.isArray(builds) || builds.length === 0) {
+    return ''
+  }
+
+  const lines = ['Bracelet arrangements:']
+
+  for (const build of builds) {
+    const kind = build.isWatch ? 'Watch' : 'Bracelet'
+    lines.push('')
+    lines.push(`${kind} ${build.num} — ${build.label} — ${build.ids.length} slots:`)
+    build.ids.forEach((id, index) => {
+      lines.push(`${index + 1}. ${charmDisplayName(id, build.metal)}`)
+    })
+  }
+
+  return lines.join('\n')
+}
+
+/** HTML charm-strip preview matching the builder layout (for fulfillment emails). */
+function formatBraceletBuildsHtml(builds, siteUrl) {
+  if (!Array.isArray(builds) || builds.length === 0) {
+    return ''
+  }
+
+  const sections = builds.map((build) => {
+    const kind = build.isWatch ? 'Watch' : 'Bracelet'
+    const heading = `${kind} ${build.num} — ${build.label} — ${build.ids.length} slots`
+
+    const cells = build.ids
+      .map((id) => {
+        const name = charmDisplayName(id, build.metal)
+        const path = charmImagePath(id, build.metal)
+        if (!path) {
+          return `<td style="padding:2px;border:1px solid #d4c4a8;background:#fff;vertical-align:middle;text-align:center;width:44px;height:44px;font-size:10px;color:#666;">${escapeHtml(name)}</td>`
+        }
+        const src = `${siteUrl}${path}`
+        return `<td style="padding:2px;border:1px solid #d4c4a8;background:#fff;vertical-align:middle;">
+  <img src="${escapeHtml(src)}" alt="${escapeHtml(name)}" width="40" height="40" style="display:block;width:40px;height:40px;object-fit:contain;" />
+</td>`
+      })
+      .join('\n')
+
+    const listItems = build.ids
+      .map((id, index) => `<li>${index + 1}. ${escapeHtml(charmDisplayName(id, build.metal))}</li>`)
+      .join('\n')
+
+    return `<div style="margin:16px 0 20px;">
+  <p style="margin:0 0 8px;font-size:14px;font-weight:600;color:#1a1a1a;">${escapeHtml(heading)}</p>
+  <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-collapse:separate;border-spacing:2px;">
+    <tr>
+${cells}
+    </tr>
+  </table>
+  <ol style="margin:10px 0 0;padding-left:20px;font-size:13px;color:#333;line-height:1.45;">
+${listItems}
+  </ol>
+</div>`
+  })
+
+  return `<h2 style="margin:24px 0 8px;font-size:16px;color:#1a1a1a;">Bracelet arrangements</h2>
+${sections.join('\n')}`
 }
 
 function formatAmount(amountMoney) {
@@ -152,9 +309,9 @@ function formatShippingSection(recipient) {
   return lines.length > 0 ? lines.join('\n') : 'Shipping address not found'
 }
 
-async function fetchOrderRecipient(orderId, accessToken) {
+async function fetchOrderDetails(orderId, accessToken) {
   if (!orderId || !accessToken) {
-    return { recipient: null, metadata: null }
+    return { recipient: null, metadata: null, lineItems: [] }
   }
 
   try {
@@ -168,7 +325,7 @@ async function fetchOrderRecipient(orderId, accessToken) {
     if (!res.ok) {
       const errorBody = await res.text()
       console.error(`Square order lookup failed (${res.status}):`, errorBody)
-      return { recipient: null, metadata: null }
+      return { recipient: null, metadata: null, lineItems: [] }
     }
 
     const data = await res.json()
@@ -177,14 +334,22 @@ async function fetchOrderRecipient(orderId, accessToken) {
     return {
       recipient: order?.fulfillments?.[0]?.shipment_details?.recipient ?? null,
       metadata: order?.metadata ?? null,
+      lineItems: Array.isArray(order?.line_items) ? order.line_items : [],
     }
   } catch (error) {
     console.error('Square order lookup error:', error)
-    return { recipient: null, metadata: null }
+    return { recipient: null, metadata: null, lineItems: [] }
   }
 }
 
-async function sendOrderEmail({ to, payment, timestamp, braceletSection, shippingSection }) {
+async function sendOrderEmail({
+  to,
+  payment,
+  timestamp,
+  lineItemsSection,
+  braceletBuilds,
+  shippingSection,
+}) {
   const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
     throw new Error('RESEND_API_KEY is not configured')
@@ -193,6 +358,9 @@ async function sendOrderEmail({ to, payment, timestamp, braceletSection, shippin
   const paymentId = payment?.id ?? 'Unknown'
   const orderId = payment?.order_id ?? 'Unknown'
   const amount = formatAmount(payment?.amount_money)
+  const siteUrl = getSiteUrl()
+  const braceletSection = formatBraceletBuilds(braceletBuilds)
+  const braceletHtml = formatBraceletBuildsHtml(braceletBuilds, siteUrl)
 
   const textParts = [
     'A new order has been completed on RetroCharm Co.',
@@ -203,6 +371,10 @@ async function sendOrderEmail({ to, payment, timestamp, braceletSection, shippin
     `Timestamp: ${timestamp}`,
   ]
 
+  if (lineItemsSection) {
+    textParts.push('', lineItemsSection)
+  }
+
   if (braceletSection) {
     textParts.push('', braceletSection)
   }
@@ -211,11 +383,39 @@ async function sendOrderEmail({ to, payment, timestamp, braceletSection, shippin
 
   const text = textParts.join('\n')
 
+  const headerHtml = `<p style="margin:0 0 16px;font-size:15px;color:#1a1a1a;">A new order has been completed on RetroCharm Co.</p>
+<p style="margin:0 0 4px;font-size:14px;color:#333;"><strong>Payment amount:</strong> ${escapeHtml(amount)}</p>
+<p style="margin:0 0 4px;font-size:14px;color:#333;"><strong>Payment ID:</strong> ${escapeHtml(paymentId)}</p>
+<p style="margin:0 0 4px;font-size:14px;color:#333;"><strong>Order ID:</strong> ${escapeHtml(orderId)}</p>
+<p style="margin:0 0 16px;font-size:14px;color:#333;"><strong>Timestamp:</strong> ${escapeHtml(timestamp)}</p>`
+
+  const lineItemsHtml = lineItemsSection
+    ? `<div style="margin:16px 0;font-size:14px;color:#333;line-height:1.5;">${textToHtmlParagraphs(lineItemsSection)}</div>`
+    : ''
+
+  const shippingHtml = `<div style="margin:24px 0 0;font-size:14px;color:#333;line-height:1.5;">
+  <h2 style="margin:0 0 8px;font-size:16px;color:#1a1a1a;">Shipping</h2>
+  ${textToHtmlParagraphs(shippingSection)}
+</div>`
+
+  const html = `<!DOCTYPE html>
+<html>
+<body style="margin:0;padding:20px;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;background:#faf7f2;color:#1a1a1a;">
+  <div style="max-width:960px;margin:0 auto;background:#ffffff;border:1px solid #e8dcc8;border-radius:12px;padding:24px;">
+    ${headerHtml}
+    ${lineItemsHtml}
+    ${braceletHtml}
+    ${shippingHtml}
+  </div>
+</body>
+</html>`
+
   const payload = {
     from: FROM_EMAIL,
     to: [to],
     subject: 'New RetroCharm Co Order',
     text,
+    html,
   }
 
   let res = await fetch('https://api.resend.com/emails', {
@@ -291,17 +491,19 @@ export default async function handler(req, res) {
         } else {
           try {
             const timestamp = event.created_at ?? payment?.updated_at ?? new Date().toISOString()
-            const { recipient, metadata } = await fetchOrderRecipient(
+            const { recipient, metadata, lineItems } = await fetchOrderDetails(
               payment?.order_id,
               process.env.SQUARE_ACCESS_TOKEN,
             )
-            const braceletSection = formatBraceletBuilds(metadata)
+            const lineItemsSection = formatLineItemsSection(lineItems)
+            const braceletBuilds = parseBraceletBuilds(metadata)
             const shippingSection = formatShippingSection(recipient)
             await sendOrderEmail({
               to: notificationEmail,
               payment,
               timestamp,
-              braceletSection,
+              lineItemsSection,
+              braceletBuilds,
               shippingSection,
             })
             console.log('Order notification sent', {

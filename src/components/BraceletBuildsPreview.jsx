@@ -27,9 +27,9 @@ function BraceletBuildRow({ build }) {
   return (
     <div className="rounded-2xl border border-jscolors-gold/30 bg-white/70 p-3 shadow-sm">
       <p className="mb-2 text-xs font-medium text-jscolors-ink/70">{label}</p>
-      <div className="relative">
+      <div className="relative min-w-0">
         <BraceletBaseGraphic stroke={chainStroke} linkCount={linkCount} />
-        <div className="relative mx-auto flex max-w-full items-center justify-center gap-0.5 overflow-x-auto px-2 py-5">
+        <div className="relative mx-auto flex w-full min-w-0 max-w-full items-center justify-center gap-0.5 overflow-x-auto overscroll-x-contain px-2 py-5">
           {build.charms.length === 0 ? (
             Array.from({ length: 6 }, (_, i) => <PlainLinkGraphic key={i} stroke={chainStroke} />)
           ) : (

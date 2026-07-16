@@ -1,7 +1,6 @@
 import { Link } from 'react-router-dom'
 import { EmailSignup } from './EmailSignup'
 import { instagram } from '../data/social'
-import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 
 const footerLinks = [
   { to: '/', label: 'Home' },
@@ -68,15 +67,7 @@ export function Footer() {
         <div className="md:col-span-2 lg:col-span-1">
           <h2 className="font-display text-sm font-semibold uppercase tracking-wide text-jscolors-gold">Charm mail</h2>
           <p className="mt-2 text-sm text-jscolors-cream/75">New charm drops, restocks, and online ordering updates.</p>
-          <EmailSignup
-            className="mt-4"
-            source="footer"
-            onSuccess={(payload) => {
-              const list = readJson(STORAGE_KEYS.shopWaitlist, [])
-              list.push({ ...payload, kind: 'footer', at: new Date().toISOString() })
-              writeJson(STORAGE_KEYS.shopWaitlist, list)
-            }}
-          />
+          <EmailSignup className="mt-4" source="footer" />
         </div>
       </div>
 

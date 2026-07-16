@@ -2,10 +2,15 @@ import { defineConfig, loadEnv } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const LOCAL_API_ROUTES = {
+  '/api/create-checkout': '/api/create-checkout.js',
+  '/api/email-signup': '/api/email-signup.js',
+}
+
 /**
  * Serves /api/* handlers during `npm run dev` the same way Vercel does in production.
- * Without this, Vite returns an empty 404 for /api/create-checkout and the cart
- * throws "Unexpected end of JSON input" when parsing the response.
+ * Without this, Vite returns an empty 404 for API routes and the client
+ * throws when parsing the response.
  */
 function localApiPlugin() {
   return {
@@ -13,7 +18,8 @@ function localApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0]
-        if (url !== '/api/create-checkout') {
+        const modulePath = url ? LOCAL_API_ROUTES[url] : null
+        if (!modulePath) {
           next()
           return
         }
@@ -43,10 +49,10 @@ function localApiPlugin() {
             }
           }
 
-          const mod = await server.ssrLoadModule('/api/create-checkout.js')
+          const mod = await server.ssrLoadModule(modulePath)
           const handler = mod.default
           if (typeof handler !== 'function') {
-            throw new Error('create-checkout handler is not exported')
+            throw new Error(`${modulePath} handler is not exported`)
           }
 
           let responded = false
@@ -70,15 +76,15 @@ function localApiPlugin() {
           if (!responded) {
             res.statusCode = 500
             res.setHeader('Content-Type', 'application/json')
-            res.end(JSON.stringify({ error: 'Checkout handler returned no response' }))
+            res.end(JSON.stringify({ error: 'API handler returned no response' }))
           }
         } catch (error) {
-          console.error('[local-api/create-checkout]', error)
+          console.error(`[local-api${url}]`, error)
           res.statusCode = 500
           res.setHeader('Content-Type', 'application/json')
           res.end(
             JSON.stringify({
-              error: error?.message || 'Failed to create checkout',
+              error: error?.message || 'API request failed',
             }),
           )
         }
@@ -89,7 +95,7 @@ function localApiPlugin() {
 
 // https://vite.dev/config/
 export default defineConfig(({ mode }) => {
-  // Load all env vars (not only VITE_*) so the local API can read Square secrets.
+  // Load all env vars (not only VITE_*) so the local API can read server secrets.
   const env = loadEnv(mode, process.cwd(), '')
   for (const [key, value] of Object.entries(env)) {
     if (process.env[key] === undefined) {

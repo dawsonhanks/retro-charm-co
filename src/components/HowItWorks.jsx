@@ -16,19 +16,16 @@ const item = {
 export function HowItWorks() {
   const steps = [
     {
-      n: '01',
       title: 'Pick Your Base',
       body: 'Silver or gold Italian link bracelet — the blank canvas for your story.',
       Icon: BraceletIcon,
     },
     {
-      n: '02',
       title: 'Choose Your Charms',
       body: 'Add as many as you like. Mix categories, initials, and icons.',
       Icon: SparkIcon,
     },
     {
-      n: '03',
       title: 'Wear Your Story',
       body: 'Shipped to your door — one-of-a-kind, made by you, ready to wear.',
       Icon: HeartStarIcon,
@@ -55,11 +52,10 @@ export function HowItWorks() {
       >
         {steps.map((s) => (
           <motion.li
-            key={s.n}
+            key={s.title}
             variants={item}
             className="retro-card retro-card-hover relative overflow-hidden p-8 text-center"
           >
-            <div className="absolute -right-6 -top-6 text-8xl font-display font-bold text-jscolors-gold/10">{s.n}</div>
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-jscolors-gold/60 bg-jscolors-cream text-jscolors-pink">
               <s.Icon />
             </div>

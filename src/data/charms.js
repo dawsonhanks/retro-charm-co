@@ -24,6 +24,26 @@ export const BASE_OPTIONS = [
   { id: 'gold-watch', metal: 'gold', label: 'Gold Watch Band', price: 20, chainClass: 'stroke-amber-400', image: '/images/base-bracelet-gold-watch.webp' },
 ]
 
+/** Charm slots reserved by the watch face on watch-band bases. */
+export const WATCH_BASE_CHARM_RESERVE = 5
+
+export function isWatchBase(baseId) {
+  return typeof baseId === 'string' && baseId.includes('watch')
+}
+
+/**
+ * How many charms a size can hold for a given base.
+ * Watch bands use 5 fewer slots than the selected size.
+ * @param {number | null | undefined} sizeCharmCount
+ * @param {string | null | undefined} baseId
+ * @returns {number | null}
+ */
+export function getCharmCapacity(sizeCharmCount, baseId) {
+  if (sizeCharmCount == null || !Number.isFinite(sizeCharmCount)) return null
+  const reserve = isWatchBase(baseId) ? WATCH_BASE_CHARM_RESERVE : 0
+  return Math.max(0, sizeCharmCount - reserve)
+}
+
 export const DEFAULT_CHARM_PRICE = 3.95
 
 export const CHARM_CATEGORY_FILTERS = [
