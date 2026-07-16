@@ -3,8 +3,9 @@ import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
 const LOCAL_API_ROUTES = {
-  '/api/create-checkout': '/api/create-checkout.js',
-  '/api/email-signup': '/api/email-signup.js',
+  '/api/create-checkout': { module: '/api/create-checkout.js', methods: ['POST'] },
+  '/api/email-signup': { module: '/api/email-signup.js', methods: ['POST'] },
+  '/api/inventory': { module: '/api/inventory.js', methods: ['GET'] },
 }
 
 /**
@@ -18,13 +19,14 @@ function localApiPlugin() {
     configureServer(server) {
       server.middlewares.use(async (req, res, next) => {
         const url = req.url?.split('?')[0]
-        const modulePath = url ? LOCAL_API_ROUTES[url] : null
-        if (!modulePath) {
+        const route = url ? LOCAL_API_ROUTES[url] : null
+        if (!route) {
           next()
           return
         }
 
-        if (req.method !== 'POST') {
+        const method = req.method ?? 'GET'
+        if (!route.methods.includes(method)) {
           res.statusCode = 405
           res.setHeader('Content-Type', 'application/json')
           res.end(JSON.stringify({ error: 'Method not allowed' }))
@@ -42,17 +44,19 @@ function localApiPlugin() {
             try {
               body = JSON.parse(raw)
             } catch {
-              res.statusCode = 400
-              res.setHeader('Content-Type', 'application/json')
-              res.end(JSON.stringify({ error: 'Invalid JSON body' }))
-              return
+              if (method === 'POST') {
+                res.statusCode = 400
+                res.setHeader('Content-Type', 'application/json')
+                res.end(JSON.stringify({ error: 'Invalid JSON body' }))
+                return
+              }
             }
           }
 
-          const mod = await server.ssrLoadModule(modulePath)
+          const mod = await server.ssrLoadModule(route.module)
           const handler = mod.default
           if (typeof handler !== 'function') {
-            throw new Error(`${modulePath} handler is not exported`)
+            throw new Error(`${route.module} handler is not exported`)
           }
 
           let responded = false
@@ -71,7 +75,7 @@ function localApiPlugin() {
             },
           }
 
-          await handler({ method: 'POST', body, headers: req.headers }, mockRes)
+          await handler({ method, body, headers: req.headers }, mockRes)
 
           if (!responded) {
             res.statusCode = 500

@@ -214,6 +214,8 @@ export default async function handler(req, res) {
           redirect_url: `${siteUrl}/order-confirmation?order=${encodeURIComponent(safeIdempotencyKey)}`,
           ask_for_shipping_address: true,
           shipping_fee: shippingFee,
+          // Shows Square Marketing coupon field when at least one coupon is active.
+          enable_coupon: true,
         },
         order,
       }),

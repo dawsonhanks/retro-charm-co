@@ -11,30 +11,50 @@ const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) =>
 const heroWords = ['Italian', 'Charm', 'Bracelets']
 const CUSTOMER_PHOTOS = [
   {
-    src: '/images/customer-photos/customer-photo-1.jpg',
+    src: '/images/customer-photos/customer-photo-1.webp',
     alt: 'Two customers showing layered Italian charm bracelets with gold and silver links, featuring heart, flag, and fish dangle charms',
   },
   {
-    src: '/images/customer-photos/customer-photo-2.jpg',
+    src: '/images/customer-photos/customer-photo-2.webp',
     alt: 'Close-up of a wrist wearing stacked bracelets with a silver Italian charm bracelet, gold chain, and gold beaded cross bracelet',
   },
   {
-    src: '/images/customer-photos/customer-photo-3.jpg',
+    src: '/images/customer-photos/customer-photo-3.webp',
     alt: 'Two customers wearing gold Italian charm bracelets with checkered and pearl dangle charms',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-4.webp',
+    alt: 'Apple Watch with a gold Italian charm band featuring fish, flag, cross, star, and heart dangle charms',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-5.webp',
+    alt: 'Wrist wearing a stacked silver Italian charm bracelet with black beaded and cord bracelets at an outdoor market',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-6.webp',
+    alt: 'Hand wearing layered gold and silver Italian charm bracelets with flag, heart, flower, checkerboard, cherry, and WWJD charms',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-7.webp',
+    alt: 'Wrist with layered silver chains and a gold Italian charm bracelet with star, I love you, checkerboard links, and fish and pearl dangle charms',
+  },
+  {
+    src: '/images/customer-photos/customer-photo-8.webp',
+    alt: 'Wrist wearing stacked gold and silver Italian charm bracelets with cherries, Diet Coke, American flag, and checkerboard charms',
   },
 ]
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[200px] items-center justify-center py-16">
+    <div className="flex min-h-[200px] items-center justify-center py-16" role="status" aria-live="polite">
       <img
-        src="/images/brand/retro-charm-icon-mark.png"
+        src="/images/brand/retro-charm-icon-mark.webp"
         alt=""
         width={56}
         height={44}
         className="h-12 w-auto animate-pulse object-contain opacity-90"
-        aria-label="Loading"
       />
+      <span className="sr-only">Loading</span>
     </div>
   )
 }
@@ -133,7 +153,13 @@ export default function Home() {
           <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-3 md:gap-6 lg:grid-cols-4">
             {CUSTOMER_PHOTOS.map((photo) => (
               <div key={photo.src} className="aspect-square overflow-hidden rounded-xl">
-                <img src={photo.src} alt={photo.alt} className="h-full w-full object-cover" />
+                <img
+                  src={photo.src}
+                  alt={photo.alt}
+                  className="h-full w-full object-cover"
+                  loading="lazy"
+                  decoding="async"
+                />
               </div>
             ))}
           </div>

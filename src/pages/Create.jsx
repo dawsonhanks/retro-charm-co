@@ -58,6 +58,7 @@ const SILVER_CHARMS = [
   { id: 's-turquoise-stone', category: 'Charms', name: 'Turquoise Stone', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/gemstones/turquoise-stone-silver.webp' },
   { id: 's-double-heart-red-pink', category: 'Charms', name: 'Double Heart - Red/Pink', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/hearts/double-heart-red-pink-silver.webp' },
   { id: 's-heart-red', category: 'Charms', name: 'Heart - Red', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/hearts/heart-red-silver.webp' },
+  { id: 's-raised-heart', category: 'Charms', name: 'Raised Gold Heart', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/hearts/raised-heart-silver.webp' },
   { id: 's-star-black', category: 'Charms', name: 'Star - Black', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-black-silver.webp' },
   { id: 's-star-gold', category: 'Charms', name: 'Star - Gold', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-gold-silver.webp' },
   { id: 's-star-green', category: 'Charms', name: 'Star - Green', price: 3.95, metal: 'silver', stock: 20, image: '/images/charms/stars/star-green-silver.webp' },
@@ -119,7 +120,6 @@ const GOLD_CHARMS = [
   { id: 'g-turquoise-stone', category: 'Charms', name: 'Turquoise Stone', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/gemstones/turquoise-stone-gold.webp' },
   { id: 'g-heart-red', category: 'Charms', name: 'Heart - Red', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-gold.webp' },
   { id: 'g-heart-red-and-gold', category: 'Charms', name: 'Heart - Red and Gold', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/hearts/heart-red-and-gold-gold.webp' },
-  { id: 'g-raised-heart', category: 'Charms', name: 'Raised Gold Heart', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/hearts/raised-heart-gold.webp' },
   { id: 'g-black-star', category: 'Charms', name: 'Black Star', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/stars/black-star-gold.webp' },
   { id: 'g-star-red-layered', category: 'Charms', name: 'Star - Red Layered', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/stars/star-red-layered-gold.webp' },
   { id: 'g-sewing-machine', category: 'Charms', name: 'Sewing Machine', price: 3.95, metal: 'gold', stock: 20, image: '/images/charms/symbols-sports/sewing-machine-gold.webp' },
@@ -231,6 +231,8 @@ function CharmPlaceholder({ charm }) {
         src={charm.image}
         alt={charm.name}
         className="h-24 w-24 rounded-2xl border-2 border-jscolors-gold/40 bg-jscolors-cream/80 object-contain"
+        loading="lazy"
+        decoding="async"
       />
     )
   }
@@ -260,15 +262,15 @@ function CharmPlaceholder({ charm }) {
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[200px] items-center justify-center py-16">
+    <div className="flex min-h-[200px] items-center justify-center py-16" role="status" aria-live="polite">
       <img
-        src="/images/brand/retro-charm-icon-mark.png"
+        src="/images/brand/retro-charm-icon-mark.webp"
         alt=""
         width={56}
         height={44}
         className="h-12 w-auto animate-pulse object-contain opacity-90"
-        aria-label="Loading"
       />
+      <span className="sr-only">Loading</span>
     </div>
   )
 }

@@ -56,7 +56,7 @@ function CharmPreviewSlot({ charm }) {
       title={charm.name}
     >
       {charm.image ? (
-        <img src={charm.image} alt="" className="h-6 w-6 object-contain" />
+        <img src={charm.image} alt="" className="h-6 w-6 object-contain" loading="lazy" decoding="async" />
       ) : (
         <div className="h-6 w-6 rounded-full bg-gray-200" aria-hidden />
       )}

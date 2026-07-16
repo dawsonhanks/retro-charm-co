@@ -17,12 +17,13 @@ export function Footer() {
         <div>
           <div className="flex items-center gap-3">
             <img
-              src="/images/brand/retro-charm-icon-mark.png"
+              src="/images/brand/retro-charm-icon-mark.webp"
               alt=""
               width={48}
               height={38}
               className="h-10 w-auto object-contain"
               decoding="async"
+              loading="lazy"
             />
             <p className="font-display text-xl font-semibold text-jscolors-cream">RetroCharm Co</p>
           </div>

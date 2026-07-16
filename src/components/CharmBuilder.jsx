@@ -24,6 +24,8 @@ import { CharmSearchInput } from './CharmSearchInput'
 import { FilterBar } from './FilterBar'
 import { readJson, writeJson, STORAGE_KEYS } from '../utils/storage'
 import { filterCharmList } from '../utils/charmFilters'
+import { fetchInventoryWithMismatchReport } from '../utils/inventoryApi'
+import { isCharmOutOfStock } from '../utils/inventory'
 import { useCart } from '../context/CartContext.jsx'
 import {
   addCharmToLinkOrder,
@@ -40,17 +42,17 @@ const PICKER_FILTERS = CHARM_CATEGORY_FILTERS.filter((f) => f.id !== 'Starter Br
 
 const SIZE_GUIDE_PHOTOS = [
   {
-    src: '/images/size-guide/measure-wrist.jpg',
+    src: '/images/size-guide/measure-wrist.webp',
     alt: 'Measuring wrist with a tape measure to determine bracelet size',
     caption: 'Measure Your Wrist',
   },
   {
-    src: '/images/size-guide/select-size.jpg',
+    src: '/images/size-guide/select-size.webp',
     alt: 'Selecting the number of charm links for a custom Italian charm bracelet',
     caption: 'Select Your Size',
   },
   {
-    src: '/images/size-guide/enjoy-fit.jpg',
+    src: '/images/size-guide/enjoy-fit.webp',
     alt: 'Finished charm bracelet worn comfortably on the wrist',
     caption: 'Enjoy Your Fit',
   },
@@ -88,6 +90,8 @@ export function CharmBuilder({
   const [addToast, setAddToast] = useState(null)
   const justAddedTimeoutRef = useRef(null)
   const addToastTimeoutRef = useRef(null)
+  const addToastKeyRef = useRef(0)
+  const [inventoryMap, setInventoryMap] = useState(null)
   const isControlled = controlledLinkOrder !== undefined && onLinkOrderChange !== undefined
   const isSizeControlled = controlledSelectedSize !== undefined && onSelectedSizeChange !== undefined
   const linkOrder = isControlled ? controlledLinkOrder : internalLinkOrder
@@ -140,6 +144,22 @@ export function CharmBuilder({
     }
   }, [])
 
+  useEffect(() => {
+    let cancelled = false
+
+    fetchInventoryWithMismatchReport().then(({ inventory }) => {
+      if (!cancelled) setInventoryMap(inventory)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  function isOutOfStockForCharm(charm) {
+    return isCharmOutOfStock(charm.name, base.metal, inventoryMap)
+  }
+
   function clearCustomSizeInput() {
     setCustomSizeInput('')
     setCustomSizeError(null)
@@ -164,12 +184,14 @@ export function CharmBuilder({
 
   function addCharm(c) {
     if (c.category === 'Starter Bracelets' || isFillerCharm(c) || selectedSize == null || braceletFull) return
+    if (isCharmOutOfStock(c.name, base.metal, inventoryMap)) return
     updateLinkOrder((prev) => addCharmToLinkOrder(prev, c))
 
     const nextCount = selected.length + 1
+    addToastKeyRef.current += 1
     setJustAddedId(c.id)
     setAddToast({
-      key: Date.now(),
+      key: addToastKeyRef.current,
       name: c.name,
       count: nextCount,
       size: charmCapacity,
@@ -450,6 +472,8 @@ export function CharmBuilder({
                 src={b.image}
                 alt={b.label}
                 className="aspect-[3/2] w-full object-contain bg-white p-2"
+                loading="lazy"
+                decoding="async"
               />
               <span
                 className={`w-full px-3 py-2.5 text-center text-sm font-semibold ${
@@ -486,6 +510,8 @@ export function CharmBuilder({
                       src={photo.src}
                       alt={photo.alt}
                       className="h-full w-full object-cover"
+                      loading="lazy"
+                      decoding="async"
                     />
                   </div>
                   <p className="mt-2 text-xs font-semibold text-jscolors-ink sm:text-sm">{photo.caption}</p>
@@ -709,6 +735,7 @@ export function CharmBuilder({
                 maxReached={braceletFull}
                 onBraceletCounts={onBraceletCounts}
                 justAddedId={justAddedId}
+                isOutOfStock={isOutOfStockForCharm}
               />
             )}
           </CharmPickerScrollArea>
@@ -778,7 +805,7 @@ function PreviousBuildOptionPreview({ build }) {
               className={`${index > 0 ? '-ml-2' : ''} rounded-full border-2 border-jscolors-gold bg-white p-0.5 shadow-sm`}
             >
               {charm.image ? (
-                <img src={charm.image} alt="" className="h-7 w-7 object-contain" />
+                <img src={charm.image} alt="" className="h-7 w-7 object-contain" loading="lazy" decoding="async" />
               ) : (
                 <div className="h-7 w-7 rounded-full bg-gray-200" aria-hidden />
               )}
@@ -830,6 +857,8 @@ function SortableBraceletLink({ link, metal, chainStroke, onRemove }) {
             alt={fillerCharm.name}
             className="h-9 w-9 object-contain sm:h-10 sm:w-10"
             draggable={false}
+            loading="lazy"
+            decoding="async"
           />
         ) : (
           <PlainLinkGraphic stroke={chainStroke} />

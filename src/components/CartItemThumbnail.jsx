@@ -9,6 +9,8 @@ export function CartItemThumbnail({ item }) {
         src={image}
         alt=""
         className="h-14 w-14 shrink-0 rounded-lg border border-gold/20 bg-white object-contain"
+        loading="lazy"
+        decoding="async"
       />
     )
   }
