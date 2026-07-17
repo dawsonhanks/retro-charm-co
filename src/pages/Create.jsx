@@ -1,10 +1,12 @@
-import { lazy, Suspense, useMemo, useState } from 'react'
+import { lazy, Suspense, useEffect, useMemo, useState } from 'react'
 import { Helmet } from 'react-helmet-async'
 import { AnimatePresence, motion } from 'framer-motion'
 import { useCart } from '../context/CartContext.jsx'
 import { getCharmById, isFillerCharm } from '../data/charms'
 import { CharmSearchInput } from '../components/CharmSearchInput'
 import { filterCharmList } from '../utils/charmFilters'
+import { fetchInventoryWithMismatchReport } from '../utils/inventoryApi'
+import { isCharmOutOfStock } from '../utils/inventory'
 import {
   addCharmToLinkOrder,
   loadInitialLinkOrder,
@@ -283,14 +285,32 @@ export default function Create() {
   const [braceletAddedIds, setBraceletAddedIds] = useState(() => new Set())
   const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
   const [selectedSize, setSelectedSize] = useState(null)
+  const [inventoryMap, setInventoryMap] = useState(null)
 
   const charmCapacity = selectedSize != null ? linkOrder.length : null
   const braceletFull = selectedSize != null && !linkOrder.some((link) => link.type === 'plain')
   const braceletUnavailable = selectedSize == null
 
+  useEffect(() => {
+    let cancelled = false
+
+    fetchInventoryWithMismatchReport().then(({ inventory }) => {
+      if (!cancelled) setInventoryMap(inventory)
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  function isOutOfStockForCharm(charm) {
+    return isCharmOutOfStock(charm.name, charm.metal, inventoryMap)
+  }
+
   function handleAddToBracelet(catalogCharm) {
     const charm = getCharmById(catalogCharm.id)
     if (!charm || charm.category === 'Starter Bracelets' || isFillerCharm(charm) || braceletFull || braceletUnavailable) return
+    if (isOutOfStockForCharm(catalogCharm)) return
     setLinkOrder((prev) => addCharmToLinkOrder(prev, charm))
     setBraceletAddedIds((prev) => new Set(prev).add(catalogCharm.id))
     setTimeout(() => {
@@ -304,6 +324,7 @@ export default function Create() {
 
   function handleAddToCart(charm) {
     if (isFillerCharm(charm)) return
+    if (isOutOfStockForCharm(charm)) return
     addItem({
       id: charm.id,
       name: charm.name,
@@ -427,91 +448,121 @@ export default function Create() {
         ) : (
           <div className="grid auto-rows-fr grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
             <AnimatePresence mode="popLayout">
-              {filtered.map((charm) => (
-                <motion.div
-                  key={charm.id}
-                  layout
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 6 }}
-                  transition={{ duration: 0.28, ease: 'easeOut' }}
-                  whileHover={{ y: -2, scale: 1.02 }}
-                  className="min-w-0"
-                >
-                  <article className="retro-card retro-card-hover flex h-full flex-col p-5">
-                    <MetalBadge metal={charm.metal} />
+              {filtered.map((charm) => {
+                const outOfStock = isOutOfStockForCharm(charm)
+                const braceletDisabled =
+                  outOfStock ||
+                  isFillerCharm(charm) ||
+                  braceletUnavailable ||
+                  braceletFull ||
+                  braceletAddedIds.has(charm.id)
+                const cartDisabled = outOfStock || isFillerCharm(charm) || addedIds.has(charm.id)
 
-                    <div className="mt-4 flex flex-1 flex-col items-center text-center">
-                      <CharmPlaceholder charm={charm} />
-                      <h3 className="mt-4 line-clamp-2 font-display text-lg font-semibold text-jscolors-ink">
-                        {charm.name}
-                      </h3>
-        <p className="mt-2 font-semibold text-jscolors-blue">{formatPrice(charm.price)}</p>
-                      <p className="mt-2 text-sm font-medium text-jscolors-ink/70">{charm.category}</p>
-                    </div>
+                return (
+                  <motion.div
+                    key={charm.id}
+                    layout
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 6 }}
+                    transition={{ duration: 0.28, ease: 'easeOut' }}
+                    whileHover={outOfStock ? undefined : { y: -2, scale: 1.02 }}
+                    className="min-w-0"
+                  >
+                    <article
+                      className={[
+                        'retro-card flex h-full flex-col p-5',
+                        outOfStock ? 'opacity-60 grayscale' : 'retro-card-hover',
+                      ].join(' ')}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <MetalBadge metal={charm.metal} />
+                        {outOfStock && (
+                          <span className="rounded bg-jscolors-ink/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">
+                            Out of Stock
+                          </span>
+                        )}
+                      </div>
 
-                    <div className="mt-4 flex flex-col gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleAddToBracelet(charm)}
-                        disabled={
-                          isFillerCharm(charm) ||
-                          braceletUnavailable ||
-                          braceletFull ||
-                          braceletAddedIds.has(charm.id)
-                        }
-                        title={
-                          isFillerCharm(charm)
-                            ? 'Blank fillers auto-fill empty bracelet slots'
-                            : braceletUnavailable
-                              ? 'Choose a bracelet size in the builder first'
-                              : braceletFull
-                                ? `Bracelet is full (${charmCapacity} charms)`
-                                : undefined
-                        }
-                        className={[
-                          'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
-                          braceletAddedIds.has(charm.id)
-                            ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
-                            : isFillerCharm(charm) || braceletUnavailable || braceletFull
-                              ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-ink/45'
-                              : 'border-jscolors-pink bg-white text-jscolors-ink hover:bg-jscolors-pink/10',
-                        ].join(' ')}
-                      >
-                        {isFillerCharm(charm)
-                          ? 'Auto-fills empty slots'
-                          : braceletAddedIds.has(charm.id)
-                            ? 'On Bracelet ✓'
-                            : braceletUnavailable
-                              ? 'Choose size first'
-                              : braceletFull
-                                ? `Bracelet full (${charmCapacity})`
-                                : 'Add to Bracelet'}
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleAddToCart(charm)}
-                        disabled={isFillerCharm(charm) || addedIds.has(charm.id)}
-                        title={isFillerCharm(charm) ? 'Blank fillers are included with your bracelet base' : undefined}
-                        className={[
-                          'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
-                          addedIds.has(charm.id)
-                            ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                      <div className="mt-4 flex flex-1 flex-col items-center text-center">
+                        <CharmPlaceholder charm={charm} />
+                        <h3 className="mt-4 line-clamp-2 font-display text-lg font-semibold text-jscolors-ink">
+                          {charm.name}
+                        </h3>
+                        <p className="mt-2 font-semibold text-jscolors-blue">{formatPrice(charm.price)}</p>
+                        <p className="mt-2 text-sm font-medium text-jscolors-ink/70">{charm.category}</p>
+                      </div>
+
+                      <div className="mt-4 flex flex-col gap-2">
+                        <button
+                          type="button"
+                          onClick={() => handleAddToBracelet(charm)}
+                          disabled={braceletDisabled}
+                          title={
+                            outOfStock
+                              ? `${charm.name} — out of stock`
+                              : isFillerCharm(charm)
+                                ? 'Blank fillers auto-fill empty bracelet slots'
+                                : braceletUnavailable
+                                  ? 'Choose a bracelet size in the builder first'
+                                  : braceletFull
+                                    ? `Bracelet is full (${charmCapacity} charms)`
+                                    : undefined
+                          }
+                          className={[
+                            'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
+                            braceletAddedIds.has(charm.id)
+                              ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                              : braceletDisabled
+                                ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-ink/45'
+                                : 'border-jscolors-pink bg-white text-jscolors-ink hover:bg-jscolors-pink/10',
+                          ].join(' ')}
+                        >
+                          {outOfStock
+                            ? 'Out of Stock'
                             : isFillerCharm(charm)
-                              ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-ink/45'
-                              : 'border-jscolors-cta bg-jscolors-cta text-jscolors-cream hover:border-jscolors-cta-hover hover:bg-jscolors-cta-hover',
-                        ].join(' ')}
-                      >
-                        {isFillerCharm(charm)
-                          ? 'Included with base'
-                          : addedIds.has(charm.id)
-                            ? 'Added ✓'
-                            : 'Add to Cart'}
-                      </button>
-                    </div>
-                  </article>
-                </motion.div>
-              ))}
+                              ? 'Auto-fills empty slots'
+                              : braceletAddedIds.has(charm.id)
+                                ? 'On Bracelet ✓'
+                                : braceletUnavailable
+                                  ? 'Choose size first'
+                                  : braceletFull
+                                    ? `Bracelet full (${charmCapacity})`
+                                    : 'Add to Bracelet'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleAddToCart(charm)}
+                          disabled={cartDisabled}
+                          title={
+                            outOfStock
+                              ? `${charm.name} — out of stock`
+                              : isFillerCharm(charm)
+                                ? 'Blank fillers are included with your bracelet base'
+                                : undefined
+                          }
+                          className={[
+                            'w-full rounded-full border-2 px-4 py-2.5 text-sm font-semibold transition',
+                            addedIds.has(charm.id)
+                              ? 'cursor-default border-emerald-300 bg-emerald-50 text-emerald-700'
+                              : cartDisabled
+                                ? 'cursor-not-allowed border-jscolors-gold/25 bg-jscolors-cream/60 text-jscolors-ink/45'
+                                : 'border-jscolors-cta bg-jscolors-cta text-jscolors-cream hover:border-jscolors-cta-hover hover:bg-jscolors-cta-hover',
+                          ].join(' ')}
+                        >
+                          {outOfStock
+                            ? 'Out of Stock'
+                            : isFillerCharm(charm)
+                              ? 'Included with base'
+                              : addedIds.has(charm.id)
+                                ? 'Added ✓'
+                                : 'Add to Cart'}
+                        </button>
+                      </div>
+                    </article>
+                  </motion.div>
+                )
+              })}
             </AnimatePresence>
           </div>
         )}
