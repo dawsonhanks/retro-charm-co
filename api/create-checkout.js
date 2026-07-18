@@ -195,11 +195,22 @@ export default async function handler(req, res) {
     const order = {
       location_id: locationId,
       line_items: lineItems,
+      taxes: [
+        {
+          uid: 'sales-tax',
+          name: 'Utah Sales Tax',
+          percentage: '7',
+          scope: 'ORDER',
+        },
+      ],
     }
 
     if (braceletMetadata) {
       order.metadata = braceletMetadata
     }
+
+    // Confirm order shape (taxes sibling to line_items) before Payment Links POST.
+    console.log('create-checkout Square order:', JSON.stringify(order, null, 2))
 
     const squareRes = await fetch('https://connect.squareup.com/v2/online-checkout/payment-links', {
       method: 'POST',
