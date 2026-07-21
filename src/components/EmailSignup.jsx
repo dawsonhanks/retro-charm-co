@@ -10,7 +10,7 @@ export function EmailSignup({
   buttonLabel = 'Subscribe',
   onSuccess,
   theme = 'on-dark',
-  successMessage = "You're on the list! We'll let you know when we launch.",
+  successMessage = "You're on the list! Watch your inbox for new charm drops and restocks.",
 }) {
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
