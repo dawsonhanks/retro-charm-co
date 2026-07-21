@@ -26,6 +26,7 @@ export default async function handler(req, res) {
 
   const rawEmail = typeof req.body?.email === 'string' ? req.body.email.trim() : ''
   const email = rawEmail.toLowerCase()
+  const source = typeof req.body?.source === 'string' && req.body.source.trim() ? req.body.source.trim() : null
 
   if (!email || !EMAIL_RE.test(email)) {
     return res.status(400).json({ error: 'A valid email is required' })
@@ -34,7 +35,7 @@ export default async function handler(req, res) {
   try {
     const supabase = getSupabaseAdmin()
     const { error } = await supabase.from('email_signups').upsert(
-      { email },
+      { email, source },
       { onConflict: 'email', ignoreDuplicates: true },
     )
 

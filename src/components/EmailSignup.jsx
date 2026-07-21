@@ -37,7 +37,7 @@ export function EmailSignup({
     setStatus('submitting')
 
     // Always show success after a valid submit — duplicates and backend errors should not block UX.
-    await submitEmailSignup(trimmedEmail)
+    await submitEmailSignup(trimmedEmail, source)
     setStatus('ok')
     onSuccess?.({ name: name.trim(), email: trimmedEmail, source })
   }

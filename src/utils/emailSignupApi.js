@@ -2,13 +2,14 @@
  * Submit an email to /api/email-signup.
  * Network/server failures are swallowed so the UI can still show success.
  * @param {string} email
+ * @param {string} [source]
  */
-export async function submitEmailSignup(email) {
+export async function submitEmailSignup(email, source) {
   try {
     const res = await fetch('/api/email-signup', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ email, source }),
     })
 
     if (!res.ok) {
