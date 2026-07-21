@@ -658,6 +658,68 @@ async function decrementInventoryForOrder(braceletBuilds, lineItems) {
   }
 }
 
+/**
+ * Log a completed order to Supabase for reporting (independent of Square's dashboard).
+ * Best-effort: swallows all errors, never throws, never blocks the webhook.
+ */
+async function logOrderToSupabase({ payment, recipient, lineItems, braceletBuilds }) {
+  if (!supabase) {
+    console.warn('Order log skipped: Supabase is not configured')
+    return
+  }
+
+  try {
+    const amountCents = payment?.amount_money?.amount
+    if (!Number.isFinite(amountCents)) {
+      console.warn('Order log skipped: missing payment amount')
+      return
+    }
+
+    const { data: orderRow, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        square_payment_id: payment?.id,
+        square_order_id: payment?.order_id ?? null,
+        channel: recipient ? 'online' : 'in_person',
+        status: 'completed',
+        amount_cents: amountCents,
+        currency: payment?.amount_money?.currency ?? 'USD',
+        customer_name: recipient?.display_name ?? null,
+        customer_phone: recipient?.phone_number ?? null,
+        shipping_address: recipient?.address ?? null,
+        bracelet_builds:
+          Array.isArray(braceletBuilds) && braceletBuilds.length > 0 ? braceletBuilds : null,
+      })
+      .select('id')
+      .single()
+
+    if (orderError) {
+      console.error('Order log failed (orders insert):', orderError.message ?? orderError)
+      return
+    }
+
+    if (Array.isArray(lineItems) && lineItems.length > 0 && orderRow?.id) {
+      const itemRows = lineItems
+        .filter((item) => item && typeof item === 'object')
+        .map((item) => ({
+          order_id: orderRow.id,
+          name: typeof item.name === 'string' && item.name.trim() ? item.name.trim() : 'Unknown item',
+          quantity: Number.parseInt(item.quantity, 10) || 1,
+          unit_amount_cents: item.base_price_money?.amount ?? null,
+        }))
+
+      const { error: itemsError } = await supabase.from('order_items').insert(itemRows)
+      if (itemsError) {
+        console.error('Order log failed (order_items insert):', itemsError.message ?? itemsError)
+      }
+    }
+
+    console.log('Order logged:', { paymentId: payment?.id, orderId: orderRow?.id })
+  } catch (error) {
+    console.error('Order log error (non-blocking):', error)
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -720,6 +782,7 @@ export default async function handler(req, res) {
             // the same braceletBuilds + lineItems parsed for the email and never
             // throws, so it can't cause a webhook retry / duplicate email.
             await decrementInventoryForOrder(braceletBuilds, lineItems)
+            await logOrderToSupabase({ payment, recipient, lineItems, braceletBuilds })
           } catch (emailError) {
             console.error('Failed to send order notification email:', emailError)
           }
