@@ -5,8 +5,8 @@ import { useCart } from '../context/CartContext.jsx'
 import { getCharmById, isFillerCharm } from '../data/charms'
 import { CharmSearchInput } from '../components/CharmSearchInput'
 import { filterCharmList } from '../utils/charmFilters'
-import { fetchInventoryWithMismatchReport } from '../utils/inventoryApi'
-import { isCharmOutOfStock } from '../utils/inventory'
+import { getInventory } from '../lib/inventory'
+import { inventoryKey, isCharmOutOfStock } from '../utils/inventory'
 import {
   addCharmToLinkOrder,
   loadInitialLinkOrder,
@@ -294,8 +294,13 @@ export default function Create() {
   useEffect(() => {
     let cancelled = false
 
-    fetchInventoryWithMismatchReport().then(({ inventory }) => {
-      if (!cancelled) setInventoryMap(inventory)
+    getInventory().then((rows) => {
+      if (cancelled) return
+      const map = {}
+      for (const row of rows) {
+        map[inventoryKey(row.name, row.metal)] = { inStock: Number(row.qty_in_stock) > 0 }
+      }
+      setInventoryMap(map)
     })
 
     return () => {
