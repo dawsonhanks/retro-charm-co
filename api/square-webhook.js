@@ -1,10 +1,23 @@
 import crypto from 'node:crypto'
+import { createClient } from '@supabase/supabase-js'
 import { charms, BASE_OPTIONS } from '../src/data/charms.js'
 
 const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
 const DEFAULT_SITE_URL = 'https://www.theretrocharmco.com'
 const FROM_EMAIL = 'RetroCharm Co <orders@theretrocharmco.com>'
 const FALLBACK_FROM_EMAIL = 'RetroCharm Co <onboarding@resend.dev>'
+
+// Server-only Supabase client for inventory writes. Uses the service role key
+// (never the public anon key) so it can call the SECURITY DEFINER RPC. Null when
+// unconfigured so inventory decrements are simply skipped rather than crashing.
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+const supabase =
+  supabaseUrl && supabaseServiceRoleKey
+    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
+        auth: { persistSession: false, autoRefreshToken: false },
+      })
+    : null
 
 export const config = {
   api: {
@@ -56,6 +69,17 @@ for (const base of BASE_OPTIONS) {
     WATCH_PRODUCT_IDS.add(base.id)
     WATCH_PRODUCT_NAMES.add(base.label)
   }
+}
+
+// Line-item display name → metal for base bracelets / watch bands, so we can
+// decrement the base itself (charms come from the parsed bracelet builds). Covers
+// both the builder base labels (e.g. "Silver Bracelet") and the catalog starter
+// bracelet names (e.g. "Silver Base", "Gold Apple Watch").
+const BASE_NAME_TO_METAL = {
+  'Silver Bracelet': 'silver',
+  'Gold Bracelet': 'gold',
+  'Silver Watch Band': 'silver',
+  'Gold Watch Band': 'gold',
 }
 
 /**
@@ -544,6 +568,96 @@ async function sendOrderEmail({
   }
 }
 
+/** Inventory row name for a build slot id (real charm catalog name, or filler). */
+function inventoryNameForBuildId(id) {
+  if (isFillerSlotToken(id)) return 'Plain Filler'
+  return CATALOG_NAMES.get(id) ?? null
+}
+
+/**
+ * Decrement Supabase stock for everything in a completed order.
+ *
+ * Runs AFTER the order email is sent and is fully best-effort: it swallows all
+ * errors and never throws. Inventory must never block or fail the webhook —
+ * Square retries any non-2xx response, which would re-send the email and
+ * re-decrement stock. Charm quantities come from the already-parsed bracelet
+ * builds; the base bracelet/watch band comes from the paid line items.
+ * @param {ReturnType<typeof parseBraceletBuilds>} braceletBuilds
+ * @param {any[]} lineItems
+ */
+async function decrementInventoryForOrder(braceletBuilds, lineItems) {
+  if (!supabase) {
+    console.warn('Inventory decrement skipped: Supabase is not configured')
+    return
+  }
+
+  try {
+    /** @type {Map<string, { name: string, metal: string, qty: number }>} */
+    const tally = new Map()
+
+    const addTally = (name, metal, qty) => {
+      if (!name || !metal || !Number.isFinite(qty) || qty <= 0) return
+      const key = `${name}|||${metal}`
+      const existing = tally.get(key)
+      if (existing) {
+        existing.qty += qty
+      } else {
+        tally.set(key, { name, metal, qty })
+      }
+    }
+
+    // Charms + fillers: every position in every parsed bracelet build.
+    if (Array.isArray(braceletBuilds)) {
+      for (const build of braceletBuilds) {
+        if (!build || !Array.isArray(build.ids)) continue
+        for (const id of build.ids) {
+          addTally(inventoryNameForBuildId(id), build.metal, 1)
+        }
+      }
+    }
+
+    // Base bracelet / watch band: match paid line items against known base names.
+    if (Array.isArray(lineItems)) {
+      for (const item of lineItems) {
+        if (!item || typeof item !== 'object') continue
+        const name = typeof item.name === 'string' ? item.name.trim() : ''
+        const metal = BASE_NAME_TO_METAL[name]
+        if (!metal) continue
+        const parsedQty = Number.parseInt(item.quantity, 10)
+        addTally(name, metal, Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 1)
+      }
+    }
+
+    const decrements = [...tally.values()]
+
+    if (decrements.length === 0) {
+      console.log('Inventory decrement: nothing to decrement for this order')
+      return
+    }
+
+    for (const { name, metal, qty } of decrements) {
+      const { error } = await supabase.rpc('decrement_charm_stock', {
+        p_name: name,
+        p_metal: metal,
+        p_qty: qty,
+      })
+      if (error) {
+        console.error(
+          `Inventory decrement failed for "${name}" (${metal}) x${qty}:`,
+          error.message ?? error,
+        )
+      }
+    }
+
+    console.log(
+      'Inventory decremented for order:',
+      decrements.map((d) => `${d.name} (${d.metal}) x${d.qty}`).join(', '),
+    )
+  } catch (error) {
+    console.error('Inventory decrement error (non-blocking):', error)
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' })
@@ -601,6 +715,11 @@ export default async function handler(req, res) {
               paymentId: payment?.id,
               orderId: payment?.order_id,
             })
+
+            // Best-effort inventory decrement AFTER the email succeeds. Reuses
+            // the same braceletBuilds + lineItems parsed for the email and never
+            // throws, so it can't cause a webhook retry / duplicate email.
+            await decrementInventoryForOrder(braceletBuilds, lineItems)
           } catch (emailError) {
             console.error('Failed to send order notification email:', emailError)
           }
