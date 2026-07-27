@@ -1,4 +1,4 @@
 export const instagram = {
-  url: 'https://www.instagram.com/retrocharm.co/',
-  handle: '@retrocharm.co',
+  url: 'https://www.instagram.com/theretrocharm.co/a',
+  handle: '@theretrocharm.co',
 }
