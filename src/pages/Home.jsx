@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BestSellers } from '../components/BestSellers'
 import { CustomerPhotoGallery, CustomerProofStrip } from '../components/CustomerProof'
@@ -21,6 +21,7 @@ import { trackCreateBraceletClicked, trackHomepageViewed } from '../lib/analytic
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
 const BEST_SELLERS_HASH = 'best-sellers'
+const CHARM_STUDIO_HASH = 'charm-studio'
 const FULFILLMENT_COPY = getCustomerFacingFulfillmentCopy()
 
 const STARTING_BRACELET_PRICE = Math.min(...BASE_OPTIONS.map((b) => b.price))
@@ -42,6 +43,62 @@ function PageLoader() {
         className="h-12 w-auto animate-pulse object-contain opacity-90"
       />
       <span className="sr-only">Loading</span>
+    </div>
+  )
+}
+
+/**
+ * Mount Charm Studio only when the section is near the viewport so early
+ * homepage scrolling stays light. Hash navigations force an early mount.
+ */
+function DeferredCharmStudio({
+  linkOrder,
+  onLinkOrderChange,
+  selectedSize,
+  onSelectedSizeChange,
+  forceMount = false,
+}) {
+  const sectionRef = useRef(null)
+  const [nearViewport, setNearViewport] = useState(false)
+  const shouldMount = forceMount || nearViewport
+
+  useEffect(() => {
+    if (shouldMount) return undefined
+    const node = sectionRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '400px 0px', threshold: 0.01 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [shouldMount])
+
+  return (
+    <div ref={sectionRef} id="charm-studio" className="scroll-mt-24 bg-jscolors-cream/70 py-16">
+      {shouldMount ? (
+        <Suspense fallback={<PageLoader />}>
+          <CharmBuilder
+            className="px-4"
+            idPrefix="home-builder"
+            linkOrder={linkOrder}
+            onLinkOrderChange={onLinkOrderChange}
+            selectedSize={selectedSize}
+            onSelectedSizeChange={onSelectedSizeChange}
+          />
+        </Suspense>
+      ) : (
+        <PageLoader />
+      )}
     </div>
   )
 }
@@ -109,20 +166,21 @@ export default function Home() {
   const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
   const [selectedSize, setSelectedSize] = useState(loadInitialSelectedSize)
   const location = useLocation()
+  const hash = location.hash.replace(/^#/, '')
+  const forceCharmStudio = hash === CHARM_STUDIO_HASH
 
   useEffect(() => {
     trackHomepageViewed()
   }, [])
 
   useEffect(() => {
-    const hash = location.hash.replace(/^#/, '')
-    if (hash !== BEST_SELLERS_HASH) return
+    if (hash !== BEST_SELLERS_HASH && hash !== CHARM_STUDIO_HASH) return
     // Defer until section is painted (including after client-side navigation).
     const id = window.requestAnimationFrame(() => {
-      document.getElementById(BEST_SELLERS_HASH)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
     return () => window.cancelAnimationFrame(id)
-  }, [location.hash, location.pathname])
+  }, [hash, location.pathname])
 
   return (
     <>
@@ -214,18 +272,13 @@ export default function Home() {
 
       <CustomerProofStrip />
 
-      <Suspense fallback={<PageLoader />}>
-        <div id="charm-studio" className="scroll-mt-24 bg-jscolors-cream/70 py-16">
-          <CharmBuilder
-            className="px-4"
-            idPrefix="home-builder"
-            linkOrder={linkOrder}
-            onLinkOrderChange={setLinkOrder}
-            selectedSize={selectedSize}
-            onSelectedSizeChange={setSelectedSize}
-          />
-        </div>
-      </Suspense>
+      <DeferredCharmStudio
+        linkOrder={linkOrder}
+        onLinkOrderChange={setLinkOrder}
+        selectedSize={selectedSize}
+        onSelectedSizeChange={setSelectedSize}
+        forceMount={forceCharmStudio}
+      />
 
       <CustomerPhotoGallery className="border-y border-jscolors-gold/25 bg-jscolors-cream/90 py-16 md:py-20" />
     </>

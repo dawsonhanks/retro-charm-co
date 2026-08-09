@@ -17,7 +17,7 @@ export function Navbar() {
   const { cartCount } = useCart()
 
   return (
-    <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream/90 backdrop-blur-md">
+    <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream">
       <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4" aria-label="Main">
         <Link to="/" className="group shrink-0" aria-label="RetroCharm Co home">
           <img
