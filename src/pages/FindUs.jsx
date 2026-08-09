@@ -1,13 +1,18 @@
-import { Helmet } from 'react-helmet-async'
+import { PageMeta } from '../components/PageMeta'
 import { MarketCard } from '../components/MarketCard'
 import { MarketSidebar } from '../components/MarketSidebar'
 import { FAQ } from '../components/FAQ'
 import { locations } from '../data/locations'
+import { buildMarketPlaceJsonLd, buildWebPageJsonLd } from '../data/structuredData'
 import { buildMarketIcs, downloadIcs } from '../utils/calendar'
 
 const weeklyRows = [
   { day: 'Wednesdays', note: 'Orem location only', time: '5-9 PM (Oct: 5-8 PM)' },
 ]
+
+const TITLE = 'Find Us in Orem | RetroCharm Co'
+const DESCRIPTION =
+  'Find RetroCharm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download.'
 
 export default function FindUs() {
   const location = locations[0]
@@ -24,15 +29,19 @@ export default function FindUs() {
     downloadIcs(`retro-charm-${location.id}-market.ics`, ics)
   }
 
+  const marketJsonLd = buildMarketPlaceJsonLd(location)
+
   return (
     <>
-      <Helmet>
-        <title>Find Us in Orem | RetroCharm Co</title>
-        <meta
-          name="description"
-          content="Find RetroCharm Co at the Sunset Farmers Market in Orem — address, hours, map, and calendar download."
-        />
-      </Helmet>
+      <PageMeta
+        title={TITLE}
+        description={DESCRIPTION}
+        path="/find-us"
+        jsonLd={[
+          buildWebPageJsonLd({ title: TITLE, description: DESCRIPTION, path: '/find-us' }),
+          ...(marketJsonLd ? [marketJsonLd] : []),
+        ]}
+      />
 
       <header className="border-b border-jscolors-gold/25 bg-jscolors-blue px-4 py-14 text-center text-jscolors-cream md:py-20">
         <h1 className="font-display text-4xl font-bold md:text-5xl">Find Us</h1>

@@ -41,6 +41,7 @@ export function MarketCard({ location }) {
             href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location.address)}`}
             target="_blank"
             rel="noopener noreferrer"
+            aria-label={`Get directions to ${location.name} (opens in Google Maps)`}
             className="inline-flex items-center justify-center rounded-full border-2 border-jscolors-blue bg-white px-5 py-2.5 text-sm font-semibold text-jscolors-blue shadow-sm transition hover:bg-jscolors-blue hover:text-jscolors-cream"
           >
             Get directions →

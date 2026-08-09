@@ -99,7 +99,7 @@ export function MarketSidebar({ onAddToCalendar }) {
           <li>💳 We take cash, card, and Venmo</li>
           <li>🚫 No reservation needed — just show up</li>
           <li>📐 One size fits all — we adjust at the booth</li>
-          <li>✨ Charms don&apos;t tarnish — wear them every day</li>
+          <li>✨ Stainless steel — resistant to tarnish with everyday wear</li>
         </ul>
         {onAddToCalendar && (
           <button

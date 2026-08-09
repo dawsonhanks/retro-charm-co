@@ -48,11 +48,16 @@ export const DEFAULT_CHARM_PRICE = 3.95
 
 export const CHARM_CATEGORY_FILTERS = [
   { id: 'all', label: 'All' },
+  { id: 'best-sellers', label: 'Best Sellers' },
+  { id: 'letters', label: 'Letters' },
+  { id: 'food-drinks', label: 'Food & Drinks' },
+  { id: 'symbols', label: 'Symbols' },
+  { id: 'sports', label: 'Sports' },
+  { id: 'states', label: 'States' },
+  { id: 'dangles', label: 'Dangles' },
   { id: 'silver', label: 'Silver' },
   { id: 'gold', label: 'Gold' },
-  { id: 'Starter Bracelets', label: 'Starter Bracelets' },
-  { id: 'charms', label: 'Charms' },
-  { id: 'dangles', label: 'Dangle Charms' },
+  { id: 'favorites', label: 'Favorites' },
 ]
 
 /** @type {Charm[]} */
@@ -189,6 +194,34 @@ export const SIZE_OPTIONS = [
   { charmCount: 24, lengthInches: 8.5 },
 ]
 
+/**
+ * Primary sizing choices shown in Charm Studio onboarding.
+ * Wrist ranges map to the Small / Medium / Large guidance already used in copy.
+ */
+export const SIZE_PRESETS = [
+  {
+    id: 'small',
+    label: 'Small',
+    charmCount: 17,
+    wristRangeInches: '5.7–6.4',
+    linkRangeLabel: '16–18 links',
+  },
+  {
+    id: 'medium',
+    label: 'Medium',
+    charmCount: 20,
+    wristRangeInches: '6.7–7.4',
+    linkRangeLabel: '19–21 links',
+  },
+  {
+    id: 'large',
+    label: 'Large',
+    charmCount: 23,
+    wristRangeInches: '7.8–8.5',
+    linkRangeLabel: '22–24 links',
+  },
+]
+
 export const DEFAULT_BRACELET_SIZE = 18
 export const MIN_BRACELET_CHARMS = 10
 export const MAX_BRACELET_CHARMS = 30
@@ -218,6 +251,12 @@ export function getSizeLengthLabel(charmCount) {
   }
 
   return `~${getApproximateLengthInches(charmCount)}" (approx.)`
+}
+
+/** @param {number | null | undefined} charmCount */
+export function getSizePresetForCount(charmCount) {
+  if (charmCount == null) return null
+  return SIZE_PRESETS.find((preset) => preset.charmCount === charmCount) ?? null
 }
 
 export function getCharmById(id) {

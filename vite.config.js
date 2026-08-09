@@ -5,7 +5,6 @@ import tailwindcss from '@tailwindcss/vite'
 const LOCAL_API_ROUTES = {
   '/api/create-checkout': { module: '/api/create-checkout.js', methods: ['POST'] },
   '/api/email-signup': { module: '/api/email-signup.js', methods: ['POST'] },
-  '/api/inventory': { module: '/api/inventory.js', methods: ['GET'] },
 }
 
 /**

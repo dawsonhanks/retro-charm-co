@@ -1,5 +1,5 @@
 import { DEFAULT_BRACELET_SIZE, getCharmById, getCharmCapacity, isFillerCharm } from '../data/charms'
-import { readJson, STORAGE_KEYS } from './storage'
+import { loadSavedBuild, readJson, STORAGE_KEYS } from './storage'
 
 /** @deprecated Use DEFAULT_BRACELET_SIZE — kept for preview components */
 export const BASE_LINK_COUNT = DEFAULT_BRACELET_SIZE
@@ -33,6 +33,12 @@ export function createInitialLinkOrder(slotCount = DEFAULT_BRACELET_SIZE) {
   return Array.from({ length: slotCount }, () => createPlainLink())
 }
 
+/** @returns {number | null} */
+export function loadInitialSelectedSize() {
+  const saved = loadSavedBuild()
+  return typeof saved?.charmCount === 'number' ? saved.charmCount : null
+}
+
 /** @returns {BraceletLink[]} */
 export function loadInitialLinkOrder() {
   const saved = readJson(STORAGE_KEYS.savedBuild, null)
@@ -40,7 +46,7 @@ export function loadInitialLinkOrder() {
   const slotCount = getCharmCapacity(nominalSize, saved?.baseId) ?? DEFAULT_BRACELET_SIZE
 
   if (Array.isArray(saved?.linkOrder) && saved.linkOrder.length > 0) {
-    return saved.linkOrder
+    const restored = saved.linkOrder
       .map((link) => {
         if (link.type === 'charm' && link.charmId) {
           const charm = getCharmById(link.charmId)
@@ -50,6 +56,7 @@ export function loadInitialLinkOrder() {
         return null
       })
       .filter(Boolean)
+    if (restored.length > 0) return restored
   }
   if (Array.isArray(saved?.charmIds)) {
     return linkOrderFromCharmIds(saved.charmIds, getCharmById, slotCount)
@@ -141,6 +148,57 @@ export function createLinkOrderForSize(slotCount, charmsOnTrack = []) {
   return Array.from({ length: slotCount }, (_, i) =>
     i < realCharms.length ? createCharmLink(realCharms[i]) : createPlainLink(),
   )
+}
+
+/**
+ * Resize the track while preserving selected charms and their relative order.
+ * Prefer dropping/adding plain slots so mid-build size changes never delete charms.
+ *
+ * @param {BraceletLink[]} linkOrder
+ * @param {number} newSlotCount
+ * @returns {{ ok: true, linkOrder: BraceletLink[] } | { ok: false, overflow: number, linkOrder: BraceletLink[] }}
+ */
+export function resizeLinkOrder(linkOrder, newSlotCount) {
+  if (!Number.isInteger(newSlotCount) || newSlotCount < 0) {
+    return { ok: false, overflow: 0, linkOrder }
+  }
+
+  const realCount = getCharmsFromLinkOrder(linkOrder).length
+  if (realCount > newSlotCount) {
+    return { ok: false, overflow: realCount - newSlotCount, linkOrder }
+  }
+
+  if (linkOrder.length === newSlotCount) {
+    return { ok: true, linkOrder }
+  }
+
+  if (newSlotCount > linkOrder.length) {
+    return {
+      ok: true,
+      linkOrder: [
+        ...linkOrder,
+        ...Array.from({ length: newSlotCount - linkOrder.length }, () => createPlainLink()),
+      ],
+    }
+  }
+
+  const next = [...linkOrder]
+  while (next.length > newSlotCount) {
+    let removeIdx = -1
+    for (let i = next.length - 1; i >= 0; i -= 1) {
+      if (next[i].type === 'plain') {
+        removeIdx = i
+        break
+      }
+    }
+    if (removeIdx === -1) {
+      removeIdx = next.findIndex((link) => link.type === 'plain')
+    }
+    if (removeIdx === -1) break
+    next.splice(removeIdx, 1)
+  }
+
+  return { ok: true, linkOrder: next }
 }
 
 /**

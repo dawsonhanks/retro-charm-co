@@ -8,6 +8,16 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "verify": "npx vite-node scripts/verify-hardening.mjs && npx vite-node scripts/verify-sizing.mjs && npx vite-node scripts/verify-bundles.mjs && npx vite-node scripts/verify-policies.mjs && npx vite-node scripts/verify-catalog.mjs && npx vite-node scripts/verify-analytics.mjs && npx vite-node scripts/verify-customer-proof.mjs && npx vite-node scripts/verify-seo-links.mjs && npx vite-node scripts/verify-conversion-qa.mjs && npx vite-node scripts/verify-webhook.mjs && npx vite-node scripts/verify-inventory.mjs",
+    "verify:hardening": "npx vite-node scripts/verify-hardening.mjs",
+    "verify:policies": "npx vite-node scripts/verify-policies.mjs",
+    "verify:catalog": "npx vite-node scripts/verify-catalog.mjs",
+    "verify:analytics": "npx vite-node scripts/verify-analytics.mjs",
+    "verify:customer-proof": "npx vite-node scripts/verify-customer-proof.mjs",
+    "verify:seo-links": "npx vite-node scripts/verify-seo-links.mjs",
+    "verify:conversion-qa": "npx vite-node scripts/verify-conversion-qa.mjs",
+    "verify:webhook": "npx vite-node scripts/verify-webhook.mjs",
+    "verify:inventory": "npx vite-node scripts/verify-inventory.mjs",
     "generate:email-pngs": "bash scripts/generate-email-pngs.sh"
   },
   "dependencies": {
@@ -20,7 +30,8 @@
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-helmet-async": "^3.0.0",
-    "react-router-dom": "^7.15.0"
+    "react-router-dom": "^7.15.0",
+    "square": "^45.0.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

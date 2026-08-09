@@ -1,6 +1,16 @@
 import { randomUUID } from 'crypto'
 import { charms, BASE_OPTIONS, isFillerCharm } from '../src/data/charms.js'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../src/data/shipping.js'
+import { recordCheckoutSession } from './_lib/webhookStore.js'
+import { revalidateCheckoutInventory } from './_lib/revalidateCheckoutInventory.js'
+
+/**
+ * Stamped on every order this endpoint creates. The webhook uses this
+ * (backed by the durable `checkout_sessions` table — see recordCheckoutSession
+ * below) as a secondary signal; the table itself is the authoritative
+ * website-order correlation record.
+ */
+const CHECKOUT_SOURCE = 'theretrocharmco.com'
 
 /** Compact token for filler slots in Square order metadata (keeps values under size limits). */
 const FILLER_METADATA_TOKEN = 'b'
@@ -191,6 +201,19 @@ export default async function handler(req, res) {
 
   const braceletMetadata = buildOrderBraceletMetadata(braceletBuilds)
 
+  // Fail-safe: never create a Square Payment Link when stock cannot be verified.
+  const inventoryCheck = await revalidateCheckoutInventory({
+    items: items.map((item) => ({ id: item?.id, quantity: item?.quantity })),
+    braceletBuilds: Array.isArray(braceletBuilds) ? braceletBuilds : [],
+  })
+  if (!inventoryCheck.createdPaymentLinkAllowed) {
+    return res.status(503).json({
+      error: inventoryCheck.validation.message || 'Live inventory is temporarily unavailable. Please try again shortly.',
+      code: inventoryCheck.validation.reason || 'inventory_unverified',
+      unavailableItems: inventoryCheck.validation.unavailableItems ?? [],
+    })
+  }
+
   try {
     const order = {
       location_id: locationId,
@@ -205,9 +228,11 @@ export default async function handler(req, res) {
       ],
     }
 
-    if (braceletMetadata) {
-      order.metadata = braceletMetadata
-    }
+    // Always stamped (independent of whether this cart has bracelet builds) so
+    // every order this endpoint creates carries a website-origin marker. The
+    // durable `checkout_sessions` record written below is the authoritative
+    // correlation source; this metadata is a secondary, human-inspectable signal.
+    order.metadata = { ...braceletMetadata, checkout_source: CHECKOUT_SOURCE }
 
     // Confirm order shape (taxes sibling to line_items) before Payment Links POST.
     console.log('create-checkout Square order:', JSON.stringify(order, null, 2))
@@ -244,6 +269,30 @@ export default async function handler(req, res) {
 
     if (!checkoutUrl) {
       return res.status(500).json({ error: 'No checkout URL returned from Square' })
+    }
+
+    // Durable website-order correlation record — the webhook's
+    // purchase_completed gate consults this table (not just the metadata
+    // above) to prove a completed payment came from this checkout flow.
+    // Square has already created the Payment Link at this point, but we
+    // must NOT hand it to the customer unless this write is confirmed:
+    // an uncorrelated checkout URL would let a real payment complete with
+    // no durable proof it was a website order, permanently blocking that
+    // purchase from ever being counted or safely re-processed. Fail closed
+    // instead — the customer can retry, which creates a fresh, correlatable
+    // Payment Link; the orphaned one above simply goes unused.
+    const squareOrderId = data.payment_link?.order_id
+    if (!squareOrderId) {
+      console.error('create-checkout: Square did not return payment_link.order_id; refusing to hand out an uncorrelated checkout URL')
+      return res.status(503).json({ error: 'Checkout could not be completed. Please try again.' })
+    }
+
+    const sessionResult = await recordCheckoutSession(squareOrderId, safeIdempotencyKey)
+    if (!sessionResult.ok) {
+      console.error('create-checkout: failed to durably record checkout session; refusing to hand out an uncorrelated checkout URL', {
+        reason: sessionResult.reason ?? 'unknown',
+      })
+      return res.status(503).json({ error: 'Checkout could not be completed. Please try again.' })
     }
 
     return res.status(200).json({ checkoutUrl })

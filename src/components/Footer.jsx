@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { EmailSignup } from './EmailSignup'
-import { instagram } from '../data/social'
+import { CONTACT, FOOTER_POLICY_LINKS } from '../data/storeInfo'
+import { instagram, tiktok } from '../data/social'
 
-const CONTACT_EMAIL = 'retro.charm.co.ut@gmail.com'
+const CONTACT_EMAIL = CONTACT.email
 
 const footerLinks = [
   { to: '/', label: 'Home' },
@@ -11,6 +12,21 @@ const footerLinks = [
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'Customer Photos' },
   { to: '/cart', label: 'Cart' },
+]
+
+const socialLinks = [
+  {
+    id: 'instagram',
+    href: instagram.url,
+    label: `Follow ${instagram.handle} on Instagram (opens in a new tab)`,
+    Glyph: InstagramGlyph,
+  },
+  {
+    id: 'tiktok',
+    href: tiktok.url,
+    label: `Follow ${tiktok.handle} on TikTok (opens in a new tab)`,
+    Glyph: TikTokGlyph,
+  },
 ]
 
 export function Footer() {
@@ -36,24 +52,18 @@ export function Footer() {
             Custom Italian charm bracelets, built online by you. Pick your base, choose your charms, and order your story.
           </p>
           <div className="mt-6 flex gap-3">
-            <a
-              href={instagram.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-ink"
-              aria-label={`Follow ${instagram.handle} on Instagram`}
-            >
-              <InstagramGlyph />
-            </a>
-            <a
-              href="https://www.tiktok.com/@retrocharm.co"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-ink"
-              aria-label="Follow @retrocharm.co on TikTok"
-            >
-              <TikTokGlyph />
-            </a>
+            {socialLinks.map(({ id, href, label, Glyph }) => (
+              <a
+                key={id}
+                href={href}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-jscolors-gold/50 text-jscolors-gold transition hover:bg-jscolors-gold hover:text-jscolors-ink focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-cream"
+                aria-label={label}
+              >
+                <Glyph />
+              </a>
+            ))}
           </div>
         </div>
 
@@ -62,7 +72,10 @@ export function Footer() {
           <ul className="mt-4 space-y-2">
             {footerLinks.map(({ to, label }) => (
               <li key={to}>
-                <Link to={to} className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink">
+                <Link
+                  to={to}
+                  className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-cream"
+                >
                   {label}
                 </Link>
               </li>
@@ -89,9 +102,32 @@ export function Footer() {
                 </svg>
               </button>
               {contactOpen ? (
-                <p className="mt-1.5 break-all text-sm text-jscolors-cream/70">{CONTACT_EMAIL}</p>
+                <p className="mt-1.5 break-all text-sm text-jscolors-cream/70">
+                  <a
+                    href={`mailto:${CONTACT_EMAIL}`}
+                    className="underline decoration-jscolors-gold/50 underline-offset-2 transition hover:text-jscolors-pink"
+                  >
+                    {CONTACT_EMAIL}
+                  </a>
+                </p>
               ) : null}
             </li>
+          </ul>
+
+          <h2 className="mt-8 font-display text-sm font-semibold uppercase tracking-wide text-jscolors-gold">
+            Help
+          </h2>
+          <ul className="mt-4 space-y-2">
+            {FOOTER_POLICY_LINKS.map(({ to, label }) => (
+              <li key={to}>
+                <Link
+                  to={to}
+                  className="text-sm text-jscolors-cream/80 transition hover:text-jscolors-pink focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-cream"
+                >
+                  {label}
+                </Link>
+              </li>
+            ))}
           </ul>
         </div>
 

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { submitEmailSignup } from '../utils/emailSignupApi'
+import { trackEmailSignupCompleted } from '../lib/analytics'
 
 const emailOk = (v) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)
 
@@ -37,7 +38,9 @@ export function EmailSignup({
     setStatus('submitting')
 
     // Always show success after a valid submit — duplicates and backend errors should not block UX.
+    // Analytics: source only — never email or name.
     await submitEmailSignup(trimmedEmail, source)
+    trackEmailSignupCompleted({ source })
     setStatus('ok')
     onSuccess?.({ name: name.trim(), email: trimmedEmail, source })
   }

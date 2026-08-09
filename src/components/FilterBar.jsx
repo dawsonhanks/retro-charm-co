@@ -1,9 +1,21 @@
 import { motion } from 'framer-motion'
 import { CHARM_CATEGORY_FILTERS } from '../data/charms'
 
+/**
+ * @param {{
+ *   active: string
+ *   onChange: (id: string) => void
+ *   filters?: { id: string, label: string }[]
+ *   layoutId?: string
+ * }} props
+ */
 export function FilterBar({ active, onChange, filters = CHARM_CATEGORY_FILTERS, layoutId = 'filter-pill' }) {
   return (
-    <div className="flex flex-wrap justify-center gap-2 md:gap-3" role="tablist" aria-label="Filter charms by category">
+    <div
+      className="flex min-w-0 gap-2 overflow-x-auto overscroll-x-contain pb-1 md:flex-wrap md:justify-center md:gap-3 md:overflow-visible md:pb-0"
+      role="tablist"
+      aria-label="Filter charms by category"
+    >
       {filters.map((cat) => {
         const isActive = active === cat.id
         return (
@@ -13,7 +25,7 @@ export function FilterBar({ active, onChange, filters = CHARM_CATEGORY_FILTERS, 
             role="tab"
             aria-selected={isActive}
             onClick={() => onChange(cat.id)}
-            className={`relative rounded-full px-4 py-2 text-sm font-semibold transition md:px-5 md:py-2.5 md:text-base ${
+            className={`relative flex-shrink-0 rounded-full px-4 py-2 text-sm font-semibold transition md:px-5 md:py-2.5 md:text-base ${
               isActive ? '' : 'bg-white/80 shadow-sm ring-1 ring-jscolors-gold/25'
             }`}
           >

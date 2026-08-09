@@ -1,23 +1,49 @@
-import crypto from 'node:crypto'
-import { createClient } from '@supabase/supabase-js'
+import { WebhooksHelper } from 'square'
 import { charms, BASE_OPTIONS } from '../src/data/charms.js'
+import { trackPurchaseCompleted } from './_lib/trackPurchase.js'
+import {
+  claimAndDecrementInventoryItem,
+  claimFulfillmentLease,
+  claimWebhookEventId,
+  getOrCreatePurchaseState,
+  getSupabaseClientForWebhook,
+  isDurableStoreConfigured,
+  isWebsiteCheckoutOrder,
+  markEffectDone,
+  markFulfillmentSent,
+  PURCHASE_EFFECT,
+  recordLastError,
+  releaseFulfillmentLease,
+} from './_lib/webhookStore.js'
 
-const NOTIFICATION_URL = 'https://www.theretrocharmco.com/api/square-webhook'
 const DEFAULT_SITE_URL = 'https://www.theretrocharmco.com'
+
+/**
+ * Square event types this handler is willing to act on. Anything else
+ * (refunds, disputes, catalog changes, etc.) is acknowledged with 200 and
+ * ignored — see the EXPECTED_PAYMENT_EVENT_TYPES check in the handler.
+ */
+const EXPECTED_PAYMENT_EVENT_TYPES = new Set(['payment.created', 'payment.updated'])
+
+/**
+ * Notification-type component of the Resend Idempotency-Key
+ * (`${FULFILLMENT_NOTIFICATION_TYPE}:${paymentId}`) — stable across every
+ * retry of the fulfillment email for a given payment. See sendOrderEmail.
+ */
+const FULFILLMENT_NOTIFICATION_TYPE = 'fulfillment_email'
+
+/**
+ * How long a fulfillment-notification processing claim is honored before
+ * it's considered abandoned and reclaimable — see claimFulfillmentLease.
+ * Read per-request (not cached at module load) so it can be tuned via env
+ * without a redeploy, and so tests can use a short lease. Defaults to 120s.
+ */
+function getFulfillmentLeaseSeconds() {
+  const configured = Number(process.env.FULFILLMENT_LEASE_SECONDS)
+  return Number.isFinite(configured) && configured > 0 ? configured : 120
+}
 const FROM_EMAIL = 'RetroCharm Co <orders@theretrocharmco.com>'
 const FALLBACK_FROM_EMAIL = 'RetroCharm Co <onboarding@resend.dev>'
-
-// Server-only Supabase client for inventory writes. Uses the service role key
-// (never the public anon key) so it can call the SECURITY DEFINER RPC. Null when
-// unconfigured so inventory decrements are simply skipped rather than crashing.
-const supabaseUrl = process.env.SUPABASE_URL
-const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-const supabase =
-  supabaseUrl && supabaseServiceRoleKey
-    ? createClient(supabaseUrl, supabaseServiceRoleKey, {
-        auth: { persistSession: false, autoRefreshToken: false },
-      })
-    : null
 
 export const config = {
   api: {
@@ -31,22 +57,6 @@ async function readRawBody(req) {
     chunks.push(typeof chunk === 'string' ? Buffer.from(chunk) : chunk)
   }
   return Buffer.concat(chunks).toString('utf8')
-}
-
-function verifySquareSignature(signature, rawBody, signatureKey) {
-  const expected = crypto
-    .createHmac('sha256', signatureKey)
-    .update(NOTIFICATION_URL + rawBody)
-    .digest('base64')
-
-  const signatureBuffer = Buffer.from(signature)
-  const expectedBuffer = Buffer.from(expected)
-
-  if (signatureBuffer.length !== expectedBuffer.length) {
-    return false
-  }
-
-  return crypto.timingSafeEqual(signatureBuffer, expectedBuffer)
 }
 
 const CATALOG_NAMES = new Map()
@@ -449,6 +459,23 @@ async function fetchOrderDetails(orderId, accessToken) {
   }
 }
 
+/**
+ * Send the fulfillment email via Resend and report exactly what happened —
+ * never throws, so the caller can tell a DEFINITIVE failure (Resend gave us
+ * an explicit answer; safe to release the fulfillment lease immediately)
+ * apart from an AMBIGUOUS one (a network-level error/timeout; Resend's own
+ * state is unknown, so the lease must be left to expire naturally rather
+ * than risk a second send racing a possibly-still-in-flight first one).
+ *
+ * `idempotencyKey` must be stable across retries for the same notification
+ * (derived from the Square payment ID + notification type by the caller) —
+ * Resend honors `Idempotency-Key` for 24h, so any retry that reaches this
+ * function again — whether because our own claim expired after an ambiguous
+ * failure, or a completely different process reclaimed it — is safe even if
+ * the first attempt actually reached Resend.
+ *
+ * @returns {Promise<{ ok: boolean, definitive?: boolean, reason?: string }>}
+ */
 async function sendOrderEmail({
   to,
   payment,
@@ -456,10 +483,11 @@ async function sendOrderEmail({
   lineItemsSection,
   braceletBuilds,
   shippingSection,
+  idempotencyKey,
 }) {
   const resendApiKey = process.env.RESEND_API_KEY
   if (!resendApiKey) {
-    throw new Error('RESEND_API_KEY is not configured')
+    return { ok: false, definitive: true, reason: 'RESEND_API_KEY is not configured' }
   }
 
   const paymentId = payment?.id ?? 'Unknown'
@@ -533,14 +561,22 @@ async function sendOrderEmail({
     html,
   }
 
-  let res = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${resendApiKey}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(payload),
-  })
+  const idempotencyHeaders = {
+    Authorization: `Bearer ${resendApiKey}`,
+    'Content-Type': 'application/json',
+    'Idempotency-Key': idempotencyKey,
+  }
+
+  let res
+  try {
+    res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: idempotencyHeaders,
+      body: JSON.stringify(payload),
+    })
+  } catch (networkError) {
+    return { ok: false, definitive: false, reason: `network error: ${networkError?.message ?? networkError}` }
+  }
 
   if (!res.ok) {
     const errorBody = await res.text()
@@ -551,158 +587,212 @@ async function sendOrderEmail({
     if (shouldRetryWithFallback) {
       console.warn('Primary sender failed; retrying with Resend onboarding address')
       payload.from = FALLBACK_FROM_EMAIL
-      res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      })
+      try {
+        res = await fetch('https://api.resend.com/emails', {
+          method: 'POST',
+          headers: idempotencyHeaders,
+          body: JSON.stringify(payload),
+        })
+      } catch (networkError) {
+        return { ok: false, definitive: false, reason: `network error on fallback: ${networkError?.message ?? networkError}` }
+      }
     }
 
     if (!res.ok) {
       const retryErrorBody = await res.text()
-      throw new Error(`Resend API error (${res.status}): ${retryErrorBody}`)
+      return { ok: false, definitive: true, reason: `Resend API error (${res.status}): ${retryErrorBody}` }
     }
   }
+
+  return { ok: true }
 }
 
-/** Inventory row name for a build slot id (real charm catalog name, or filler). */
+/**
+ * Inventory row name for a build slot id (real charm catalog name), or null
+ * for a slot that must never be inventoried. Plain fillers are free blank
+ * spacers auto-added by the builder to fill unused links — they are not a
+ * stocked product, so they must never generate a decrement attempt.
+ */
 function inventoryNameForBuildId(id) {
-  if (isFillerSlotToken(id)) return 'Plain Filler'
+  if (isFillerSlotToken(id)) return null
   return CATALOG_NAMES.get(id) ?? null
 }
 
 /**
- * Decrement Supabase stock for everything in a completed order.
+ * Decrement Supabase stock for everything in a completed order, resuming
+ * safely across retries via claimAndDecrementInventoryItem — each distinct
+ * (name, metal) tally's ledger claim AND its actual stock decrement happen
+ * together in one atomic Postgres function call (see
+ * supabase/migrations/20260808020000_webhook_crash_safety.sql), so there is
+ * no crash window between "claimed" and "applied" to protect against: the
+ * item is either fully decremented (ledger row + stock update both
+ * committed) or not decremented at all (nothing committed). A repeat call
+ * for an item that already succeeded is a safe, explicit no-op.
  *
- * Runs AFTER the order email is sent and is fully best-effort: it swallows all
- * errors and never throws. Inventory must never block or fail the webhook —
- * Square retries any non-2xx response, which would re-send the email and
- * re-decrement stock. Charm quantities come from the already-parsed bracelet
- * builds; the base bracelet/watch band comes from the paid line items.
+ * Same SKU appearing multiple times in one build, or across multiple
+ * builds, or as a paid quantity > 1, all correctly sum into a single tally
+ * entry — one claim, one decrement, for the total quantity — never one
+ * claim per occurrence.
+ *
+ * @param {string} paymentId
  * @param {ReturnType<typeof parseBraceletBuilds>} braceletBuilds
  * @param {any[]} lineItems
+ * @returns {Promise<{ allSucceeded: boolean, attempted: number, succeeded: number, failed: string[] }>}
  */
-async function decrementInventoryForOrder(braceletBuilds, lineItems) {
-  if (!supabase) {
+async function decrementInventoryForOrder(paymentId, braceletBuilds, lineItems) {
+  if (!getSupabaseClientForWebhook()) {
     console.warn('Inventory decrement skipped: Supabase is not configured')
-    return
+    return { allSucceeded: false, attempted: 0, succeeded: 0, failed: ['supabase_not_configured'] }
   }
 
-  try {
-    /** @type {Map<string, { name: string, metal: string, qty: number }>} */
-    const tally = new Map()
+  /** @type {Map<string, { name: string, metal: string, qty: number }>} */
+  const tally = new Map()
 
-    const addTally = (name, metal, qty) => {
-      if (!name || !metal || !Number.isFinite(qty) || qty <= 0) return
-      const key = `${name}|||${metal}`
-      const existing = tally.get(key)
-      if (existing) {
-        existing.qty += qty
-      } else {
-        tally.set(key, { name, metal, qty })
-      }
+  const addTally = (name, metal, qty) => {
+    if (!name || !metal || !Number.isFinite(qty) || qty <= 0) return
+    const key = `${name}|||${metal}`
+    const existing = tally.get(key)
+    if (existing) {
+      existing.qty += qty
+    } else {
+      tally.set(key, { name, metal, qty })
     }
-
-    // Charms + fillers: every position in every parsed bracelet build.
-    if (Array.isArray(braceletBuilds)) {
-      for (const build of braceletBuilds) {
-        if (!build || !Array.isArray(build.ids)) continue
-        for (const id of build.ids) {
-          addTally(inventoryNameForBuildId(id), build.metal, 1)
-        }
-      }
-    }
-
-    // Base bracelet / watch band: match paid line items against known base names.
-    if (Array.isArray(lineItems)) {
-      for (const item of lineItems) {
-        if (!item || typeof item !== 'object') continue
-        const name = typeof item.name === 'string' ? item.name.trim() : ''
-        const metal = BASE_NAME_TO_METAL[name]
-        if (!metal) continue
-        const parsedQty = Number.parseInt(item.quantity, 10)
-        addTally(name, metal, Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 1)
-      }
-    }
-
-    const decrements = [...tally.values()]
-
-    if (decrements.length === 0) {
-      console.log('Inventory decrement: nothing to decrement for this order')
-      return
-    }
-
-    for (const { name, metal, qty } of decrements) {
-      const { error } = await supabase.rpc('decrement_charm_stock', {
-        p_name: name,
-        p_metal: metal,
-        p_qty: qty,
-      })
-      if (error) {
-        console.error(
-          `Inventory decrement failed for "${name}" (${metal}) x${qty}:`,
-          error.message ?? error,
-        )
-      }
-    }
-
-    console.log(
-      'Inventory decremented for order:',
-      decrements.map((d) => `${d.name} (${d.metal}) x${d.qty}`).join(', '),
-    )
-  } catch (error) {
-    console.error('Inventory decrement error (non-blocking):', error)
   }
+
+  // Charms: every non-filler position in every parsed bracelet build.
+  if (Array.isArray(braceletBuilds)) {
+    for (const build of braceletBuilds) {
+      if (!build || !Array.isArray(build.ids)) continue
+      for (const id of build.ids) {
+        addTally(inventoryNameForBuildId(id), build.metal, 1)
+      }
+    }
+  }
+
+  // Base bracelet / watch band: match paid line items against known base names.
+  if (Array.isArray(lineItems)) {
+    for (const item of lineItems) {
+      if (!item || typeof item !== 'object') continue
+      const name = typeof item.name === 'string' ? item.name.trim() : ''
+      const metal = BASE_NAME_TO_METAL[name]
+      if (!metal) continue
+      const parsedQty = Number.parseInt(item.quantity, 10)
+      addTally(name, metal, Number.isFinite(parsedQty) && parsedQty > 0 ? parsedQty : 1)
+    }
+  }
+
+  const items = [...tally.values()]
+
+  if (items.length === 0) {
+    console.log('Inventory decrement: nothing to decrement for this order')
+    return { allSucceeded: true, attempted: 0, succeeded: 0, failed: [] }
+  }
+
+  let succeeded = 0
+  const failed = []
+
+  for (const { name, metal, qty } of items) {
+    const itemKey = `${name}|||${metal}`
+    const result = await claimAndDecrementInventoryItem(paymentId, itemKey, name, metal, qty)
+
+    if (result.ok) {
+      succeeded += 1
+    } else {
+      console.error(`Inventory decrement: could not confirm "${name}" (${metal}) x${qty} — leaving retryable`)
+      failed.push(itemKey)
+    }
+  }
+
+  const allSucceeded = failed.length === 0
+  console.log('Inventory decrement summary:', { attempted: items.length, succeeded, failed })
+  return { allSucceeded, attempted: items.length, succeeded, failed }
 }
 
 /**
- * Log a completed order to Supabase for reporting (independent of Square's dashboard).
- * Best-effort: swallows all errors, never throws, never blocks the webhook.
+ * Log a completed order to Supabase for reporting (independent of Square's
+ * dashboard). Idempotent and resumable: `orders.square_payment_id` has a
+ * unique constraint, so a conflicting insert (from a previous attempt that
+ * succeeded but crashed before this function returned) is treated as
+ * already-logged success, not a failure — and order_items are only inserted
+ * if none exist yet for that order, so a retry never duplicates line items.
+ * @returns {Promise<{ ok: boolean, reason?: string, orderRowId?: string }>}
  */
 async function logOrderToSupabase({ payment, recipient, lineItems, braceletBuilds }) {
+  const supabase = getSupabaseClientForWebhook()
   if (!supabase) {
     console.warn('Order log skipped: Supabase is not configured')
-    return
+    return { ok: false, reason: 'supabase_not_configured' }
   }
 
-  try {
-    const amountCents = payment?.amount_money?.amount
-    if (!Number.isFinite(amountCents)) {
-      console.warn('Order log skipped: missing payment amount')
-      return
-    }
+  const amountCents = payment?.amount_money?.amount
+  if (!Number.isFinite(amountCents)) {
+    console.warn('Order log skipped: missing payment amount')
+    return { ok: false, reason: 'missing_amount' }
+  }
 
-    const { data: orderRow, error: orderError } = await supabase
-      .from('orders')
-      .insert({
-        square_payment_id: payment?.id,
-        square_order_id: payment?.order_id ?? null,
-        channel: recipient ? 'online' : 'in_person',
-        status: 'completed',
-        amount_cents: amountCents,
-        currency: payment?.amount_money?.currency ?? 'USD',
-        customer_name: recipient?.display_name ?? null,
-        customer_phone: recipient?.phone_number ?? null,
-        shipping_address: recipient?.address ?? null,
-        bracelet_builds:
-          Array.isArray(braceletBuilds) && braceletBuilds.length > 0 ? braceletBuilds : null,
-      })
+  let orderRowId = null
+
+  const { data: inserted, error: insertError } = await supabase
+    .from('orders')
+    .insert({
+      square_payment_id: payment?.id,
+      square_order_id: payment?.order_id ?? null,
+      channel: recipient ? 'online' : 'in_person',
+      status: 'completed',
+      amount_cents: amountCents,
+      currency: payment?.amount_money?.currency ?? 'USD',
+      customer_name: recipient?.display_name ?? null,
+      customer_phone: recipient?.phone_number ?? null,
+      shipping_address: recipient?.address ?? null,
+      bracelet_builds:
+        Array.isArray(braceletBuilds) && braceletBuilds.length > 0 ? braceletBuilds : null,
+    })
+    .select('id')
+    .single()
+
+  if (insertError) {
+    if (insertError.code === '23505') {
+      // Already logged by a previous attempt (possibly one that crashed
+      // before confirming success back to the orchestrator) — idempotent,
+      // not a failure.
+      const { data: existing, error: fetchError } = await supabase
+        .from('orders')
+        .select('id')
+        .eq('square_payment_id', payment?.id)
+        .single()
+      if (fetchError || !existing) {
+        console.error('Order log: conflict on insert but could not fetch existing row:', fetchError?.message ?? fetchError)
+        return { ok: false, reason: 'conflict_fetch_failed' }
+      }
+      orderRowId = existing.id
+    } else {
+      console.error('Order log failed (orders insert):', insertError.message ?? insertError)
+      return { ok: false, reason: 'orders_insert_failed' }
+    }
+  } else {
+    orderRowId = inserted?.id ?? null
+  }
+
+  if (!orderRowId) {
+    return { ok: false, reason: 'missing_order_row_id' }
+  }
+
+  if (Array.isArray(lineItems) && lineItems.length > 0) {
+    const { data: existingItems, error: existingItemsError } = await supabase
+      .from('order_items')
       .select('id')
-      .single()
+      .eq('order_id', orderRowId)
 
-    if (orderError) {
-      console.error('Order log failed (orders insert):', orderError.message ?? orderError)
-      return
+    if (existingItemsError) {
+      console.error('Order log: could not check existing order_items:', existingItemsError.message ?? existingItemsError)
+      return { ok: false, reason: 'order_items_check_failed' }
     }
 
-    if (Array.isArray(lineItems) && lineItems.length > 0 && orderRow?.id) {
+    if (!existingItems || existingItems.length === 0) {
       const itemRows = lineItems
         .filter((item) => item && typeof item === 'object')
         .map((item) => ({
-          order_id: orderRow.id,
+          order_id: orderRowId,
           name: typeof item.name === 'string' && item.name.trim() ? item.name.trim() : 'Unknown item',
           quantity: Number.parseInt(item.quantity, 10) || 1,
           unit_amount_cents: item.base_price_money?.amount ?? null,
@@ -711,12 +801,30 @@ async function logOrderToSupabase({ payment, recipient, lineItems, braceletBuild
       const { error: itemsError } = await supabase.from('order_items').insert(itemRows)
       if (itemsError) {
         console.error('Order log failed (order_items insert):', itemsError.message ?? itemsError)
+        return { ok: false, reason: 'order_items_insert_failed' }
       }
     }
+  }
 
-    console.log('Order logged:', { paymentId: payment?.id, orderId: orderRow?.id })
-  } catch (error) {
-    console.error('Order log error (non-blocking):', error)
+  console.log('Order logged:', { paymentId: payment?.id, orderId: orderRowId })
+  return { ok: true, orderRowId }
+}
+
+/**
+ * Build the non-sensitive purchase_completed payload. Never include buyer
+ * name, email, phone, address, payment details/card data, or the raw
+ * webhook payload — only anonymous order reference, value, currency,
+ * product/build category signal, and (future) campaign attribution already
+ * associated with the checkout.
+ */
+function buildPurchaseAnalyticsProps({ payment, lineItems, braceletBuilds }) {
+  return {
+    amountCents: payment?.amount_money?.amount ?? null,
+    currency: payment?.amount_money?.currency ?? 'USD',
+    itemCount: Array.isArray(lineItems)
+      ? lineItems.reduce((sum, item) => sum + (Number.parseInt(item.quantity, 10) || 1), 0)
+      : null,
+    hasBraceletBuilds: Array.isArray(braceletBuilds) && braceletBuilds.length > 0,
   }
 }
 
@@ -725,74 +833,328 @@ export default async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' })
   }
 
+  // ── 1. Signature verification (fail closed on missing production config) ──
+  const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY
+  const notificationUrl = process.env.SQUARE_WEBHOOK_NOTIFICATION_URL
+
+  if (!signatureKey || !notificationUrl) {
+    console.error(
+      'square-webhook: rejected — missing required production configuration',
+      { hasSignatureKey: Boolean(signatureKey), hasNotificationUrl: Boolean(notificationUrl) },
+    )
+    return res.status(500).json({ error: 'Webhook is not configured' })
+  }
+
+  const signatureHeader = req.headers['x-square-hmacsha256-signature']
+  if (!signatureHeader || typeof signatureHeader !== 'string') {
+    console.warn('square-webhook: rejected — missing signature header')
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  // Raw, untouched body — read before any JSON parsing so verification runs
+  // against exactly the bytes Square signed.
+  const rawBody = await readRawBody(req)
+
+  let signatureValid
   try {
-    const signatureKey = process.env.SQUARE_WEBHOOK_SIGNATURE_KEY
-    if (!signatureKey) {
-      console.error('SQUARE_WEBHOOK_SIGNATURE_KEY is not configured')
-      return res.status(500).json({ error: 'Webhook is not configured' })
+    // Square's official SDK helper: timing-safe, HMAC-SHA256 over
+    // (notificationUrl + rawBody), keyed by the signature key. Never
+    // reimplemented by hand.
+    signatureValid = await WebhooksHelper.verifySignature({
+      requestBody: rawBody,
+      signatureHeader,
+      signatureKey,
+      notificationUrl,
+    })
+  } catch (error) {
+    console.error('square-webhook: signature verification threw:', error?.message ?? error)
+    signatureValid = false
+  }
+
+  if (!signatureValid) {
+    console.warn('square-webhook: rejected — invalid signature')
+    return res.status(401).json({ error: 'Unauthorized' })
+  }
+
+  // ── 2. Parse (only after verifying the raw bytes) ──────────────────────
+  let event
+  try {
+    event = JSON.parse(rawBody)
+  } catch (parseError) {
+    console.warn('square-webhook: rejected — malformed JSON payload:', parseError?.message ?? parseError)
+    return res.status(400).json({ error: 'Malformed payload' })
+  }
+
+  const eventId = typeof event?.event_id === 'string' && event.event_id ? event.event_id : null
+  const eventType = typeof event?.type === 'string' ? event.type : null
+
+  if (!eventId) {
+    console.warn('square-webhook: rejected — signed payload missing event_id')
+    return res.status(400).json({ error: 'Malformed payload' })
+  }
+
+  // ── 3. Webhook delivery audit log (Square event_id) ─────────────────────
+  // Best-effort, non-gating: logged purely for observability ("how many
+  // times was this delivered"). Processing itself is never skipped based on
+  // event_id alone — see step 6, which resumes strictly from durable
+  // per-effect state instead. Gating on event_id was the original design's
+  // failure window: an event claimed-but-not-finished (e.g. the process
+  // crashed mid-fulfillment) would look "seen" forever and a Square retry
+  // of that exact event would be discarded instead of resuming the
+  // incomplete work.
+  const eventLog = await claimWebhookEventId(eventId, eventType)
+  if (!eventLog.unavailable && !eventLog.claimed) {
+    console.log('square-webhook: redelivery observed for event_id (informational only)', { eventId, eventType })
+  }
+
+  // ── 4. Event qualification ──────────────────────────────────────────────
+  if (!eventType || !EXPECTED_PAYMENT_EVENT_TYPES.has(eventType)) {
+    console.log('square-webhook: ignored — unexpected event type', { eventId, eventType })
+    return res.status(200).json({ received: true, ignored: 'unexpected_event_type' })
+  }
+
+  const payment = event.data?.object?.payment
+  const status = payment?.status
+
+  if (status !== 'COMPLETED') {
+    console.log('square-webhook: ignored — payment not completed', {
+      eventId,
+      eventType,
+      status: status ?? 'unknown',
+    })
+    return res.status(200).json({ received: true, ignored: 'not_completed' })
+  }
+
+  const paymentId = typeof payment?.id === 'string' && payment.id ? payment.id : null
+  const orderId = typeof payment?.order_id === 'string' && payment.order_id ? payment.order_id : null
+
+  if (!paymentId || !orderId) {
+    console.warn('square-webhook: ignored — completed payment missing payment id or order id', { eventId })
+    return res.status(200).json({ received: true, ignored: 'missing_ids' })
+  }
+
+  // ── 5. Establish durable per-payment state (entire-purchase idempotency) ─
+  // Every required side effect below (order log, inventory, fulfillment
+  // email) is gated by this SAME row, keyed by payment_id — not by
+  // event_id. That is what makes two different events for one payment
+  // (a redelivery under a new event_id, payment.created + payment.updated,
+  // etc.) share one durable outcome instead of each re-running fulfillment
+  // independently. If the durable store can't be reached at all, fail
+  // closed: attempting side effects with no way to record what happened
+  // risks exactly the duplication this table exists to prevent.
+  if (!isDurableStoreConfigured()) {
+    console.error('square-webhook: durable store not configured — cannot safely process, requesting retry', { eventId, paymentId })
+    return res.status(500).json({ received: true, retryable: true, error: 'durable_store_unavailable' })
+  }
+
+  const { row, unavailable: stateUnavailable } = await getOrCreatePurchaseState(paymentId, orderId)
+  if (stateUnavailable || !row) {
+    console.error('square-webhook: could not establish durable purchase state — requesting retry', { eventId, paymentId })
+    return res.status(500).json({ received: true, retryable: true, error: 'durable_store_unavailable' })
+  }
+
+  const wasAlreadyCompleted = Boolean(row.completed_at)
+
+  // Order details are read-only and safe to re-fetch on every delivery —
+  // needed by whichever effects below are still incomplete.
+  let recipient = null
+  let lineItems = []
+  let braceletBuilds = []
+
+  try {
+    const details = await fetchOrderDetails(orderId, process.env.SQUARE_ACCESS_TOKEN)
+    recipient = details.recipient
+    lineItems = details.lineItems
+    braceletBuilds = parseBraceletBuilds(details.metadata)
+  } catch (detailsError) {
+    console.error('Failed to fetch Square order details (non-blocking):', detailsError)
+  }
+
+  // ── 6. Resume exactly the required side effects that are still incomplete ─
+  // Each block only runs when its column is still NULL on `row` — a repeat
+  // delivery for an already-completed payment does none of this work.
+  // Runs for every completed payment on this Square account (POS,
+  // market-booth, and website alike) — this is order fulfillment, not
+  // purchase analytics, and the owner needs it regardless of channel.
+
+  if (!row.order_logged_at) {
+    const logResult = await logOrderToSupabase({ payment, recipient, lineItems, braceletBuilds })
+    if (logResult.ok) {
+      // The order log itself is confirmed — but only trust it "done" for
+      // this delivery's response once the durable marker also commits. If
+      // the marker write fails, a retry safely re-runs logOrderToSupabase
+      // (idempotent via orders.square_payment_id's unique constraint) and
+      // tries the marker again — never a duplicate order row.
+      const markResult = await markEffectDone(paymentId, PURCHASE_EFFECT.ORDER_LOGGED)
+      if (markResult.claimed) {
+        row.order_logged_at = new Date().toISOString()
+      } else {
+        console.error('square-webhook: order logged but could not be durably recorded — leaving retryable', { eventId, paymentId })
+        await recordLastError(paymentId, 'order_logged: succeeded but not recorded')
+      }
+    } else {
+      console.error('square-webhook: order_logged incomplete, leaving retryable', { eventId, paymentId, reason: logResult.reason })
+      await recordLastError(paymentId, `order_logged: ${logResult.reason}`)
     }
+  }
 
-    const signature = req.headers['x-square-hmacsha256-signature']
-    if (!signature) {
-      console.error('Missing x-square-hmacsha256-signature header')
-      return res.status(401).json({ error: 'Unauthorized' })
+  if (!row.inventory_updated_at) {
+    const invResult = await decrementInventoryForOrder(paymentId, braceletBuilds, lineItems)
+    if (invResult.allSucceeded) {
+      // Same reasoning as order logging: every item is already durably
+      // decremented (ledger-protected, safe to re-check on retry), but this
+      // delivery only counts it "done" once the marker itself commits.
+      const markResult = await markEffectDone(paymentId, PURCHASE_EFFECT.INVENTORY_UPDATED)
+      if (markResult.claimed) {
+        row.inventory_updated_at = new Date().toISOString()
+      } else {
+        console.error('square-webhook: inventory decremented but could not be durably recorded — leaving retryable', { eventId, paymentId })
+        await recordLastError(paymentId, 'inventory_updated: succeeded but not recorded')
+      }
+    } else {
+      console.error('square-webhook: inventory_updated incomplete, leaving retryable', { eventId, paymentId, failed: invResult.failed })
+      await recordLastError(paymentId, `inventory_updated: failed=${invResult.failed?.join(',') ?? 'unknown'}`)
     }
+  }
 
-    const rawBody = await readRawBody(req)
+  if (!row.fulfillment_notified_at) {
+    const notificationEmail = process.env.NOTIFICATION_EMAIL
+    if (!notificationEmail) {
+      console.error('NOTIFICATION_EMAIL is not configured — fulfillment_notified left retryable', { eventId, paymentId })
+      await recordLastError(paymentId, 'fulfillment_notified: NOTIFICATION_EMAIL not configured')
+    } else {
+      // Claim (or reclaim, if a previous processing lease expired) BEFORE
+      // calling Resend — see claimFulfillmentLease. A process killed after
+      // this claim but before/during the Resend call leaves the lease to
+      // expire naturally rather than getting stuck "notified" forever.
+      const lease = await claimFulfillmentLease(paymentId, getFulfillmentLeaseSeconds())
+      if (lease.alreadySent) {
+        row.fulfillment_notified_at = new Date().toISOString()
+      } else if (lease.claimed) {
+        const timestamp = event.created_at ?? payment?.updated_at ?? new Date().toISOString()
+        const lineItemsSection = formatLineItemsSection(lineItems)
+        const shippingSection = formatShippingSection(recipient)
+        // Stable across every retry of this notification — same payment,
+        // same notification type — so Resend's own 24h idempotency window
+        // guarantees at most one email even if we call it more than once.
+        const idempotencyKey = `${FULFILLMENT_NOTIFICATION_TYPE}:${paymentId}`
+        const sendResult = await sendOrderEmail({
+          to: notificationEmail,
+          payment,
+          timestamp,
+          lineItemsSection,
+          braceletBuilds,
+          shippingSection,
+          idempotencyKey,
+        })
 
-    if (!verifySquareSignature(signature, rawBody, signatureKey)) {
-      console.error('Square webhook signature verification failed')
-      return res.status(401).json({ error: 'Unauthorized' })
-    }
-
-    const event = JSON.parse(rawBody)
-
-    if (event.type === 'payment.updated') {
-      const payment = event.data?.object?.payment
-      const status = payment?.status
-
-      if (status === 'COMPLETED') {
-        const notificationEmail = process.env.NOTIFICATION_EMAIL
-        if (!notificationEmail) {
-          console.error('NOTIFICATION_EMAIL is not configured')
-        } else {
-          try {
-            const timestamp = event.created_at ?? payment?.updated_at ?? new Date().toISOString()
-            const { recipient, metadata, lineItems } = await fetchOrderDetails(
-              payment?.order_id,
-              process.env.SQUARE_ACCESS_TOKEN,
-            )
-            const lineItemsSection = formatLineItemsSection(lineItems)
-            const braceletBuilds = parseBraceletBuilds(metadata)
-            const shippingSection = formatShippingSection(recipient)
-            await sendOrderEmail({
-              to: notificationEmail,
-              payment,
-              timestamp,
-              lineItemsSection,
-              braceletBuilds,
-              shippingSection,
+        if (sendResult.ok) {
+          // Only ever marked sent AFTER Resend confirms acceptance.
+          const markResult = await markFulfillmentSent(paymentId)
+          if (markResult.ok) {
+            row.fulfillment_notified_at = new Date().toISOString()
+            console.log('Order notification sent', { paymentId, orderId })
+          } else {
+            // Resend confirmed the send, but we could not durably record
+            // it. Do NOT release the lease — the email really was sent, so
+            // a fresh attempt must never be allowed to race in and send a
+            // second one. Leave fulfillment_state 'processing': once the
+            // lease expires, a retry reclaims it, calls Resend again with
+            // the SAME idempotency key (Resend returns its cached result
+            // instead of sending again), and retries recording sent.
+            console.error('square-webhook: fulfillment email sent but could not be durably recorded — will retry after lease expiry', {
+              eventId,
+              paymentId,
             })
-            console.log('Order notification sent', {
-              paymentId: payment?.id,
-              orderId: payment?.order_id,
-            })
-
-            // Best-effort inventory decrement AFTER the email succeeds. Reuses
-            // the same braceletBuilds + lineItems parsed for the email and never
-            // throws, so it can't cause a webhook retry / duplicate email.
-            await decrementInventoryForOrder(braceletBuilds, lineItems)
-            await logOrderToSupabase({ payment, recipient, lineItems, braceletBuilds })
-          } catch (emailError) {
-            console.error('Failed to send order notification email:', emailError)
+            await recordLastError(paymentId, 'fulfillment_notified: sent but not recorded')
           }
+        } else if (sendResult.definitive) {
+          // Resend gave a definitive answer: no email went out. Safe to
+          // release the lease immediately so the very next delivery can
+          // retry without waiting out the full lease window.
+          console.error('square-webhook: fulfillment email failed definitively, releasing lease for immediate retry', {
+            eventId,
+            paymentId,
+            reason: sendResult.reason,
+          })
+          await releaseFulfillmentLease(paymentId)
+          await recordLastError(paymentId, `fulfillment_notified: ${sendResult.reason}`)
+        } else {
+          // Ambiguous (network error/timeout): we don't know whether Resend
+          // received the request. Do NOT release — releasing here could let
+          // a second attempt race one that's still in flight. Leave the
+          // lease to expire; the eventual retry reuses idempotencyKey, so
+          // at most one email goes out either way.
+          console.error('square-webhook: fulfillment email failed ambiguously, leaving lease to expire', {
+            eventId,
+            paymentId,
+            reason: sendResult.reason,
+          })
+          await recordLastError(paymentId, `fulfillment_notified: ${sendResult.reason}`)
         }
+      } else if (lease.unavailable) {
+        console.error('square-webhook: fulfillment lease unavailable, leaving retryable', { eventId, paymentId })
+        await recordLastError(paymentId, 'fulfillment_notified: durable lease unavailable')
+      } else {
+        // Not claimed, not already sent: another delivery holds a live
+        // (non-expired) lease right now — not our job this round.
+        console.log('square-webhook: fulfillment lease held by another in-flight delivery', { eventId, paymentId })
       }
     }
-
-    return res.status(200).json({ received: true })
-  } catch (error) {
-    console.error('Square webhook handler error:', error)
-    return res.status(500).json({ error: 'Internal server error' })
   }
+
+  const requiredComplete = Boolean(row.order_logged_at && row.inventory_updated_at && row.fulfillment_notified_at)
+  if (requiredComplete && !wasAlreadyCompleted) {
+    await markEffectDone(paymentId, PURCHASE_EFFECT.COMPLETED)
+  }
+
+  // ── 7. Website-order correlation + at-most-once purchase_completed ──────
+  // purchase_completed fires only when this order was created by our own
+  // /api/create-checkout (not Square POS, a market-booth sale, an invoice,
+  // or a manually entered payment) AND analytics hasn't already been
+  // attempted for this payment_id — independent of event_id, so two
+  // different Square events for the same payment can't double-count.
+  // Deliberately NOT required for `completed_at` / the required-work gate
+  // above: an external analytics outage must never hold up fulfillment or
+  // cause endless Square retries on its own.
+  if (!row.analytics_recorded_at) {
+    const isWebsiteOrder = await isWebsiteCheckoutOrder(orderId)
+    if (!isWebsiteOrder) {
+      console.log('square-webhook: purchase_completed skipped — order not correlated to a theretrocharmco.com checkout', { eventId, orderId })
+    } else {
+      const claim = await markEffectDone(paymentId, PURCHASE_EFFECT.ANALYTICS_RECORDED)
+      if (claim.claimed) {
+        // Claim is durable and NOT rolled back on failure: if the analytics
+        // call itself fails, we accept a missed event over risking a
+        // duplicate count on a later retry of this or a different event_id
+        // for the same payment (at-most-once, not guaranteed-delivery).
+        try {
+          await trackPurchaseCompleted(buildPurchaseAnalyticsProps({ payment, lineItems, braceletBuilds }))
+          console.log('square-webhook: purchase_completed fired', { eventId, paymentId, orderId })
+        } catch (analyticsError) {
+          console.error(
+            'square-webhook: purchase_completed analytics call failed (claimed; not retried, to avoid a duplicate count):',
+            analyticsError?.message ?? analyticsError,
+          )
+        }
+      } else {
+        console.log('square-webhook: purchase_completed skipped — already attempted for this payment', { eventId, paymentId })
+      }
+    }
+  }
+
+  // ── 8. Response: 2xx only once required work is actually done ───────────
+  // A non-2xx here is a deliberate signal for Square to retry — the next
+  // delivery (same or different event_id) will resume exactly the columns
+  // still NULL, per step 6, and skip everything already confirmed done.
+  if (requiredComplete) {
+    return res.status(200).json({ received: true, processed: true, alreadyCompleted: wasAlreadyCompleted })
+  }
+
+  const incomplete = []
+  if (!row.order_logged_at) incomplete.push('order_logged')
+  if (!row.inventory_updated_at) incomplete.push('inventory_updated')
+  if (!row.fulfillment_notified_at) incomplete.push('fulfillment_notified')
+  console.error('square-webhook: required work incomplete, requesting Square retry', { eventId, paymentId, incomplete })
+  return res.status(500).json({ received: true, retryable: true, incomplete })
 }

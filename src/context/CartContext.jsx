@@ -228,6 +228,7 @@ export function CartProvider({ children }) {
       ...prev,
       {
         buildId: build.buildId ?? crypto.randomUUID(),
+        label: build.label ?? null,
         baseId: build.baseId ?? build.metal,
         metal: build.metal,
         charmCount: build.charmCount,
@@ -237,7 +238,31 @@ export function CartProvider({ children }) {
   }
 
   const removeBraceletBuild = (buildId) => {
-    setBraceletBuilds((prev) => prev.filter((b) => b.buildId !== buildId))
+    setBraceletBuilds((prevBuilds) => {
+      const oldBuild = prevBuilds.find((b) => b.buildId === buildId)
+      if (!oldBuild) return prevBuilds
+
+      const required = buildItemCounts(oldBuild)
+      setItems((prevItems) => {
+        let next = [...prevItems]
+        for (const [id, qty] of required) {
+          const existingIndex = next.findIndex((item) => item.id === id)
+          if (existingIndex < 0) continue
+          const nextQuantity = next[existingIndex].quantity - qty
+          if (nextQuantity <= 0) {
+            next = next.filter((item) => item.id !== id)
+          } else {
+            next[existingIndex] = {
+              ...next[existingIndex],
+              quantity: nextQuantity,
+            }
+          }
+        }
+        return next
+      })
+
+      return prevBuilds.filter((b) => b.buildId !== buildId)
+    })
   }
 
   const replaceBraceletBuild = (buildId, newBuild) => {
@@ -251,6 +276,7 @@ export function CartProvider({ children }) {
         b.buildId === buildId
           ? {
               buildId,
+              label: newBuild.label ?? b.label ?? null,
               baseId: newBuild.baseId ?? newBuild.metal,
               metal: newBuild.metal,
               charmCount: newBuild.charmCount,

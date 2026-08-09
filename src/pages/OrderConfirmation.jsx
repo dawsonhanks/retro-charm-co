@@ -1,8 +1,9 @@
 import { useEffect } from 'react'
-import { Helmet } from 'react-helmet-async'
 import { Link, useSearchParams } from 'react-router-dom'
+import { PageMeta } from '../components/PageMeta'
 import { SparkleRow } from '../components/RetroAccents'
 import { useCart } from '../context/CartContext.jsx'
+import { trackCheckoutReturned } from '../lib/analytics'
 
 export default function OrderConfirmation() {
   const { clearCart } = useCart()
@@ -12,8 +13,14 @@ export default function OrderConfirmation() {
     // Square only appends this ?order= token when it redirects here after a real
     // checkout attempt. Without it, someone just navigated here directly (bookmark,
     // back button, refresh, shared link) and we should NOT wipe their cart.
+    //
+    // IMPORTANT: Presence of ?order= is NOT verified payment success. Do not fire
+    // purchase_completed here — that event is emitted only from the Square webhook
+    // after payment.status === COMPLETED (see api/square-webhook.js).
     const orderToken = searchParams.get('order')
-    if (orderToken) {
+    const hasOrderToken = Boolean(orderToken)
+    trackCheckoutReturned({ hasOrderToken })
+    if (hasOrderToken) {
       clearCart()
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -21,10 +28,12 @@ export default function OrderConfirmation() {
 
   return (
     <>
-      <Helmet>
-        <title>Order Confirmed | RetroCharm Co</title>
-        <meta name="description" content="Thank you for your RetroCharm Co order!" />
-      </Helmet>
+      <PageMeta
+        title="Order Confirmed | RetroCharm Co"
+        description="Thank you for your RetroCharm Co order. We are preparing your custom bracelet."
+        path="/order-confirmation"
+        noindex
+      />
 
       <section className="relative overflow-hidden bg-gradient-to-b from-jscolors-cream via-[#ddd0b8] to-jscolors-cream text-jscolors-ink">
         <div className="mx-auto max-w-2xl px-4 py-16 text-center md:py-24">

@@ -1,8 +1,9 @@
 import { BASE_LINK_COUNT } from '../utils/braceletLinks'
-import { BASE_OPTIONS } from '../data/charms'
+import { BASE_OPTIONS, getCharmById, isFillerCharm } from '../data/charms'
+import { buildOrderEstimate, formatMoney } from '../utils/orderEstimate'
 
 /**
- * @param {{ buildId: string, baseId?: string, metal: 'silver' | 'gold', charms: { id: string, image?: string, name: string }[] }[]} builds
+ * @param {{ buildId: string, label?: string | null, baseId?: string, metal: 'silver' | 'gold', charmCount?: number, charms: { id: string, image?: string, name: string }[] }[]} builds
  * @param {{ className?: string }} props
  */
 export function BraceletBuildsPreview({ builds, className = '' }) {
@@ -22,11 +23,39 @@ function BraceletBuildRow({ build }) {
   const chainStroke = build.metal === 'gold' ? '#d4af37' : '#b8bcc6'
   const linkCount = Math.max(build.charms.length * 2 + 2, BASE_LINK_COUNT)
   const base = BASE_OPTIONS.find((b) => b.id === (build.baseId ?? build.metal))
-  const label = base?.label ?? `${build.metal} bracelet`
+  const baseLabel = base?.label ?? `${build.metal} bracelet`
+  const title = build.label ? build.label : 'Custom build'
+  const paidCharms = build.charms
+    .filter((charm) => !isFillerCharm(charm))
+    .map((charm) => getCharmById(charm.id) ?? charm)
+  const plainLinkCount = build.charms.filter((charm) => isFillerCharm(charm)).length
+  const estimate = buildOrderEstimate({
+    base: base ?? { id: build.baseId ?? build.metal, label: baseLabel, price: 0 },
+    charms: paidCharms,
+    plainLinkCount,
+  })
+  const subtitleParts = [
+    baseLabel,
+    build.charmCount ? `${build.charmCount} links` : null,
+    `${paidCharms.length} paid charm${paidCharms.length === 1 ? '' : 's'}`,
+    `${plainLinkCount} plain included free`,
+  ].filter(Boolean)
 
   return (
     <div className="rounded-2xl border border-jscolors-gold/30 bg-white/70 p-3 shadow-sm">
-      <p className="mb-2 text-xs font-medium text-jscolors-ink/70">{label}</p>
+      <p className="mb-0.5 text-sm font-semibold text-jscolors-ink">{title}</p>
+      <p className="mb-2 text-xs font-medium leading-snug text-jscolors-ink/70">{subtitleParts.join(' · ')}</p>
+      {estimate && (
+        <p className="mb-2 text-xs text-jscolors-ink/65">
+          Product {formatMoney(estimate.productSubtotal)} · Shipping {formatMoney(estimate.shipping)} ·{' '}
+          <span className="font-semibold text-jscolors-ink">
+            Estimated total before tax {formatMoney(estimate.estimatedTotalBeforeTax)}
+          </span>
+        </p>
+      )}
+      <p className="mb-2 text-[11px] text-jscolors-ink/60">
+        You do not need a charm for every link — plain fillers are included free with the base.
+      </p>
       <div className="relative min-w-0">
         <BraceletBaseGraphic stroke={chainStroke} linkCount={linkCount} />
         <div className="relative mx-auto flex w-full min-w-0 max-w-full items-center justify-center gap-0.5 overflow-x-auto overscroll-x-contain px-2 py-5">
@@ -50,10 +79,13 @@ function BraceletBuildRow({ build }) {
 }
 
 function CharmPreviewSlot({ charm }) {
+  const filler = isFillerCharm(charm)
   return (
     <div
-      className="shrink-0 rounded-full border-2 border-jscolors-gold bg-white p-1 shadow-sm"
-      title={charm.name}
+      className={`shrink-0 rounded-full border-2 bg-white p-1 shadow-sm ${
+        filler ? 'border-jscolors-gold/35' : 'border-jscolors-gold'
+      }`}
+      title={filler ? `${charm.name} (included free)` : charm.name}
     >
       {charm.image ? (
         <img src={charm.image} alt="" className="h-6 w-6 object-contain" loading="lazy" decoding="async" />

@@ -17,7 +17,7 @@ export function HowItWorks() {
   const steps = [
     {
       title: 'Pick Your Base',
-      body: 'Silver or gold Italian link bracelet — the blank canvas for your story.',
+      body: 'Silver-tone or gold-tone Italian link bracelet — the blank canvas for your story.',
       Icon: BraceletIcon,
     },
     {
