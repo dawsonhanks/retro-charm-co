@@ -96,6 +96,7 @@ export const BEST_SELLER_BUNDLES = [
     ],
     substitutions: {
       'g-strawberry': ['g-strawberry-dangle'],
+      'g-wwjd': ['g-cross-black'],
       'g-heart-red': ['g-heart-red-and-gold'],
     },
   },
@@ -207,7 +208,7 @@ export function resolveBundle(bundle, inventoryMap, stockOpts = {}) {
       slotSequence: [],
       plainLinkCount: 0,
       configuredListPrice,
-      price: 0,
+      price: configuredListPrice,
       priceDeltaFromConfigured: 0,
       error: null,
     }
