@@ -1,7 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BestSellers } from '../components/BestSellers'
-import { CustomerPhotoGallery, CustomerProofStrip } from '../components/CustomerProof'
+import { CustomerProofStrip } from '../components/CustomerProof'
 import { HowItWorks } from '../components/HowItWorks'
 import { PageMeta } from '../components/PageMeta'
 import { StarField } from '../components/RetroAccents'
@@ -34,15 +34,26 @@ const secondaryCtaClassName =
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[200px] items-center justify-center py-16" role="status" aria-live="polite">
-      <img
-        src="/images/brand/retro-charm-icon-mark.webp"
-        alt=""
-        width={56}
-        height={44}
-        className="h-12 w-auto animate-pulse object-contain opacity-90"
-      />
-      <span className="sr-only">Loading</span>
+    <div className="mx-auto min-h-[320px] max-w-6xl px-4 py-14" role="status" aria-live="polite">
+      <div className="text-center">
+        <img
+          src="/images/brand/retro-charm-icon-mark.webp"
+          alt=""
+          width={56}
+          height={44}
+          className="mx-auto h-11 w-auto animate-pulse object-contain opacity-90"
+        />
+        <p className="mt-4 font-display text-xl font-semibold text-jscolors-ink">Getting Charm Studio ready…</p>
+        <p className="mt-1 text-sm text-jscolors-ink/65">Loading the builder and current charm availability.</p>
+      </div>
+      <div className="mt-8 grid animate-pulse gap-4 md:grid-cols-[1.1fr_0.9fr]" aria-hidden>
+        <div className="h-44 rounded-3xl border border-jscolors-gold/25 bg-white/55" />
+        <div className="space-y-3 rounded-3xl border border-jscolors-gold/25 bg-white/55 p-5">
+          <div className="h-5 w-2/3 rounded-full bg-jscolors-gold/20" />
+          <div className="h-12 rounded-2xl bg-jscolors-gold/15" />
+          <div className="h-12 rounded-2xl bg-jscolors-gold/15" />
+        </div>
+      </div>
     </div>
   )
 }
@@ -279,8 +290,6 @@ export default function Home() {
         onSelectedSizeChange={setSelectedSize}
         forceMount={forceCharmStudio}
       />
-
-      <CustomerPhotoGallery className="border-y border-jscolors-gold/25 bg-jscolors-cream/90 py-16 md:py-20" />
     </>
   )
 }

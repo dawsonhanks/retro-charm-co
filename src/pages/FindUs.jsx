@@ -7,7 +7,7 @@ import { buildMarketPlaceJsonLd, buildWebPageJsonLd } from '../data/structuredDa
 import { buildMarketIcs, downloadIcs } from '../utils/calendar'
 
 const weeklyRows = [
-  { day: 'Wednesdays', note: 'Orem location only', time: '5-9 PM (Oct: 5-8 PM)' },
+  { day: 'Wednesdays', note: 'Orem location only', time: '5-9 PM through September; 5-8 PM in October' },
 ]
 
 const TITLE = 'Find Us in Orem | RetroCharm Co'
@@ -46,8 +46,8 @@ export default function FindUs() {
       <header className="border-b border-jscolors-gold/25 bg-jscolors-blue px-4 py-14 text-center text-jscolors-cream md:py-20">
         <h1 className="font-display text-4xl font-bold md:text-5xl">Find Us</h1>
         <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/85">
-          We are currently at one location: Sunset Farmers Market in Orem. Hours are generally 5–9 PM; confirm seasonal
-          dates on the location card below.
+          We are currently at one location: Sunset Farmers Market in Orem, Wednesdays from May through October. Hours
+          are 5–9 PM through September and 5–8 PM in October.
         </p>
       </header>
 

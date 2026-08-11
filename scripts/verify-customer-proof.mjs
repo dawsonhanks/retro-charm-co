@@ -187,7 +187,7 @@ const proofDataSrc = readFileSync(new URL('../src/data/customerProof.js', import
 
 assert(homeSrc.includes('CustomerProofStrip'), 'Homepage must include proof strip')
 assert(homeSrc.indexOf('BestSellers') < homeSrc.indexOf('CustomerProofStrip'), 'Strip should follow best sellers')
-assert(homeSrc.includes('CustomerPhotoGallery'), 'Homepage gallery uses shared component')
+assert(!homeSrc.includes('CustomerPhotoGallery'), 'Homepage avoids duplicating the full customer gallery')
 assert(homeSrc.includes('getHomeHeroPhoto'), 'Homepage hero uses permitted hero helper')
 assert(!homeSrc.includes('customer-photo-9'), 'Homepage must not hardcode customer-photo-9')
 assert(aboutSrc.includes('CustomerPhotoGallery'), 'About uses shared gallery')

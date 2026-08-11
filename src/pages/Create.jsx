@@ -69,15 +69,29 @@ function CharmImage({ charm }) {
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[200px] items-center justify-center py-16" role="status" aria-live="polite">
-      <img
-        src="/images/brand/retro-charm-icon-mark.webp"
-        alt=""
-        width={56}
-        height={44}
-        className="h-12 w-auto animate-pulse object-contain opacity-90"
-      />
-      <span className="sr-only">Loading</span>
+    <div className="mx-auto min-h-[420px] max-w-6xl px-4 py-14" role="status" aria-live="polite">
+      <div className="text-center">
+        <img
+          src="/images/brand/retro-charm-icon-mark.webp"
+          alt=""
+          width={56}
+          height={44}
+          className="mx-auto h-11 w-auto animate-pulse object-contain opacity-90"
+        />
+        <p className="mt-4 font-display text-xl font-semibold text-jscolors-ink">Getting your bracelet builder ready…</p>
+        <p className="mt-1 text-sm text-jscolors-ink/65">Loading your saved design and current charm availability.</p>
+      </div>
+      <div className="mt-8 grid animate-pulse gap-4 md:grid-cols-[1.1fr_0.9fr]" aria-hidden>
+        <div className="h-56 rounded-3xl border border-jscolors-gold/25 bg-white/60" />
+        <div className="space-y-4 rounded-3xl border border-jscolors-gold/25 bg-white/60 p-5">
+          <div className="h-5 w-2/3 rounded-full bg-jscolors-gold/20" />
+          <div className="grid grid-cols-2 gap-3">
+            <div className="h-24 rounded-2xl bg-jscolors-gold/15" />
+            <div className="h-24 rounded-2xl bg-jscolors-gold/15" />
+          </div>
+          <div className="h-12 rounded-2xl bg-jscolors-gold/15" />
+        </div>
+      </div>
     </div>
   )
 }

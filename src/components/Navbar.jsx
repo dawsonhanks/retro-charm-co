@@ -18,14 +18,14 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 border-b border-jscolors-gold/35 bg-jscolors-cream">
-      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-3 md:py-4" aria-label="Main">
+      <nav className="mx-auto flex max-w-6xl items-center justify-between px-4 py-2.5 md:py-3" aria-label="Main">
         <Link to="/" className="group shrink-0" aria-label="RetroCharm Co home">
           <img
             src="/images/brand/retro-charm-logo.webp"
             alt="RetroCharm Co"
             width={158}
             height={117}
-            className="h-12 w-auto object-contain transition group-hover:opacity-90 md:h-14"
+            className="h-14 w-auto object-contain transition group-hover:opacity-90 md:h-[4.25rem]"
             decoding="async"
             fetchPriority="high"
           />
