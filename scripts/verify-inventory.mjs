@@ -360,6 +360,10 @@ function mockFetchJson(data, { ok = true, status = 200, delayMs = 0 } = {}) {
   }
   const unresolved = resolveBundle(BEST_SELLER_BUNDLES[0], null, { status: 'unavailable' })
   assert(!unresolved.available, 'bundle unavailable when inventory unverified')
+  assert(
+    unresolved.price === unresolved.configuredListPrice,
+    'unavailable bundle preserves its configured list price',
+  )
   pass('bundles-fail-safe')
 }
 

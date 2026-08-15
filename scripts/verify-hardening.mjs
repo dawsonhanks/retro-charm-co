@@ -108,6 +108,7 @@ const lowerOrEqualMap = {
 }
 const unavailableMap = {
   'wwjd|gold': { inStock: false, qty: 0 },
+  'cross - black|gold': { inStock: false, qty: 0 },
 }
 
 function allInStockInventoryMap() {
@@ -158,7 +159,7 @@ pass('bundles-base-prices-and-fillers')
 {
   const gold = BEST_SELLER_BUNDLES.find((b) => b.id === 'gold-best-sellers')
   const unavailable = resolveBundle(gold, { ...fullStockMap, ...unavailableMap }, stockReady)
-  assert(!unavailable.available, 'no substitute → unavailable')
+  assert(!unavailable.available, 'primary and substitute unavailable → bundle unavailable')
   assert(unavailable.unavailableCharms.some((c) => c.id === 'g-wwjd'), 'wwjd listed unavailable')
 }
 pass('bundle-substitutions-price-recalc')

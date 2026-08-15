@@ -1,18 +1,3 @@
-import { motion } from 'framer-motion'
-
-const container = {
-  hidden: { opacity: 0 },
-  show: {
-    opacity: 1,
-    transition: { staggerChildren: 0.12, delayChildren: 0.05 },
-  },
-}
-
-const item = {
-  hidden: { opacity: 0, y: 20 },
-  show: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 320, damping: 28 } },
-}
-
 export function HowItWorks() {
   const steps = [
     {
@@ -43,27 +28,17 @@ export function HowItWorks() {
         </p>
       </div>
 
-      <motion.ol
-        variants={container}
-        initial="hidden"
-        whileInView="show"
-        viewport={{ once: true, margin: '-60px' }}
-        className="mt-12 grid gap-8 md:grid-cols-3"
-      >
+      <ol className="mt-12 grid gap-8 md:grid-cols-3">
         {steps.map((s) => (
-          <motion.li
-            key={s.title}
-            variants={item}
-            className="retro-card retro-card-hover relative overflow-hidden p-8 text-center"
-          >
+          <li key={s.title} className="retro-card retro-card-hover relative overflow-hidden p-8 text-center">
             <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-jscolors-gold/60 bg-jscolors-cream text-jscolors-pink">
               <s.Icon />
             </div>
             <h3 className="mt-6 font-display text-xl font-semibold text-jscolors-ink">{s.title}</h3>
             <p className="mt-3 text-sm leading-relaxed text-jscolors-ink/75">{s.body}</p>
-          </motion.li>
+          </li>
         ))}
-      </motion.ol>
+      </ol>
     </section>
   )
 }

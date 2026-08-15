@@ -21,16 +21,31 @@ const FaqPage = lazy(() => import('./pages/FaqPage.jsx'))
 const NotFound = lazy(() => import('./pages/NotFound.jsx'))
 
 function RouteFallback() {
+  const { pathname } = useLocation()
+  const isCharmStudio = pathname === '/create'
+
   return (
-    <div className="flex min-h-[40vh] items-center justify-center px-4 py-16" role="status" aria-live="polite">
+    <div className="min-h-[52vh] px-4 py-16 text-center" role="status" aria-live="polite">
       <img
         src="/images/brand/retro-charm-icon-mark.webp"
         alt=""
         width={56}
         height={44}
-        className="h-12 w-auto animate-pulse object-contain opacity-90"
+        className="mx-auto h-12 w-auto animate-pulse object-contain opacity-90"
       />
-      <span className="sr-only">Loading page</span>
+      <p className="mt-5 font-display text-2xl font-semibold text-jscolors-ink">
+        {isCharmStudio ? 'Opening Charm Studio…' : 'Loading your page…'}
+      </p>
+      <p className="mx-auto mt-2 max-w-md text-sm text-jscolors-ink/65">
+        {isCharmStudio
+          ? 'Preparing the bracelet builder, your saved design, and current charm availability.'
+          : 'Just a moment while everything gets ready.'}
+      </p>
+      <div className="mx-auto mt-9 grid max-w-3xl animate-pulse gap-4 sm:grid-cols-3" aria-hidden>
+        <div className="h-28 rounded-3xl border border-jscolors-gold/25 bg-white/55" />
+        <div className="h-28 rounded-3xl border border-jscolors-gold/25 bg-white/55" />
+        <div className="h-28 rounded-3xl border border-jscolors-gold/25 bg-white/55" />
+      </div>
     </div>
   )
 }

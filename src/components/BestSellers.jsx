@@ -196,7 +196,7 @@ function BundleCard({
       : 'Checking stock…'
     : available
       ? 'In stock'
-      : 'Unavailable'
+      : 'Sold out'
 
   useBundleViewTracking(cardRef, bundle.id)
 
@@ -243,20 +243,30 @@ function BundleCard({
           </p>
         )}
 
-        <button
-          type="button"
-          onClick={onAdd}
-          disabled={disabled}
-          className="mt-5 w-full rounded-full bg-jscolors-cta px-4 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {adding ? 'Adding…' : !inventoryReady ? 'Checking stock…' : available ? 'Add to Cart' : 'Unavailable'}
-        </button>
+        {inventoryReady && !available ? (
+          <Link
+            to="/create"
+            className="mt-5 block w-full rounded-full border-2 border-jscolors-cta px-4 py-3 text-center text-sm font-semibold text-jscolors-cta transition hover:bg-jscolors-cta hover:text-jscolors-cream focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
+            onClick={() => trackCreateBraceletClicked({ source: `sold_out_bundle_${bundle.id}` })}
+          >
+            Build a Similar Bracelet
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onAdd}
+            disabled={disabled}
+            className="mt-5 w-full rounded-full bg-jscolors-cta px-4 py-3 text-sm font-semibold text-jscolors-cream transition hover:bg-jscolors-cta-hover disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {adding ? 'Adding…' : !inventoryReady ? 'Checking stock…' : 'Add to Cart'}
+          </button>
+        )}
 
         {!available && inventoryReady && (
           <div className="mt-4 rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-xs leading-relaxed text-red-800" role="status">
             {unavailableCharms.length > 0
-              ? `Unavailable: ${unavailableCharms.map((c) => c.name).join(', ')}. Customize a similar look in Charm Studio.`
-              : 'This bundle is unavailable right now.'}
+              ? `Sold out: ${unavailableCharms.map((c) => c.name).join(', ')}. You can still customize a similar look in Charm Studio.`
+              : 'This bundle is sold out right now.'}
           </div>
         )}
 

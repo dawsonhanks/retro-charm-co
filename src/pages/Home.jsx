@@ -1,7 +1,7 @@
-import { lazy, Suspense, useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { BestSellers } from '../components/BestSellers'
-import { CustomerPhotoGallery, CustomerProofStrip } from '../components/CustomerProof'
+import { CustomerProofStrip } from '../components/CustomerProof'
 import { HowItWorks } from '../components/HowItWorks'
 import { PageMeta } from '../components/PageMeta'
 import { StarField } from '../components/RetroAccents'
@@ -21,6 +21,7 @@ import { trackCreateBraceletClicked, trackHomepageViewed } from '../lib/analytic
 const CharmBuilder = lazy(() => import('../components/CharmBuilder').then((m) => ({ default: m.CharmBuilder })))
 
 const BEST_SELLERS_HASH = 'best-sellers'
+const CHARM_STUDIO_HASH = 'charm-studio'
 const FULFILLMENT_COPY = getCustomerFacingFulfillmentCopy()
 
 const STARTING_BRACELET_PRICE = Math.min(...BASE_OPTIONS.map((b) => b.price))
@@ -33,15 +34,82 @@ const secondaryCtaClassName =
 
 function PageLoader() {
   return (
-    <div className="flex min-h-[200px] items-center justify-center py-16" role="status" aria-live="polite">
-      <img
-        src="/images/brand/retro-charm-icon-mark.webp"
-        alt=""
-        width={56}
-        height={44}
-        className="h-12 w-auto animate-pulse object-contain opacity-90"
-      />
-      <span className="sr-only">Loading</span>
+    <div className="mx-auto min-h-[320px] max-w-6xl px-4 py-14" role="status" aria-live="polite">
+      <div className="text-center">
+        <img
+          src="/images/brand/retro-charm-icon-mark.webp"
+          alt=""
+          width={56}
+          height={44}
+          className="mx-auto h-11 w-auto animate-pulse object-contain opacity-90"
+        />
+        <p className="mt-4 font-display text-xl font-semibold text-jscolors-ink">Getting Charm Studio ready…</p>
+        <p className="mt-1 text-sm text-jscolors-ink/65">Loading the builder and current charm availability.</p>
+      </div>
+      <div className="mt-8 grid animate-pulse gap-4 md:grid-cols-[1.1fr_0.9fr]" aria-hidden>
+        <div className="h-44 rounded-3xl border border-jscolors-gold/25 bg-white/55" />
+        <div className="space-y-3 rounded-3xl border border-jscolors-gold/25 bg-white/55 p-5">
+          <div className="h-5 w-2/3 rounded-full bg-jscolors-gold/20" />
+          <div className="h-12 rounded-2xl bg-jscolors-gold/15" />
+          <div className="h-12 rounded-2xl bg-jscolors-gold/15" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/**
+ * Mount Charm Studio only when the section is near the viewport so early
+ * homepage scrolling stays light. Hash navigations force an early mount.
+ */
+function DeferredCharmStudio({
+  linkOrder,
+  onLinkOrderChange,
+  selectedSize,
+  onSelectedSizeChange,
+  forceMount = false,
+}) {
+  const sectionRef = useRef(null)
+  const [nearViewport, setNearViewport] = useState(false)
+  const shouldMount = forceMount || nearViewport
+
+  useEffect(() => {
+    if (shouldMount) return undefined
+    const node = sectionRef.current
+    if (!node || typeof IntersectionObserver === 'undefined') {
+      setNearViewport(true)
+      return undefined
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setNearViewport(true)
+          observer.disconnect()
+        }
+      },
+      { rootMargin: '400px 0px', threshold: 0.01 },
+    )
+    observer.observe(node)
+    return () => observer.disconnect()
+  }, [shouldMount])
+
+  return (
+    <div ref={sectionRef} id="charm-studio" className="scroll-mt-24 bg-jscolors-cream/70 py-16">
+      {shouldMount ? (
+        <Suspense fallback={<PageLoader />}>
+          <CharmBuilder
+            className="px-4"
+            idPrefix="home-builder"
+            linkOrder={linkOrder}
+            onLinkOrderChange={onLinkOrderChange}
+            selectedSize={selectedSize}
+            onSelectedSizeChange={onSelectedSizeChange}
+          />
+        </Suspense>
+      ) : (
+        <PageLoader />
+      )}
     </div>
   )
 }
@@ -109,20 +177,21 @@ export default function Home() {
   const [linkOrder, setLinkOrder] = useState(loadInitialLinkOrder)
   const [selectedSize, setSelectedSize] = useState(loadInitialSelectedSize)
   const location = useLocation()
+  const hash = location.hash.replace(/^#/, '')
+  const forceCharmStudio = hash === CHARM_STUDIO_HASH
 
   useEffect(() => {
     trackHomepageViewed()
   }, [])
 
   useEffect(() => {
-    const hash = location.hash.replace(/^#/, '')
-    if (hash !== BEST_SELLERS_HASH) return
+    if (hash !== BEST_SELLERS_HASH && hash !== CHARM_STUDIO_HASH) return
     // Defer until section is painted (including after client-side navigation).
     const id = window.requestAnimationFrame(() => {
-      document.getElementById(BEST_SELLERS_HASH)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      document.getElementById(hash)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     })
     return () => window.cancelAnimationFrame(id)
-  }, [location.hash, location.pathname])
+  }, [hash, location.pathname])
 
   return (
     <>
@@ -214,20 +283,13 @@ export default function Home() {
 
       <CustomerProofStrip />
 
-      <Suspense fallback={<PageLoader />}>
-        <div id="charm-studio" className="scroll-mt-24 bg-jscolors-cream/70 py-16">
-          <CharmBuilder
-            className="px-4"
-            idPrefix="home-builder"
-            linkOrder={linkOrder}
-            onLinkOrderChange={setLinkOrder}
-            selectedSize={selectedSize}
-            onSelectedSizeChange={setSelectedSize}
-          />
-        </div>
-      </Suspense>
-
-      <CustomerPhotoGallery className="border-y border-jscolors-gold/25 bg-jscolors-cream/90 py-16 md:py-20" />
+      <DeferredCharmStudio
+        linkOrder={linkOrder}
+        onLinkOrderChange={setLinkOrder}
+        selectedSize={selectedSize}
+        onSelectedSizeChange={setSelectedSize}
+        forceMount={forceCharmStudio}
+      />
     </>
   )
 }

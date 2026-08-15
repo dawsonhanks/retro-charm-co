@@ -10,7 +10,7 @@
  * and vice versa.
  *
  * Placement rules (enforced by selectors + verify scripts):
- * - gallery — CustomerPhotoGallery (About + homepage deeper section)
+ * - gallery — CustomerPhotoGallery on the dedicated Customer Photos page
  * - hero — homepage hero + matching share/preload imagery
  * - proofStrip — homepage benefit proof strip
  * - nearCta — Charm Studio / cart near-CTA thumbnails
