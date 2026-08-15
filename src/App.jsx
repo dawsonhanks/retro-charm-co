@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react'
-import { Routes, Route, Outlet, Navigate, useLocation } from 'react-router-dom'
+import { Routes, Route, Outlet, useLocation } from 'react-router-dom'
 import { Analytics } from '@vercel/analytics/react'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
@@ -8,6 +8,7 @@ import { ScrollToTop } from './components/ScrollToTop.jsx'
 import { AnalyticsBootstrap } from './components/AnalyticsBootstrap.jsx'
 import Home from './pages/Home.jsx'
 
+const Shop = lazy(() => import('./pages/Shop.jsx'))
 const Create = lazy(() => import('./pages/Create.jsx'))
 const FindUs = lazy(() => import('./pages/FindUs.jsx'))
 const About = lazy(() => import('./pages/About.jsx'))
@@ -67,9 +68,7 @@ export default function App() {
       <Routes>
         <Route element={<Shell />}>
           <Route index element={<Home />} />
-          {/* Old build-and-checkout flow was retired in favor of a single cart (CartContext).
-              Redirect any existing /shop links/bookmarks straight to the real cart. */}
-          <Route path="shop" element={<Navigate to="/cart" replace />} />
+          <Route path="shop" element={<Shop />} />
           <Route path="create" element={<Create />} />
           <Route path="find-us" element={<FindUs />} />
           <Route path="about" element={<About />} />

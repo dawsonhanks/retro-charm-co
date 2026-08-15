@@ -127,6 +127,12 @@ export const charms = [
   { id: 's-flower-yellow', name: 'Flower - Yellow', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/flowers/flower-yellow-silver.webp' },
   { id: 'g-flower-red', name: 'Flower - Red', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/flowers/flower-red-gold.webp' },
   { id: 's-rose', name: 'Rose', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/flowers/rose-silver.webp' },
+
+  // ── New arrivals (added Aug 2026) ─────────────────────────────────────
+  { id: 's-pearl-white', name: 'Pearl - White', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/animals-characters/pearl-white-silver.webp' },
+  { id: 's-flower-tigers-eye', name: "Flower - Tiger's Eye", category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/flowers/flower-tigers-eye-silver.webp' },
+  { id: 'g-flower-pink-beaded', name: 'Flower - Pink Beaded', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/flowers/flower-pink-beaded-gold.webp' },
+  { id: 's-lemon', name: 'Lemon', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/food-drink/lemon-silver.webp' },
   { id: 's-cherries', name: 'Cherries', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/food-drink/cherries-silver.webp' },
   { id: 'g-cherries-pink-background', name: 'Cherries - Pink Background', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/cherries-pink-background-gold.webp' },
   { id: 'g-cherry-heart-checkered', name: 'Cherry Heart Checkered', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/cherry-heart-checkered-gold.webp' },

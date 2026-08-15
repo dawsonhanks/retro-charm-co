@@ -41,7 +41,7 @@ function pass(name, detail = {}) {
     assert(!nameMetal.has(key), `duplicate name+metal inventory key ${key} (${charm.id})`)
     nameMetal.add(key)
   }
-  assert(ids.size === 111, `expected 111 charms, got ${ids.size}`)
+  assert(ids.size === 115, `expected 115 charms, got ${ids.size}`)
   pass('unique-skus', { count: ids.size })
 }
 
@@ -87,6 +87,7 @@ const pickable = getBrowsableCharms({ includeStarters: false }).filter((c) => !i
   const food = applyCharmTabFilter(pickable, 'food-drinks')
   assert(food.some((c) => c.id === 's-diet-coke'), 'food includes diet coke')
   assert(food.some((c) => c.id === 's-cherry-dangle'), 'food includes cherry dangle')
+  assert(food.some((c) => c.id === 's-lemon'), 'food includes lemon')
 }
 {
   const sports = applyCharmTabFilter(pickable, 'sports')

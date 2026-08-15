@@ -8,6 +8,7 @@ const CONTACT_EMAIL = CONTACT.email
 
 const footerLinks = [
   { to: '/', label: 'Home' },
+  { to: '/shop', label: 'Shop' },
   { to: '/create', label: 'Charm Studio' },
   { to: '/find-us', label: 'Find Us' },
   { to: '/about', label: 'Customer Photos' },

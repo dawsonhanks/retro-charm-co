@@ -87,6 +87,7 @@ assert(appSrc.includes('NotFound'), 'NotFound page wired')
 
 const pageFiles = {
   'src/pages/Home.jsx': '/',
+  'src/pages/Shop.jsx': '/shop',
   'src/pages/Create.jsx': '/create',
   'src/pages/FindUs.jsx': '/find-us',
   'src/pages/About.jsx': '/about',
@@ -146,7 +147,7 @@ const routePaths = new Set([
   '/returns',
   '/materials',
   '/faq',
-  '/shop', // redirect
+  '/shop',
   '/404',
 ])
 
@@ -182,7 +183,7 @@ assert(unknown.length === 0, `Unknown internal paths linked: ${unknown.join(', '
 pass('internal-links-resolve', { checked: internalHrefs.size })
 
 const sitemap = read('public/sitemap.xml')
-for (const path of ['/', '/create', '/find-us', '/about', '/shipping', '/returns', '/materials', '/faq']) {
+for (const path of ['/', '/shop', '/create', '/find-us', '/about', '/shipping', '/returns', '/materials', '/faq']) {
   assert(sitemap.includes(`theretrocharmco.com${path === '/' ? '/' : path}`), `sitemap includes ${path}`)
 }
 pass('sitemap-aligned')
