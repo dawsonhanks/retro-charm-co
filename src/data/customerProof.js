@@ -225,7 +225,7 @@ export const CUSTOMER_PHOTOS = [
 /** Homepage strip: one photo per core benefit, in buying-decision order. */
 const STRIP_IDS = [
   'customer-photo-5', // fit
-  'customer-photo-6', // personalization (also homepage hero)
+  'customer-photo-6', // personalization
   'customer-photo-1', // gifting
   'customer-photo-2', // stacking
 ]

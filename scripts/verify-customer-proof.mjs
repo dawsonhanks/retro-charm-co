@@ -139,14 +139,14 @@ pass('near-cta-proof')
 
 const hero = getHomeHeroPhoto()
 assert(hero.id === HOME_HERO_PHOTO_ID, 'Hero helper must resolve HOME_HERO_PHOTO_ID')
-assert(hero.id === 'customer-photo-6', 'Hero remains customer-photo-6')
+assert(hero.id === 'customer-photo-10', 'Hero uses the approved customer-photo-10 asset')
 assert(hero.heroEligible === true && hero.marketingEligible === true, 'Hero must be fully eligible')
 assert(isPhotoAllowedForPlacement(hero, 'hero'), 'Hero must pass hero placement check')
 assert(isPhotoAllowedForPlacement(hero, 'share'), 'Hero must also be share-eligible')
 assert(HOME_OG_IMAGE_PATH === hero.src, 'Homepage OG image must match the hero photo')
 assert(
-  gallery.some((p) => p.id === hero.id),
-  'Hero photo must remain in the gallery set',
+  !gallery.some((p) => p.id === hero.id),
+  'Hero-only photo must stay out of the customer gallery',
 )
 pass('hero-and-og-use-permitted-photo', { heroId: hero.id, og: HOME_OG_IMAGE_PATH })
 
