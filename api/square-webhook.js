@@ -1,5 +1,6 @@
 import { WebhooksHelper } from 'square'
 import { charms, BASE_OPTIONS } from '../src/data/charms.js'
+import { ACCESSORY_PRODUCTS } from '../src/data/sellableProducts.js'
 import { trackPurchaseCompleted } from './_lib/trackPurchase.js'
 import {
   claimAndDecrementInventoryItem,
@@ -79,6 +80,10 @@ for (const base of BASE_OPTIONS) {
     WATCH_PRODUCT_IDS.add(base.id)
     WATCH_PRODUCT_NAMES.add(base.label)
   }
+}
+for (const a of ACCESSORY_PRODUCTS) {
+  CATALOG_NAMES.set(a.id, a.name)
+  if (a.image) CATALOG_IMAGES.set(a.id, a.image)
 }
 
 // Line-item display name → metal for base bracelets / watch bands, so we can
