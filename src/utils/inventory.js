@@ -1,4 +1,5 @@
 import { charms, BASE_OPTIONS, isFillerCharm, getCharmById } from '../data/charms.js'
+import { getSellableProduct } from '../data/sellableProducts.js'
 import { logMissingInventoryProduct } from '../lib/inventoryDiagnostics.js'
 import { isInventoryEmergencyFailOpen } from '../lib/inventoryConfig.js'
 
@@ -178,6 +179,15 @@ export function resolveCatalogProductForInventory(id) {
       id: base.id,
       name: base.label,
       metal: base.metal,
+      isFiller: false,
+    }
+  }
+  const accessory = getSellableProduct(id)
+  if (accessory) {
+    return {
+      id: accessory.id,
+      name: accessory.name,
+      metal: accessory.metal,
       isFiller: false,
     }
   }
