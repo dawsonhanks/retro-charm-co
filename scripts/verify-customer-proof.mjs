@@ -265,9 +265,10 @@ for (const bundle of BEST_SELLER_BUNDLES) {
 const goldBundle = BEST_SELLER_BUNDLES.find((b) => b.id === 'gold-best-sellers')
 assert(goldBundle, 'Gold Best Sellers bundle exists')
 assert(
-  goldBundle.image === '/images/customer-photos/customer-photo-8.webp',
-  'Gold Best Sellers remains customer-photo-8',
+  goldBundle.image === '/images/bundles/gold-best-sellers.webp',
+  'Gold Best Sellers uses dedicated product photo',
 )
+assert(goldBundle.imageIsInspiration === false, 'Gold Best Sellers product photo is not inspiration')
 
 const productJson = JSON.stringify(buildBestSellerProductsJsonLd())
 for (const needle of restrictedNeedles) {

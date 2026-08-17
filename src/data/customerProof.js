@@ -38,7 +38,7 @@ export const TESTIMONIAL_PLACEHOLDER_TOKEN = ['SET', 'TESTIMONIAL', 'QUOTE'].joi
  * Homepage hero + share-image photo. Must be hero- and marketing-eligible.
  * Prefer a strong close-up bracelet shot.
  */
-export const HOME_HERO_PHOTO_ID = 'customer-photo-6'
+export const HOME_HERO_PHOTO_ID = 'customer-photo-10'
 
 /**
  * @typedef {'fit' | 'personalization' | 'gifting' | 'stacking'} CustomerProofBenefit
@@ -191,6 +191,20 @@ export const CUSTOMER_PHOTOS = [
     benefit: 'personalization',
     benefitCaption: 'Playful charms that still read as jewelry you wear daily.',
     ...fullPhotoPermissions(),
+  },
+  {
+    id: 'customer-photo-10',
+    src: '/images/customer-photos/customer-photo-10.webp',
+    width: 1086,
+    height: 1448,
+    alt: 'Wrist stacked with gold and silver RetroCharm Co Italian charm bracelets featuring heart, American flag, flower, star, cherry, and I love you charms',
+    benefit: 'stacking',
+    benefitCaption: 'Stack the gold and silver best sellers for an everyday duo.',
+    // Hero-only: intentionally not shown in the customer gallery or proof strip.
+    photoPermissionGranted: true,
+    allowedPlacements: ['hero', 'share'],
+    heroEligible: true,
+    marketingEligible: true,
   },
   {
     // Gallery-only: owner granted website customer-gallery use; not hero/marketing.

@@ -53,3 +53,19 @@ Logged events (no customer details or full cart payloads):
 npm run verify:inventory
 npm run verify
 ```
+
+## Prebuilt best-seller stock
+
+Prebuilt bracelets do not have their own SKUs — each sale decrements the base and charms in the build. To keep **10 complete units of each** best-seller style available (shared parts summed across styles):
+
+```bash
+# Dry-run: print allocation table + SQL (also writes scripts/sql/set-prebuilt-bundle-stock.sql)
+npm run stock:prebuilts
+
+# Apply via service role — put SUPABASE_URL + SUPABASE_SERVICE_ROLE_KEY in .env / .env.local
+npm run stock:prebuilts -- --apply
+```
+
+Or paste [`scripts/sql/set-prebuilt-bundle-stock.sql`](../scripts/sql/set-prebuilt-bundle-stock.sql) into the Supabase SQL editor.
+
+Charm Studio purchases of the same bases/charms share this inventory pool.

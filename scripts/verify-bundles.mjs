@@ -69,12 +69,13 @@ for (const bundle of BEST_SELLER_BUNDLES) {
   })
 }
 
-const oosMap = { 'dice|silver': { inStock: false, qty: 0 } }
+const oosMap = { 'flower - pink|silver': { inStock: false, qty: 0 } }
 const withSub = resolveBundle(BEST_SELLER_BUNDLES[0], { ...fullStockMap, ...oosMap }, stockReady)
 const subPayload = buildBundleCartPayload(withSub)
 
-const hardOos = { 'wwjd|gold': { inStock: false, qty: 0 } }
-const unavailable = resolveBundle(BEST_SELLER_BUNDLES[2], { ...fullStockMap, ...hardOos }, stockReady)
+const hardOos = { 'checkered flag - gold|gold': { inStock: false, qty: 0 } }
+const goldBundle = BEST_SELLER_BUNDLES.find((b) => b.id === 'gold-best-sellers')
+const unavailable = resolveBundle(goldBundle, { ...fullStockMap, ...hardOos }, stockReady)
 
 console.log(
   JSON.stringify(

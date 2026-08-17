@@ -99,16 +99,15 @@ assert(!homeSrc.includes('{ORDER_FULFILLMENT_TIMEFRAME}'), 'Home does not render
 pass('homepage-cta-contract')
 
 // ── 3–6. Bundles: prices, substitutions, fillers ──────────────────────────
-const equalSubMap = { 'dice|silver': { inStock: false } } // s-dice → g-dice same $3.95
+const equalSubMap = { 'flower - pink|silver': { inStock: false } } // s-flower-pink → s-flower-turquoise same $3.95
 const higherSubMap = {
-  'strawberry|gold': { inStock: false }, // g-strawberry $3.95 → g-strawberry-dangle $4.95
+  'cherries - pink background|gold': { inStock: false }, // $3.95 → g-cherries-dangle $4.95
 }
 const lowerOrEqualMap = {
   'heart - red|gold': { inStock: false }, // g-heart-red → g-heart-red-and-gold (same 3.95)
 }
 const unavailableMap = {
-  'wwjd|gold': { inStock: false, qty: 0 },
-  'cross - black|gold': { inStock: false, qty: 0 },
+  'checkered flag - gold|gold': { inStock: false, qty: 0 }, // no substitute configured
 }
 
 function allInStockInventoryMap() {
@@ -134,25 +133,28 @@ for (const bundle of BEST_SELLER_BUNDLES) {
   assert(payload.items.every((item) => !isFillerCharm(item)), `${bundle.name}: no paid fillers`)
   assert(payload.subtotal === resolved.price, `${bundle.name}: subtotal matches live price`)
   assert(resolved.plainLinkCount === resolved.capacity - resolved.resolvedCharms.length, `${bundle.name}: plain count`)
-  assert(bundle.imageIsInspiration === true, `${bundle.name}: inspiration flag set`)
+  assert(typeof bundle.imageIsInspiration === 'boolean', `${bundle.name}: inspiration flag set`)
   assert(getBundleConfiguredListPrice(bundle) === resolved.configuredListPrice, `${bundle.name}: list price from catalog`)
 }
 pass('bundles-base-prices-and-fillers')
 
 {
-  const retro = BEST_SELLER_BUNDLES.find((b) => b.id === 'retro-starter')
-  const withEqual = resolveBundle(retro, { ...fullStockMap, ...equalSubMap }, stockReady)
-  assert(withEqual.available, 'Equal-price substitution available')
-  assert(withEqual.substitutionsApplied.some((s) => s.from.id === 's-dice' && s.to.id === 'g-dice'), 's-dice → g-dice')
-  assert(withEqual.priceDeltaFromConfigured === 0, 'Equal sub keeps price')
+  const silver = BEST_SELLER_BUNDLES.find((b) => b.id === 'silver-best-sellers')
+  const withEqual = resolveBundle(silver, { ...fullStockMap, ...equalSubMap }, stockReady)
+  assert(withEqual.available, 'equal-price substitution available')
+  assert(
+    withEqual.substitutionsApplied.some((s) => s.from.id === 's-flower-pink' && s.to.id === 's-flower-turquoise'),
+    's-flower-pink → s-flower-turquoise',
+  )
+  assert(withEqual.priceDeltaFromConfigured === 0, 'equal sub keeps price')
   assert(withEqual.price === withEqual.configuredListPrice, 'price equals configured after equal sub')
 }
 {
   const gold = BEST_SELLER_BUNDLES.find((b) => b.id === 'gold-best-sellers')
   const withHigher = resolveBundle(gold, { ...fullStockMap, ...higherSubMap }, stockReady)
   assert(withHigher.available, 'higher-price substitution available')
-  const sub = withHigher.substitutionsApplied.find((s) => s.from.id === 'g-strawberry')
-  assert(sub?.to.id === 'g-strawberry-dangle', 'strawberry → dangle')
+  const sub = withHigher.substitutionsApplied.find((s) => s.from.id === 'g-cherries-pink-background')
+  assert(sub?.to.id === 'g-cherries-dangle', 'cherries → cherries dangle')
   assert(sub.priceDelta === round(4.95 - 3.95), 'higher delta recorded')
   assert(withHigher.price === round(withHigher.configuredListPrice + 1), 'bundle price recalculated higher')
 }
@@ -160,7 +162,7 @@ pass('bundles-base-prices-and-fillers')
   const gold = BEST_SELLER_BUNDLES.find((b) => b.id === 'gold-best-sellers')
   const unavailable = resolveBundle(gold, { ...fullStockMap, ...unavailableMap }, stockReady)
   assert(!unavailable.available, 'primary and substitute unavailable → bundle unavailable')
-  assert(unavailable.unavailableCharms.some((c) => c.id === 'g-wwjd'), 'wwjd listed unavailable')
+  assert(unavailable.unavailableCharms.some((c) => c.id === 'g-checkered-flag-gold'), 'checkered flag listed unavailable')
 }
 pass('bundle-substitutions-price-recalc')
 

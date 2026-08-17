@@ -124,13 +124,13 @@ trackCharmAdded({
 })
 
 trackBundleViewed({
-  bundleId: 'retro-starter',
+  bundleId: 'silver-best-sellers',
   baseColor: 'silver',
   charmCount: 6,
   listPrice: 33.7,
 })
 trackBundleViewed({
-  bundleId: 'retro-starter',
+  bundleId: 'silver-best-sellers',
   baseColor: 'silver',
   charmCount: 6,
   listPrice: 33.7,
@@ -138,7 +138,7 @@ trackBundleViewed({
 assert(count(AnalyticsEvent.BUNDLE_VIEWED) === 1, 'bundle viewed once')
 
 trackBundleAdded({
-  bundleId: 'retro-starter',
+  bundleId: 'silver-best-sellers',
   baseColor: 'silver',
   charmCount: 6,
   cartValue: 33.7,

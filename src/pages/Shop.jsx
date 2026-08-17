@@ -15,12 +15,17 @@ import {
 } from '../data/charmBrowse'
 import { buildWebPageJsonLd } from '../data/structuredData'
 import { BAG_CHARMS, BAG_CHARM_PRICE } from '../data/bagCharms'
+import { KEYCHAINS, KEYCHAIN_PRICE_FROM } from '../data/keychains'
+import { TOOLS, TOOL_PRICE_FROM } from '../data/tools'
+import { useCart } from '../context/CartContext.jsx'
+import { useInventory } from '../hooks/useInventory'
+import { isCharmVerifiedOutOfStock } from '../utils/inventory'
 
 const META = {
   path: '/shop',
   title: 'Shop the Collection | RetroCharm Co',
   description:
-    'Browse the full RetroCharm Co collection — bracelet bases, Italian charms, dangles, and beaded bag charms. Watches and keychains coming soon. Build a bracelet in the Charm Studio or find us at the market.',
+    'Browse the full RetroCharm Co collection — bracelet bases, Italian charms, dangles, beaded bag charms, charm keychains, and builder tools. Watches coming soon. Build a bracelet in the Charm Studio or find us at the market.',
 }
 
 // Bracelet bases only — watch bands get their own (coming soon) section below.
@@ -61,6 +66,39 @@ function SectionHeading({ eyebrow, title, description, id }) {
   )
 }
 
+/**
+ * Adds a single standalone shop item (base, charm, bag charm, keychain, tool)
+ * to the cart. Cart dedupes by id and checkout runs through Square like the bundles.
+ */
+function AddToCartButton({ item }) {
+  const { addItem } = useCart()
+  const [added, setAdded] = useState(false)
+
+  function handleAdd() {
+    addItem({
+      id: item.id,
+      name: item.name,
+      price: item.price,
+      image: item.image,
+      metal: item.metal,
+      quantity: 1,
+    })
+    setAdded(true)
+    window.setTimeout(() => setAdded(false), 1400)
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={handleAdd}
+      aria-live="polite"
+      className="mt-2 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-jscolors-cta px-4 py-2 text-xs font-semibold text-jscolors-cream transition hover:bg-jscolors-cta-hover focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold sm:text-sm"
+    >
+      {added ? 'Added ✓' : 'Add to Cart'}
+    </button>
+  )
+}
+
 function BaseCard({ base, index }) {
   return (
     <motion.article
@@ -85,12 +123,13 @@ function BaseCard({ base, index }) {
         <span className="mt-1 rounded-full bg-jscolors-gold/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-jscolors-ink/80">
           {base.metal === 'gold' ? 'Gold-tone' : 'Silver-tone'}
         </span>
+        <AddToCartButton item={{ id: base.id, name: base.label, price: base.price, metal: base.metal, image: base.image }} />
       </div>
     </motion.article>
   )
 }
 
-function CharmCard({ charm, index }) {
+function CharmCard({ charm, index, outOfStock = false }) {
   return (
     <motion.article
       layout
@@ -101,9 +140,14 @@ function CharmCard({ charm, index }) {
       className="retro-card retro-card-hover flex h-full flex-col overflow-hidden"
     >
       <div className="relative flex aspect-square items-center justify-center bg-jscolors-cream/70 p-4">
-        {BEST_SELLER_CHARM_IDS.has(charm.id) && (
+        {BEST_SELLER_CHARM_IDS.has(charm.id) && !outOfStock && (
           <span className="absolute left-2 top-2 rounded-full bg-jscolors-pink px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
             Best seller
+          </span>
+        )}
+        {outOfStock && (
+          <span className="absolute right-2 top-2 z-10 rounded-full bg-jscolors-ink/80 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+            Out of Stock
           </span>
         )}
         <img
@@ -111,7 +155,7 @@ function CharmCard({ charm, index }) {
           alt={charm.name}
           loading="lazy"
           decoding="async"
-          className="h-full w-full object-contain"
+          className={`h-full w-full object-contain ${outOfStock ? 'opacity-40 grayscale' : ''}`}
         />
       </div>
       <div className="flex flex-1 flex-col items-center gap-0.5 border-t border-jscolors-gold/25 px-3 py-3 text-center">
@@ -120,6 +164,18 @@ function CharmCard({ charm, index }) {
           {formatCharmSubtitle(charm)}
         </p>
         <p className="mt-0.5 font-semibold text-jscolors-blue">${charm.price.toFixed(2)}</p>
+        {outOfStock ? (
+          <button
+            type="button"
+            disabled
+            aria-disabled="true"
+            className="mt-2 inline-flex min-h-9 w-full items-center justify-center rounded-full border border-jscolors-ink/15 bg-jscolors-ink/5 px-4 py-2 text-xs font-semibold text-jscolors-ink/50 sm:text-sm"
+          >
+            Out of Stock
+          </button>
+        ) : (
+          <AddToCartButton item={charm} />
+        )}
       </div>
     </motion.article>
   )
@@ -156,6 +212,76 @@ function BagCharmCard({ item, index }) {
         <h3 className="font-display text-sm font-semibold leading-snug text-jscolors-ink">{item.name}</h3>
         <p className="text-[11px] font-medium uppercase tracking-wide text-jscolors-ink/60">Beaded</p>
         <p className="mt-0.5 font-semibold text-jscolors-blue">${item.price.toFixed(2)}</p>
+        {item.image ? <AddToCartButton item={item} /> : null}
+      </div>
+    </motion.article>
+  )
+}
+
+function KeychainCard({ item, index }) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: Math.min(index * 0.06, 0.3), type: 'spring', stiffness: 320, damping: 28 }}
+      className="retro-card retro-card-hover flex h-full flex-col overflow-hidden"
+    >
+      <div className="flex aspect-square items-center justify-center bg-jscolors-cream/70 p-5">
+        <img
+          src={item.image}
+          alt={item.name}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-contain"
+        />
+      </div>
+      <div className="flex flex-1 flex-col items-center gap-1 border-t border-jscolors-gold/25 px-4 py-4 text-center">
+        <h3 className="font-display text-lg font-semibold text-jscolors-ink">{item.name}</h3>
+        <p className="font-semibold text-jscolors-blue">${item.price.toFixed(2)}</p>
+        <span className="mt-1 rounded-full bg-jscolors-gold/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-jscolors-ink/80">
+          {item.metal === 'gold' ? 'Gold-tone' : 'Silver-tone'}
+        </span>
+        <AddToCartButton item={item} />
+      </div>
+    </motion.article>
+  )
+}
+
+function ToolCard({ item, index }) {
+  return (
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: Math.min(index * 0.06, 0.3), type: 'spring', stiffness: 320, damping: 28 }}
+      className="retro-card retro-card-hover flex h-full flex-col overflow-hidden"
+    >
+      <div className="relative flex aspect-square items-center justify-center bg-jscolors-cream/70 p-5">
+        {item.image ? (
+          <img
+            src={item.image}
+            alt={item.name}
+            loading="lazy"
+            decoding="async"
+            className="h-full w-full object-contain"
+          />
+        ) : (
+          <div className="flex flex-col items-center gap-2 px-3 text-center">
+            <span className="rounded-full bg-jscolors-pink/15 px-3 py-1 text-[10px] font-bold uppercase tracking-wide text-jscolors-pink">
+              Photo soon
+            </span>
+            <p className="text-xs text-jscolors-ink/55">Image landing shortly</p>
+          </div>
+        )}
+      </div>
+      <div className="flex flex-1 flex-col items-center gap-0.5 border-t border-jscolors-gold/25 px-4 py-4 text-center">
+        <h3 className="font-display text-lg font-semibold text-jscolors-ink">{item.name}</h3>
+        {item.subtitle ? (
+          <p className="text-[11px] font-medium uppercase tracking-wide text-jscolors-ink/60">{item.subtitle}</p>
+        ) : null}
+        <p className="mt-0.5 font-semibold text-jscolors-blue">${item.price.toFixed(2)}</p>
+        {item.image ? <AddToCartButton item={item} /> : null}
       </div>
     </motion.article>
   )
@@ -200,6 +326,8 @@ function SparkleDot() {
 
 export default function Shop() {
   const [activeFilter, setActiveFilter] = useState('all')
+  const inventory = useInventory()
+  const inventoryStatus = inventory.verified ? inventory.status : 'unavailable'
 
   const visibleCharms = useMemo(
     () => filterCharms(CATALOG_CHARMS, activeFilter),
@@ -220,8 +348,8 @@ export default function Shop() {
         <SparkleRow className="mx-auto opacity-90" />
         <h1 className="mt-6 font-display text-4xl font-bold md:text-5xl">Shop the Collection</h1>
         <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/85">
-          Browse everything we make — bracelet bases, Italian charms and dangles, plus pre-made beaded bag charms.
-          Watches and keychains are on the way. See something you love? Build it in the Charm Studio or come find us at the market.
+          Browse everything we make — bracelet bases, Italian charms and dangles, beaded bag charms, charm keychains, and builder tools.
+          Watches are on the way. See something you love? Build it in the Charm Studio or come find us at the market.
         </p>
         <nav aria-label="Jump to section" className="mt-7 flex flex-wrap items-center justify-center gap-2">
           {[
@@ -231,6 +359,7 @@ export default function Shop() {
             { href: '#watches', label: 'Watches' },
             { href: '#bag-charms', label: 'Bag Charms' },
             { href: '#keychains', label: 'Keychains' },
+            { href: '#tools', label: 'Tools' },
           ].map((item) => (
             <a
               key={item.href}
@@ -292,7 +421,12 @@ export default function Shop() {
           {visibleCharms.length > 0 ? (
             <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-4 xl:grid-cols-5">
               {visibleCharms.map((charm, i) => (
-                <CharmCard key={charm.id} charm={charm} index={i} />
+                <CharmCard
+                  key={charm.id}
+                  charm={charm}
+                  index={i}
+                  outOfStock={isCharmVerifiedOutOfStock(charm.name, charm.metal, inventory.map, { status: inventoryStatus })}
+                />
               ))}
             </div>
           ) : (
@@ -333,14 +467,45 @@ export default function Shop() {
         </div>
       </section>
 
-      {/* Keychains — reserved */}
-      <ComingSoonSection
+      {/* Keychains */}
+      <section
         id="keychains"
-        eyebrow="Take them with you"
-        title="Keychains"
-        description="Custom charm keychains for your keys, backpack, or lanyard."
-        note="Charm keychains are coming soon to the online shop. Be the first to grab one at our next market."
-      />
+        className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 md:py-16"
+        aria-labelledby="shop-keychain-heading"
+      >
+        <SectionHeading
+          eyebrow="Take them with you"
+          title="Keychains"
+          description={`Stainless steel charm keychains from $${KEYCHAIN_PRICE_FROM.toFixed(2)} — clip one to your keys or bag and build it up just like a bracelet.`}
+          id="shop-keychain-heading"
+        />
+        <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
+          {KEYCHAINS.map((item, i) => (
+            <KeychainCard key={item.id} item={item} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Tools */}
+      <section
+        id="tools"
+        className="scroll-mt-24 border-t border-jscolors-gold/25 bg-jscolors-cream/70 px-4 py-14 md:py-16"
+        aria-labelledby="shop-tools-heading"
+      >
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="Helpful extras"
+            title="Tools"
+            description={`Handy extras for building your bracelet, from $${TOOL_PRICE_FROM.toFixed(2)}.`}
+            id="shop-tools-heading"
+          />
+          <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
+            {TOOLS.map((item, i) => (
+              <ToolCard key={item.id} item={item} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Closing CTA */}
       <section className="px-4 py-16" aria-labelledby="shop-cta-heading">

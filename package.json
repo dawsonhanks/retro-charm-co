@@ -18,6 +18,7 @@
     "verify:conversion-qa": "npx vite-node scripts/verify-conversion-qa.mjs",
     "verify:webhook": "npx vite-node scripts/verify-webhook.mjs",
     "verify:inventory": "npx vite-node scripts/verify-inventory.mjs",
+    "stock:prebuilts": "npx vite-node scripts/set-prebuilt-bundle-stock.mjs",
     "generate:email-pngs": "bash scripts/generate-email-pngs.sh"
   },
   "dependencies": {
