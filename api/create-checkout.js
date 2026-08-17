@@ -1,5 +1,6 @@
 import { randomUUID } from 'crypto'
 import { charms, BASE_OPTIONS, isFillerCharm } from '../src/data/charms.js'
+import { ACCESSORY_PRODUCTS } from '../src/data/sellableProducts.js'
 import { FLAT_RATE_SHIPPING, SHIPPING_LINE_ITEM_NAME } from '../src/data/shipping.js'
 import { recordCheckoutSession } from './_lib/webhookStore.js'
 import { revalidateCheckoutInventory } from './_lib/revalidateCheckoutInventory.js'
@@ -24,6 +25,9 @@ for (const c of charms) {
 }
 for (const b of BASE_OPTIONS) {
   CANONICAL_ITEMS.set(b.id, { name: b.label, price: b.price })
+}
+for (const a of ACCESSORY_PRODUCTS) {
+  CANONICAL_ITEMS.set(a.id, { name: a.name, price: a.price })
 }
 
 const MAX_QUANTITY_PER_LINE_ITEM = 50
