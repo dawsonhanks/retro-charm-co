@@ -17,6 +17,7 @@ import { buildWebPageJsonLd } from '../data/structuredData'
 import { BAG_CHARMS, BAG_CHARM_PRICE } from '../data/bagCharms'
 import { KEYCHAINS, KEYCHAIN_PRICE_FROM } from '../data/keychains'
 import { TOOLS, TOOL_PRICE_FROM } from '../data/tools'
+import { WATCHES, WATCH_PRICE_FROM } from '../data/watches'
 import { useCart } from '../context/CartContext.jsx'
 import { useInventory } from '../hooks/useInventory'
 import { isCharmVerifiedOutOfStock } from '../utils/inventory'
@@ -25,7 +26,7 @@ const META = {
   path: '/shop',
   title: 'Shop the Collection | RetroCharm Co',
   description:
-    'Browse the full RetroCharm Co collection — bracelet bases, Italian charms, dangles, beaded bag charms, charm keychains, and builder tools. Watches coming soon. Build a bracelet in the Charm Studio or find us at the market.',
+    'Browse the full RetroCharm Co collection — bracelet bases, Italian charms, dangles, charm watches, beaded bag charms, charm keychains, and builder tools. Build a bracelet in the Charm Studio or find us at the market.',
 }
 
 // Bracelet bases only — watch bands get their own (coming soon) section below.
@@ -287,40 +288,33 @@ function ToolCard({ item, index }) {
   )
 }
 
-/**
- * Reserved catalog slot for a product line that isn't live yet.
- * Styled to match the real sections so it reads as "on the way," not broken.
- */
-function ComingSoonSection({ eyebrow, title, description, note, id }) {
-  const headingId = `${id}-heading`
+function WatchCard({ item, index }) {
   return (
-    <section
-      id={id}
-      className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 md:py-16"
-      aria-labelledby={headingId}
+    <motion.article
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, margin: '-40px' }}
+      transition={{ delay: Math.min(index * 0.06, 0.3), type: 'spring', stiffness: 320, damping: 28 }}
+      className="retro-card retro-card-hover flex h-full flex-col overflow-hidden"
     >
-      <SectionHeading eyebrow={eyebrow} title={title} description={description} id={headingId} />
-      <div className="mt-9 flex flex-col items-center justify-center rounded-3xl border-2 border-dashed border-jscolors-gold/45 bg-white/50 px-6 py-14 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full bg-jscolors-pink px-4 py-1.5 text-xs font-bold uppercase tracking-wide text-white shadow-sm">
-          <SparkleDot /> Coming soon
-        </span>
-        <p className="mt-4 max-w-md text-jscolors-ink/75">{note}</p>
-        <Link
-          to="/find-us"
-          className="mt-6 inline-flex min-h-11 items-center justify-center rounded-full border-2 border-jscolors-gold/55 bg-transparent px-6 py-2.5 text-sm font-semibold text-jscolors-ink transition hover:border-jscolors-gold hover:bg-jscolors-pink/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-jscolors-gold"
-        >
-          Find us at the market
-        </Link>
+      <div className="flex aspect-square items-center justify-center bg-jscolors-cream/70 p-5">
+        <img
+          src={item.image}
+          alt={item.name}
+          loading="lazy"
+          decoding="async"
+          className="h-full w-full object-contain"
+        />
       </div>
-    </section>
-  )
-}
-
-function SparkleDot() {
-  return (
-    <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" fill="currentColor" aria-hidden="true">
-      <path d="M12 2l1.9 5.6L19.5 9.5 13.9 11.4 12 17l-1.9-5.6L4.5 9.5l5.6-1.9L12 2z" />
-    </svg>
+      <div className="flex flex-1 flex-col items-center gap-1 border-t border-jscolors-gold/25 px-4 py-4 text-center">
+        <h3 className="font-display text-lg font-semibold text-jscolors-ink">{item.name}</h3>
+        <p className="font-semibold text-jscolors-blue">${item.price.toFixed(2)}</p>
+        <span className="mt-1 rounded-full bg-jscolors-gold/15 px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-jscolors-ink/80">
+          {item.metal === 'gold' ? 'Gold-tone' : 'Silver-tone'}
+        </span>
+        <AddToCartButton item={item} />
+      </div>
+    </motion.article>
   )
 }
 
@@ -348,8 +342,8 @@ export default function Shop() {
         <SparkleRow className="mx-auto opacity-90" />
         <h1 className="mt-6 font-display text-4xl font-bold md:text-5xl">Shop the Collection</h1>
         <p className="mx-auto mt-4 max-w-2xl text-jscolors-cream/85">
-          Browse everything we make — bracelet bases, Italian charms and dangles, beaded bag charms, charm keychains, and builder tools.
-          Watches are on the way. See something you love? Build it in the Charm Studio or come find us at the market.
+          Browse everything we make — bracelet bases, Italian charms and dangles, charm watches, beaded bag charms, charm keychains, and builder tools.
+          See something you love? Build it in the Charm Studio or come find us at the market.
         </p>
         <nav aria-label="Jump to section" className="mt-7 flex flex-wrap items-center justify-center gap-2">
           {[
@@ -437,14 +431,26 @@ export default function Shop() {
         </div>
       </section>
 
-      {/* Watches — reserved */}
-      <ComingSoonSection
+      {/* Watches */}
+      <section
         id="watches"
-        eyebrow="For your wrist"
-        title="Watches"
-        description="Turn your favorite band into a charm watch."
-        note="Charm watches and watch bands are coming soon to the online shop. Want first dibs? Come see them in person at the market."
-      />
+        className="scroll-mt-24 border-t border-jscolors-gold/25 bg-jscolors-cream/70 px-4 py-14 md:py-16"
+        aria-labelledby="shop-watches-heading"
+      >
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="For your wrist"
+            title="Watches"
+            description={`Quartz charm watches on a stainless steel Italian charm band, from $${WATCH_PRICE_FROM.toFixed(2)}.`}
+            id="shop-watches-heading"
+          />
+          <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:gap-6">
+            {WATCHES.map((item, i) => (
+              <WatchCard key={item.id} item={item} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Bag charms */}
       <section

@@ -7,6 +7,7 @@ import { charms, BASE_OPTIONS, getCharmById, isFillerCharm } from './charms.js'
 import { BAG_CHARMS } from './bagCharms.js'
 import { KEYCHAINS } from './keychains.js'
 import { TOOLS } from './tools.js'
+import { WATCHES } from './watches.js'
 
 /** Inventory metal for products that are not silver/gold bracelet hardware. */
 export const ACCESSORY_INVENTORY_METAL = 'accessory'
@@ -18,7 +19,7 @@ export const ACCESSORY_INVENTORY_METAL = 'accessory'
  *   price: number,
  *   metal: string,
  *   image?: string | null,
- *   kind: 'charm' | 'base' | 'bag-charm' | 'keychain' | 'tool',
+ *   kind: 'charm' | 'base' | 'bag-charm' | 'keychain' | 'tool' | 'watch',
  *   isFiller?: boolean,
  * }} SellableProduct
  */
@@ -48,6 +49,14 @@ export const ACCESSORY_PRODUCTS = [
     metal: ACCESSORY_INVENTORY_METAL,
     image: item.image,
     kind: /** @type {const} */ ('tool'),
+  })),
+  ...WATCHES.map((item) => ({
+    id: item.id,
+    name: item.name,
+    price: item.price,
+    metal: item.metal,
+    image: item.image,
+    kind: /** @type {const} */ ('watch'),
   })),
 ]
 
