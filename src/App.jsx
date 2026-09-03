@@ -4,7 +4,6 @@ import { Analytics } from '@vercel/analytics/react'
 import { Navbar } from './components/Navbar.jsx'
 import { Footer } from './components/Footer.jsx'
 import { NextMarketBanner } from './components/NextMarketBanner'
-import { SaleBanner } from './components/SaleBanner.jsx'
 import { ScrollToTop } from './components/ScrollToTop.jsx'
 import { AnalyticsBootstrap } from './components/AnalyticsBootstrap.jsx'
 import Home from './pages/Home.jsx'
@@ -63,7 +62,6 @@ function Shell() {
       >
         Skip to main content
       </a>
-      <SaleBanner />
       <Navbar />
       {showMarketBanner ? <NextMarketBanner /> : null}
       <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
