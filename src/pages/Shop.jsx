@@ -348,11 +348,11 @@ export default function Shop() {
         <nav aria-label="Jump to section" className="mt-7 flex flex-wrap items-center justify-center gap-2">
           {[
             { href: '#best-sellers', label: 'Prebuilt' },
+            { href: '#watches', label: 'Watches' },
+            { href: '#keychains', label: 'Keychains' },
+            { href: '#bag-charms', label: 'Bag Charms' },
             { href: '#bases', label: 'Bases' },
             { href: '#charms', label: 'Charms' },
-            { href: '#watches', label: 'Watches' },
-            { href: '#bag-charms', label: 'Bag Charms' },
-            { href: '#keychains', label: 'Keychains' },
             { href: '#tools', label: 'Tools' },
           ].map((item) => (
             <a
@@ -369,6 +369,67 @@ export default function Shop() {
       {/* Prebuilt / ready-made bracelets — reuses the homepage bundles component
           (live pricing, stock, and Add to Cart → Square checkout). */}
       <BestSellers />
+
+      {/* Watches, keychains, and bag charms sit above the charm catalog so they stay easy to find. */}
+      <section
+        id="watches"
+        className="scroll-mt-24 bg-jscolors-cream/70 px-4 py-14 md:py-16"
+        aria-labelledby="shop-watches-heading"
+      >
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="For your wrist"
+            title="Watches"
+            description={`Quartz charm watches on a stainless steel Italian charm band, from $${WATCH_PRICE_FROM.toFixed(2)}.`}
+            id="shop-watches-heading"
+          />
+          <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:gap-6">
+            {WATCHES.map((item, i) => (
+              <WatchCard key={item.id} item={item} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Keychains */}
+      <section
+        id="keychains"
+        className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 md:py-16"
+        aria-labelledby="shop-keychain-heading"
+      >
+        <SectionHeading
+          eyebrow="Take them with you"
+          title="Keychains"
+          description={`Stainless steel charm keychains from $${KEYCHAIN_PRICE_FROM.toFixed(2)} — clip one to your keys or bag and build it up just like a bracelet.`}
+          id="shop-keychain-heading"
+        />
+        <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:gap-6">
+          {KEYCHAINS.map((item, i) => (
+            <KeychainCard key={item.id} item={item} index={i} />
+          ))}
+        </div>
+      </section>
+
+      {/* Bag charms */}
+      <section
+        id="bag-charms"
+        className="scroll-mt-24 border-t border-jscolors-gold/25 bg-jscolors-cream/70 px-4 py-14 md:py-16"
+        aria-labelledby="shop-bag-heading"
+      >
+        <div className="mx-auto max-w-6xl">
+          <SectionHeading
+            eyebrow="Beyond the bracelet"
+            title="Bag Charms"
+            description={`Pre-made beaded bag charms — $${BAG_CHARM_PRICE.toFixed(2)} each. Clip one on your bag, keys, or lanyard.`}
+            id="shop-bag-heading"
+          />
+          <div className="mt-9 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-6">
+            {BAG_CHARMS.map((item, i) => (
+              <BagCharmCard key={item.id} item={item} index={i} />
+            ))}
+          </div>
+        </div>
+      </section>
 
       {/* Bases */}
       <section id="bases" className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 md:py-16" aria-labelledby="shop-bases-heading">
@@ -428,67 +489,6 @@ export default function Shop() {
               No charms in this category yet — check back soon or browse another category.
             </p>
           )}
-        </div>
-      </section>
-
-      {/* Watches */}
-      <section
-        id="watches"
-        className="scroll-mt-24 border-t border-jscolors-gold/25 bg-jscolors-cream/70 px-4 py-14 md:py-16"
-        aria-labelledby="shop-watches-heading"
-      >
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading
-            eyebrow="For your wrist"
-            title="Watches"
-            description={`Quartz charm watches on a stainless steel Italian charm band, from $${WATCH_PRICE_FROM.toFixed(2)}.`}
-            id="shop-watches-heading"
-          />
-          <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:gap-6">
-            {WATCHES.map((item, i) => (
-              <WatchCard key={item.id} item={item} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Bag charms */}
-      <section
-        id="bag-charms"
-        className="scroll-mt-24 border-t border-jscolors-gold/25 bg-jscolors-cream/70 px-4 py-14 md:py-16"
-        aria-labelledby="shop-bag-heading"
-      >
-        <div className="mx-auto max-w-6xl">
-          <SectionHeading
-            eyebrow="Beyond the bracelet"
-            title="Bag Charms"
-            description={`Pre-made beaded bag charms — $${BAG_CHARM_PRICE.toFixed(2)} each. Clip one on your bag, keys, or lanyard.`}
-            id="shop-bag-heading"
-          />
-          <div className="mt-9 grid grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-5 lg:grid-cols-6">
-            {BAG_CHARMS.map((item, i) => (
-              <BagCharmCard key={item.id} item={item} index={i} />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Keychains */}
-      <section
-        id="keychains"
-        className="mx-auto max-w-6xl scroll-mt-24 px-4 py-14 md:py-16"
-        aria-labelledby="shop-keychain-heading"
-      >
-        <SectionHeading
-          eyebrow="Take them with you"
-          title="Keychains"
-          description={`Stainless steel charm keychains from $${KEYCHAIN_PRICE_FROM.toFixed(2)} — clip one to your keys or bag and build it up just like a bracelet.`}
-          id="shop-keychain-heading"
-        />
-        <div className="mx-auto mt-9 grid max-w-3xl grid-cols-2 gap-4 sm:grid-cols-3 sm:gap-6">
-          {KEYCHAINS.map((item, i) => (
-            <KeychainCard key={item.id} item={item} index={i} />
-          ))}
         </div>
       </section>
 
