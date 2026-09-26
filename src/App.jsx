@@ -7,6 +7,7 @@ import { NextMarketBanner } from './components/NextMarketBanner'
 import { PromoBanner } from './components/PromoBanner.jsx'
 import { ScrollToTop } from './components/ScrollToTop.jsx'
 import { AnalyticsBootstrap } from './components/AnalyticsBootstrap.jsx'
+import { RouteErrorBoundary } from './components/RouteErrorBoundary.jsx'
 import Home from './pages/Home.jsx'
 
 const Shop = lazy(() => import('./pages/Shop.jsx'))
@@ -67,9 +68,11 @@ function Shell() {
       <Navbar />
       {showMarketBanner ? <NextMarketBanner /> : null}
       <main className="min-w-0 flex-1" id="main-content" tabIndex={-1}>
-        <Suspense fallback={<RouteFallback />}>
-          <Outlet />
-        </Suspense>
+        <RouteErrorBoundary>
+          <Suspense fallback={<RouteFallback />}>
+            <Outlet />
+          </Suspense>
+        </RouteErrorBoundary>
       </main>
       <Footer />
     </div>
