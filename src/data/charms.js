@@ -186,7 +186,25 @@ export const charms = [
   { id: 's-mom', name: 'MOM', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/words-phrases/mom-silver.webp' },
   { id: 's-treat-people-with-kindness', name: 'Treat People With Kindness', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/words-phrases/treat-people-with-kindness-silver.webp' },
   { id: 's-yeet-or-be-yeeted', name: 'Yeet or be Yeeted', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/words-phrases/yeet-or-be-yeeted-silver.webp' },
+
+  // ── New arrivals (added Sep 2026) ─────────────────────────────────────
+  { id: 'g-gem-red', name: 'Gem - Red', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-red-gold.webp' },
+  { id: 'g-gem-blue', name: 'Gem - Blue', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-blue-gold.webp' },
+  { id: 'g-gem-sapphire', name: 'Gem - Sapphire', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-sapphire-gold.webp' },
+  { id: 'g-gem-emerald', name: 'Gem - Emerald', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-emerald-gold.webp' },
+  { id: 'g-gem-pink', name: 'Gem - Pink', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-pink-gold.webp' },
+  { id: 'g-gem-magenta', name: 'Gem - Magenta', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-magenta-gold.webp' },
+  { id: 's-jesus', name: 'Jesus', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/faith/jesus-silver.webp' },
+  { id: 's-cow-print', name: 'Cow Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/animals-characters/cow-print-silver.webp' },
+  { id: 'g-fish-sardines', name: 'Fish - Sardines', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/fish-sardines-gold.webp' },
+  { id: 's-zebra-print', name: 'Zebra Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/zebra-print-silver.webp' },
+  { id: 's-camera', name: 'Camera', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/camera-silver.webp' },
+  { id: 's-four-leaf-clover', name: 'Four-Leaf Clover', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/four-leaf-clover-silver.webp' },
+  { id: 'g-football', name: 'Football', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/football-gold.webp' },
+  { id: 's-leopard-print', name: 'Leopard Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/leopard-print-silver.webp' },
+  { id: 'g-yin-yang', name: 'Yin Yang', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/yin-yang-gold.webp' },
 ]
+
 
 export const SIZE_OPTIONS = [
   { charmCount: 16, lengthInches: 5.7 },
