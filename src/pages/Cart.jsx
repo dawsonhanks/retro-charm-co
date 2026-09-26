@@ -118,6 +118,12 @@ export default function Cart() {
         ) : (
           <div className="mt-10 space-y-6">
             <BraceletBuildsPreview builds={braceletBuilds} />
+            {braceletBuilds.length > 0 ? (
+              <p className="text-xs text-jscolors-ink/60">
+                Every charm and base in your build{braceletBuilds.length === 1 ? '' : 's'} above is also listed
+                individually below so you can adjust quantities or remove one — nothing is charged twice.
+              </p>
+            ) : null}
             <ul className="divide-y divide-jscolors-gold/25 rounded-3xl border-2 border-jscolors-gold/35 bg-white/80 shadow-lg">
               {items.map((item) => {
                 const blocked = unavailableItems.some((u) => u.id === item.id)
