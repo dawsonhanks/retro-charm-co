@@ -9,6 +9,7 @@ import { BASE_OPTIONS, isWatchBase } from '../data/charms'
 import {
   CHARM_BROWSE_FILTERS,
   BEST_SELLER_CHARM_IDS,
+  NEW_CHARM_IDS,
   getBrowsableCharms,
   getCharmBrowseThemes,
   formatCharmSubtitle,
@@ -48,6 +49,7 @@ const BASE_PRICE_FROM = Math.min(...BRACELET_BASES.map((b) => b.price))
 function filterCharms(charms, filterId) {
   if (filterId === 'all') return charms
   if (filterId === 'best-sellers') return charms.filter((c) => BEST_SELLER_CHARM_IDS.has(c.id))
+  if (filterId === 'new') return charms.filter((c) => NEW_CHARM_IDS.has(c.id))
   if (filterId === 'silver') return charms.filter((c) => c.metal === 'silver')
   if (filterId === 'gold') return charms.filter((c) => c.metal === 'gold')
   return charms.filter((c) => getCharmBrowseThemes(c).includes(filterId))
@@ -144,6 +146,11 @@ function CharmCard({ charm, index, outOfStock = false }) {
         {BEST_SELLER_CHARM_IDS.has(charm.id) && !outOfStock && (
           <span className="absolute left-2 top-2 rounded-full bg-jscolors-pink px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
             Best seller
+          </span>
+        )}
+        {!BEST_SELLER_CHARM_IDS.has(charm.id) && NEW_CHARM_IDS.has(charm.id) && !outOfStock && (
+          <span className="absolute left-2 top-2 rounded-full bg-jscolors-gold-warm px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-white shadow-sm">
+            New
           </span>
         )}
         {outOfStock && (

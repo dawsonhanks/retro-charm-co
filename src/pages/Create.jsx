@@ -2,7 +2,7 @@ import { lazy, Suspense, useMemo, useState } from 'react'
 import { PageMeta } from '../components/PageMeta'
 import { useCart } from '../context/CartContext.jsx'
 import { CHARM_CATEGORY_FILTERS, charms, getCharmById, isFillerCharm } from '../data/charms'
-import { formatCharmSubtitle, formatMetalLabel } from '../data/charmBrowse'
+import { formatCharmSubtitle, formatMetalLabel, NEW_CHARM_IDS } from '../data/charmBrowse'
 import { CharmSearchInput } from '../components/CharmSearchInput'
 import { FilterBar } from '../components/FilterBar'
 import { StockVisibilityToggle } from '../components/StockVisibilityToggle'
@@ -337,7 +337,14 @@ export default function Create() {
                   ].join(' ')}
                 >
                   <div className="flex items-start justify-between gap-2">
-                    <MetalBadge metal={charm.metal} />
+                    <div className="flex items-center gap-2">
+                      <MetalBadge metal={charm.metal} />
+                      {NEW_CHARM_IDS.has(charm.id) && !nonPurchasable ? (
+                        <span className="inline-flex rounded-full bg-jscolors-gold-warm px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                          New
+                        </span>
+                      ) : null}
+                    </div>
                     <div className="flex items-center gap-2">
                       {stockLabel ? (
                         <span className="rounded bg-jscolors-ink/80 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-white">

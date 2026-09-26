@@ -1,3 +1,5 @@
+import { NEW_CHARM_IDS } from '../data/charmBrowse'
+
 export function CharmSvgIcon({ charm, className = 'h-8 w-8', accentClass = 'text-jscolors-pink' }) {
   if (!charm) return null
   const vb = charm.viewBox || '0 0 24 24'
@@ -145,15 +147,22 @@ export function CharmPickerGrid({
               )}
               <CharmSvgIcon charm={c} className="h-7 w-7 text-jscolors-ink" accentClass="text-jscolors-pink" />
               <span className="mt-1 line-clamp-2 text-[10px] font-medium leading-tight text-jscolors-ink">{c.name}</span>
-              <span
-                className={[
-                  'mt-0.5 rounded-full px-1.5 py-px text-[8px] font-bold uppercase tracking-wide',
-                  c.metal === 'gold'
-                    ? 'bg-amber-100 text-amber-900'
-                    : 'bg-slate-100 text-slate-700',
-                ].join(' ')}
-              >
-                {metalLabel}
+              <span className="mt-0.5 flex items-center gap-1">
+                <span
+                  className={[
+                    'rounded-full px-1.5 py-px text-[8px] font-bold uppercase tracking-wide',
+                    c.metal === 'gold'
+                      ? 'bg-amber-100 text-amber-900'
+                      : 'bg-slate-100 text-slate-700',
+                  ].join(' ')}
+                >
+                  {metalLabel}
+                </span>
+                {NEW_CHARM_IDS.has(c.id) && !outOfStock ? (
+                  <span className="rounded-full bg-jscolors-gold-warm px-1.5 py-px text-[8px] font-bold uppercase tracking-wide text-white">
+                    New
+                  </span>
+                ) : null}
               </span>
               {justAdded && !outOfStock && (
                 <span className="pointer-events-none absolute inset-x-0 bottom-0 rounded-b-[10px] bg-emerald-500/95 py-0.5 text-[9px] font-bold uppercase tracking-wide text-white">

@@ -14,6 +14,7 @@ import { BEST_SELLER_BUNDLES } from './bundles'
  */
 export const CHARM_BROWSE_FILTERS = [
   { id: 'all', label: 'All' },
+  { id: 'new', label: 'New' },
   { id: 'best-sellers', label: 'Best Sellers' },
   { id: 'letters', label: 'Letters' },
   { id: 'food-drinks', label: 'Food & Drinks' },
@@ -59,6 +60,25 @@ export function getBestSellerCharmIds() {
 }
 
 export const BEST_SELLER_CHARM_IDS = getBestSellerCharmIds()
+
+/** How long a charm keeps its 'New' badge/filter after `dateAdded`. */
+export const NEW_CHARM_WINDOW_DAYS = 45
+
+/**
+ * Whether a charm was added recently enough to still count as 'New'.
+ * Based on the charm's `dateAdded` (YYYY-MM-DD) — no manual list to keep in sync.
+ * @param {{ dateAdded?: string }} charm
+ */
+export function isNewCharm(charm) {
+  if (!charm?.dateAdded) return false
+  const added = new Date(`${charm.dateAdded}T00:00:00`)
+  if (Number.isNaN(added.getTime())) return false
+  const ageDays = (Date.now() - added.getTime()) / (1000 * 60 * 60 * 24)
+  return ageDays >= 0 && ageDays <= NEW_CHARM_WINDOW_DAYS
+}
+
+/** Charm IDs currently within the 'New' window, evaluated at load time. */
+export const NEW_CHARM_IDS = new Set(charms.filter(isNewCharm).map((c) => c.id))
 
 /**
  * Thematic browse groups for a catalog charm (may be empty for fillers/starters).

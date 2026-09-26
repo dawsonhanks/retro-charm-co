@@ -3,6 +3,7 @@
  */
 import {
   BEST_SELLER_CHARM_IDS,
+  NEW_CHARM_IDS,
   getCharmBrowseThemes,
 } from '../data/charmBrowse'
 
@@ -17,6 +18,9 @@ export function applyCharmTabFilter(list, filter, { favoriteIds = [] } = {}) {
   if (filter === 'gold') return list.filter((c) => c.metal === 'gold')
   if (filter === 'best-sellers') {
     return list.filter((c) => BEST_SELLER_CHARM_IDS.has(c.id))
+  }
+  if (filter === 'new') {
+    return list.filter((c) => NEW_CHARM_IDS.has(c.id))
   }
   if (filter === 'favorites') {
     const set = new Set(favoriteIds)

@@ -48,6 +48,7 @@ export const DEFAULT_CHARM_PRICE = 3.95
 
 export const CHARM_CATEGORY_FILTERS = [
   { id: 'all', label: 'All' },
+  { id: 'new', label: 'New' },
   { id: 'best-sellers', label: 'Best Sellers' },
   { id: 'letters', label: 'Letters' },
   { id: 'food-drinks', label: 'Food & Drinks' },
@@ -188,21 +189,21 @@ export const charms = [
   { id: 's-yeet-or-be-yeeted', name: 'Yeet or be Yeeted', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/words-phrases/yeet-or-be-yeeted-silver.webp' },
 
   // ── New arrivals (added Sep 2026) ─────────────────────────────────────
-  { id: 'g-gem-red', name: 'Gem - Red', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-red-gold.webp' },
-  { id: 'g-gem-blue', name: 'Gem - Blue', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-blue-gold.webp' },
-  { id: 'g-gem-sapphire', name: 'Gem - Sapphire', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-sapphire-gold.webp' },
-  { id: 'g-gem-emerald', name: 'Gem - Emerald', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-emerald-gold.webp' },
-  { id: 'g-gem-pink', name: 'Gem - Pink', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-pink-gold.webp' },
-  { id: 'g-gem-magenta', name: 'Gem - Magenta', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-magenta-gold.webp' },
-  { id: 's-jesus', name: 'Jesus', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/faith/jesus-silver.webp' },
-  { id: 's-cow-print', name: 'Cow Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/animals-characters/cow-print-silver.webp' },
-  { id: 'g-fish-sardines', name: 'Fish - Sardines', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/fish-sardines-gold.webp' },
-  { id: 's-zebra-print', name: 'Zebra Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/zebra-print-silver.webp' },
-  { id: 's-camera', name: 'Camera', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/camera-silver.webp' },
-  { id: 's-four-leaf-clover', name: 'Four-Leaf Clover', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/four-leaf-clover-silver.webp' },
-  { id: 'g-football', name: 'Football', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/football-gold.webp' },
-  { id: 's-leopard-print', name: 'Leopard Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/leopard-print-silver.webp' },
-  { id: 'g-yin-yang', name: 'Yin Yang', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/yin-yang-gold.webp' },
+  { id: 'g-gem-red', dateAdded: '2026-09-26', name: 'Gem - Red', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-red-gold.webp' },
+  { id: 'g-gem-blue', dateAdded: '2026-09-26', name: 'Gem - Blue', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-blue-gold.webp' },
+  { id: 'g-gem-sapphire', dateAdded: '2026-09-26', name: 'Gem - Sapphire', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-sapphire-gold.webp' },
+  { id: 'g-gem-emerald', dateAdded: '2026-09-26', name: 'Gem - Emerald', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-emerald-gold.webp' },
+  { id: 'g-gem-pink', dateAdded: '2026-09-26', name: 'Gem - Pink', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-pink-gold.webp' },
+  { id: 'g-gem-magenta', dateAdded: '2026-09-26', name: 'Gem - Magenta', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/gemstones/gem-magenta-gold.webp' },
+  { id: 's-jesus', dateAdded: '2026-09-26', name: 'Jesus', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/faith/jesus-silver.webp' },
+  { id: 's-cow-print', dateAdded: '2026-09-26', name: 'Cow Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/animals-characters/cow-print-silver.webp' },
+  { id: 'g-fish-sardines', dateAdded: '2026-09-26', name: 'Fish - Sardines', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/food-drink/fish-sardines-gold.webp' },
+  { id: 's-zebra-print', dateAdded: '2026-09-26', name: 'Zebra Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/zebra-print-silver.webp' },
+  { id: 's-camera', dateAdded: '2026-09-26', name: 'Camera', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/camera-silver.webp' },
+  { id: 's-four-leaf-clover', dateAdded: '2026-09-26', name: 'Four-Leaf Clover', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/symbols-sports/four-leaf-clover-silver.webp' },
+  { id: 'g-football', dateAdded: '2026-09-26', name: 'Football', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/football-gold.webp' },
+  { id: 's-leopard-print', dateAdded: '2026-09-26', name: 'Leopard Print', category: 'charms', price: 3.95, metal: 'silver', iconType: 'image', image: '/images/charms/fashion/leopard-print-silver.webp' },
+  { id: 'g-yin-yang', dateAdded: '2026-09-26', name: 'Yin Yang', category: 'charms', price: 3.95, metal: 'gold', iconType: 'image', image: '/images/charms/symbols-sports/yin-yang-gold.webp' },
 ]
 
 
