@@ -95,6 +95,10 @@ const BASE_NAME_TO_METAL = {
   'Gold Bracelet': 'gold',
   'Silver Watch Band': 'silver',
   'Gold Watch Band': 'gold',
+  'Silver Base': 'silver',
+  'Gold Base': 'gold',
+  'Silver Apple Watch': 'silver',
+  'Gold Apple Watch': 'gold',
 }
 
 /**
