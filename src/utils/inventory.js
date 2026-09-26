@@ -1,5 +1,5 @@
 import { charms, BASE_OPTIONS, isFillerCharm, getCharmById } from '../data/charms.js'
-import { getSellableProduct } from '../data/sellableProducts.js'
+import { getSellableProduct, ACCESSORY_PRODUCTS } from '../data/sellableProducts.js'
 import { logMissingInventoryProduct } from '../lib/inventoryDiagnostics.js'
 import { isInventoryEmergencyFailOpen } from '../lib/inventoryConfig.js'
 
@@ -295,6 +295,13 @@ export function getPickableCatalogCharms() {
 
 /**
  * Compare inventory keys to charms.js and warn on mismatches.
+ *
+ * The catalog side isn't just the pickable charms: bracelet/watch bases
+ * (BASE_OPTIONS), starter-bracelet catalog cards, and accessories (bag
+ * charms, keychains, tools, watches from sellableProducts.js) are real,
+ * intentionally-sellable inventory rows too, just not "pickable charms".
+ * Leaving them out here made this warn on ~20 expected rows on every
+ * load, drowning out any genuinely orphaned row (e.g. a stale duplicate).
  * @param {InventoryMap | null | undefined} inventoryMap
  */
 export function logInventoryMismatches(inventoryMap) {
@@ -310,6 +317,30 @@ export function logInventoryMismatches(inventoryMap) {
     const key = inventoryKey(charm.name, charm.metal)
     catalogKeys.add(key)
     catalogByKey.set(key, { name: charm.name, metal: charm.metal, id: charm.id })
+  }
+
+  // Starter-bracelet catalog cards (Silver/Gold Base, Silver/Gold Apple Watch)
+  // are excluded from getPickableCatalogCharms() on purpose (they're not
+  // "add a charm" picks) but still have real inventory rows behind them.
+  for (const charm of charms) {
+    if (charm.category !== 'Starter Bracelets') continue
+    const key = inventoryKey(charm.name, charm.metal)
+    catalogKeys.add(key)
+    catalogByKey.set(key, { name: charm.name, metal: charm.metal, id: charm.id })
+  }
+
+  // Bracelet/watch-band bases.
+  for (const base of BASE_OPTIONS) {
+    const key = inventoryKey(base.label, base.metal)
+    catalogKeys.add(key)
+    catalogByKey.set(key, { name: base.label, metal: base.metal, id: base.id })
+  }
+
+  // Bag charms, keychains, tools, and watches.
+  for (const product of ACCESSORY_PRODUCTS) {
+    const key = inventoryKey(product.name, product.metal)
+    catalogKeys.add(key)
+    catalogByKey.set(key, { name: product.name, metal: product.metal, id: product.id })
   }
 
   const sheetKeys = new Set(Object.keys(inventoryMap))
